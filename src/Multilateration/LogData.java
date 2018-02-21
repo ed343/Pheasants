@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class LogData {
     String FilePath;
     ArrayList<Long> Times= new ArrayList<>();
-    ArrayList<Integer> IDs= new ArrayList<>();
+    ArrayList<Long> IDs= new ArrayList<>();
     ArrayList<Double> Frequencies= new ArrayList<>();
     ArrayList<Double> TBuffers= new ArrayList<>();
     ArrayList<Double> TDets= new ArrayList<>();
@@ -101,9 +101,9 @@ public class LogData {
                     //Find the position of ID in line.
                     int iDind = line.indexOf("[4400");
                     //Extract the ID string from the log.
-                    String iD = line.substring((iDind+8), (iDind+12));
+                    String iD = line.substring((iDind+1), (iDind+12));
                     //Convert the ID string to an integer.
-                    int iDInt = Integer.parseInt(iD);
+                    long iDInt = Long.parseLong(iD);
                     //Add ID to ArrayList.
                     this.IDs.add(iDInt);
                     //Frequencies
@@ -187,7 +187,7 @@ public class LogData {
         return this.Times;
     }
     
-    ArrayList<Integer> getIDs() {
+    ArrayList<Long> getIDs() {
         return this.IDs;
     }
     
@@ -228,3 +228,4 @@ public class LogData {
     }
     
 }
+
