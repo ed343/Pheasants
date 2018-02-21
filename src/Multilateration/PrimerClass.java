@@ -54,16 +54,16 @@ public class PrimerClass {
     
     /* Method accepts double values for the RSSI values extracted by the parser. 
      */
-    boolean setTimeRssiValues(long[] time, long[] tagID, double[] rssi){
+    boolean setTimeRssiValues(ArrayList<Long>time, ArrayList<Long> tagID, ArrayList<Double> rssi){
         // try catch with error handling
         
         // create the entire HashMap first
         // no way to do it fast, do it manually
         HashMap hm=new HashMap();
-        for(int i=0; i<time.length; i++){
+        for(int i=0; i<time.size(); i++){
             // we create a Pair for each time-rssi value pair and store it
-            Pair pair= new Pair(tagID[i], rssi[i]);
-            hm.put(time[i], pair);
+            Pair pair= new Pair(tagID.get(i), rssi.get(i));
+            hm.put(time.get(i), pair);
         }
         
         rssiValues.add(hm);
