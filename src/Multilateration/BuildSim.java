@@ -38,10 +38,10 @@ public class BuildSim {
         primer2.setRadioMeasuredPower(-84.4);
         primer3.setRadioMeasuredPower(-84.4);
         primer4.setRadioMeasuredPower(-84.4);
-        primer1.setTimeRssiValues(beacon1.getTimes(),beacon1.getIDs(),beacon1.getRSSIs());
-        primer2.setTimeRssiValues(beacon2.getTimes(),beacon2.getIDs(),beacon2.getRSSIs());
-        primer3.setTimeRssiValues(beacon3.getTimes(),beacon3.getIDs(),beacon3.getRSSIs());
-        primer1.setTimeRssiValues(beacon4.getTimes(),beacon4.getIDs(),beacon4.getRSSIs());
+        primer1.setTimeAndRssiValues(beacon1.getTimes(),beacon1.getIDs(),beacon1.getRSSIs());
+        primer2.setTimeAndRssiValues(beacon2.getTimes(),beacon2.getIDs(),beacon2.getRSSIs());
+        primer3.setTimeAndRssiValues(beacon3.getTimes(),beacon3.getIDs(),beacon3.getRSSIs());
+        primer1.setTimeAndRssiValues(beacon4.getTimes(),beacon4.getIDs(),beacon4.getRSSIs());
         RssiEquation re1 = new RssiEquation();
         RssiEquation re2 = new RssiEquation();
         RssiEquation re3 = new RssiEquation();
@@ -49,6 +49,7 @@ public class BuildSim {
         ArrayList<HashMap<Long, HashMap<Long, Double>>> rs1 = primer1.rssiValues;
         HashMap<Long, HashMap<Long, Double>> thisOne = rs1.get(0);
         HashMap dist1 = re1.getTagDistance(rs1.get(0), (int) -84.4);
+        primer1.tagDistances.add(0,dist1);
         System.out.println(primer1.tagDistances);
     }
     
