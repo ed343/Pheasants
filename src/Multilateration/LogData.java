@@ -35,6 +35,12 @@ public class LogData {
         this.extractData(fp);
     }
     
+    LogData(ArrayList<Long> times, ArrayList<Long> ids, ArrayList<Double> rssis) {
+        this.Times = times;
+        this.IDs = ids;
+        this.RSSIs = rssis;
+    }
+    
     
     /*
     *  Function to convert a date/time string into a number.
@@ -50,13 +56,12 @@ public class LogData {
     *
     */
     long getDT(String dt) {
-        String year = dt.substring(0,4);
         String month = dt.substring(5,7);
         String day = dt.substring(8,10);
         String hour = dt.substring(11,13);
         String minute = dt.substring(14,16);
         String second = dt.substring(17,19);
-        String fullString = year+month+day+hour+minute+second;
+        String fullString = month+day+hour+minute+second;
         long flatDT = Long.parseLong(fullString);
         return flatDT;
     }
@@ -101,7 +106,7 @@ public class LogData {
                     //Find the position of ID in line.
                     int iDind = line.indexOf("[4400");
                     //Extract the ID string from the log.
-                    String iD = line.substring((iDind+1), (iDind+12));
+                    String iD = line.substring((iDind+8), (iDind+12));
                     //Convert the ID string to an integer.
                     long iDInt = Long.parseLong(iD);
                     //Add ID to ArrayList.
