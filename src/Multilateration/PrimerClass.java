@@ -1,7 +1,10 @@
 package Multilateration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import javafx.util.Pair;
 
 public class PrimerClass {
@@ -16,6 +19,7 @@ public class PrimerClass {
     ArrayList<Double[]> radiosCoordinates= new ArrayList<>();
     ArrayList<Double> measuredPower= new ArrayList<>();
     ArrayList<HashMap<Long, HashMap<Long, Double>>> rssiValues= new ArrayList<>();
+    HashMap<Long, ArrayList<Pair<Long,Double>>> idRSSIs = new HashMap<>();
     ArrayList<HashMap<Long, HashMap<Long, Double>>> tagDistances=new ArrayList<>();
     
     ////////////////////////////////////////////////////////////////////////////
@@ -70,6 +74,26 @@ public class PrimerClass {
         
         rssiValues.add(hm);
         return false; // change once implemented
+    }
+    
+    boolean setTRVals(ArrayList<Long>time, ArrayList<Long> tagID, 
+                                    ArrayList<Double> rssi) {
+        HashMap<Long, ArrayList<Pair<Long,Double>>> hm=new HashMap();
+        Set<Long> uniqueIDs = new HashSet<>(tagID);
+        Object[] uIArr = uniqueIDs.toArray();
+        for(int i=0;i<uniqueIDs.size();i++) {
+            ArrayList<Pair<Long,Double>> detList = new ArrayList<>();
+            long val = Long.parseLong(uIArr[i].toString());
+            for(int j=0; j<tagID.size();j++) {
+                if(tagID.get(j)==val) {
+                    Pair<Long,Double> timeRSSI = new Pair<>(time.get(j),rssi.get(j));
+                    detList.add(timeRSSI);
+                }
+            }
+            hm.put(val, detList);
+        }
+        this.idRSSIs = hm;
+        return false;
     }
     
     
