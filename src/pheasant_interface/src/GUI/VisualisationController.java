@@ -26,13 +26,20 @@ public class VisualisationController {
 
     @FXML
     HBox imagebox;
+    @FXML
     AnchorPane visualisation;
+    @FXML
+    HBox buttons;
 
     public void initialize() throws IOException {
 
         // downloading static map of the location
+        // ! WHAT HAPPENS IF NO INTERNET CONNECTION - SHOULD HAVE SOME INFO MESSAGE AND DUMMY BACKGROUND IMAGE
+        // SEEMS LIKE IMAGE JUST STAYS EMPTY, BUT NEED TO SOMEHOW DETECT THAT
         Image image = new Image("https://maps.googleapis.com/maps/api/staticmap?center=50.728,-3.527&zoom=16&size=480x280&key=AIzaSyD9duo3FCZAGzoydpTGoM2Gwwcba3OXxSs");
         ImageView imageView = new ImageView(image);
+
+        System.out.println(image);
         //imageView.setFitWidth(300);
         //imageView.setPreserveRatio(true);
 
@@ -64,6 +71,7 @@ public class VisualisationController {
         patterns.setText("Draw movement patterns");
         patterns.setSelected(false);
 
+        /**
         HBox buttons = new HBox();
         buttons.setSpacing(15);
 
@@ -75,6 +83,7 @@ public class VisualisationController {
         cancel.setCancelButton(true);
 
         buttons.getChildren().addAll(export,cancel);
+        */
 
         lists.getChildren().addAll(tags, beacons, patterns, buttons);
 

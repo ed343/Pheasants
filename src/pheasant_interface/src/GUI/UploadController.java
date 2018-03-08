@@ -21,14 +21,8 @@ public class UploadController {
     @FXML
     private Button run;
 
-    /*
-    This bit of code doesn't belong here, but describes what is done when the Controller is initialised -
-    when the data upload fxml is loaded. Here I manage to upload an image of static google map using JavaFX and
-    attach it to the main AnchorPane with prespecified location.
-     */
 
-    public void initialize(){
-
+    public void initialize() {
 
     }
 
