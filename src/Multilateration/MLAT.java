@@ -49,7 +49,7 @@ public class MLAT {
             ArrayList<Long> idData = log.getIDs();
             //Get RSSI values for this basestation.
             ArrayList<Double> rssiData = log.getRSSIs();
-            primer.setTimeRssiValues(tData,idData,rssiData);
+            primer.setTimeAndRssiValues(tData,idData,rssiData);
         }
         // 5. find out all distances using RSSI
         for (int i=0; i<no_of_radios; i++){
