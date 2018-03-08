@@ -5,10 +5,10 @@
  */
 package Multilateration;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import javafx.util.Pair;
 
 /**
  *
@@ -17,7 +17,6 @@ import java.util.Random;
 public class BuildSim {
     
     public static void main(String[] args) {
-        
         ArrayList<Long> times = generateTimes(30);
         ArrayList<ArrayList<Double>> allRSSIs = generateRSSIs(times.size());
         long dis = 4067;
@@ -26,31 +25,22 @@ public class BuildSim {
         LogData beacon2 = new LogData(times,ids,allRSSIs.get(1));
         LogData beacon3 = new LogData(times,ids,allRSSIs.get(2));
         LogData beacon4 = new LogData(times,ids,allRSSIs.get(3));
-        PrimerClass primer1 = new PrimerClass();
-        PrimerClass primer2 = new PrimerClass();
-        PrimerClass primer3 = new PrimerClass();
-        PrimerClass primer4 = new PrimerClass();
-        primer1.setRadioCoordinates(0, 0, 0);
-        primer2.setRadioCoordinates(500, 0, 0);
-        primer3.setRadioCoordinates(0, 500, 0);
-        primer4.setRadioCoordinates(500, 500, 0);
-        primer1.setRadioMeasuredPower(-84.4);
-        primer2.setRadioMeasuredPower(-84.4);
-        primer3.setRadioMeasuredPower(-84.4);
-        primer4.setRadioMeasuredPower(-84.4);
-        primer1.setTimeAndRssiValues(beacon1.getTimes(),beacon1.getIDs(),beacon1.getRSSIs());
-        primer2.setTimeAndRssiValues(beacon2.getTimes(),beacon2.getIDs(),beacon2.getRSSIs());
-        primer3.setTimeAndRssiValues(beacon3.getTimes(),beacon3.getIDs(),beacon3.getRSSIs());
-        primer1.setTimeAndRssiValues(beacon4.getTimes(),beacon4.getIDs(),beacon4.getRSSIs());
-        RssiEquation re1 = new RssiEquation();
-        RssiEquation re2 = new RssiEquation();
-        RssiEquation re3 = new RssiEquation();
-        RssiEquation re4 = new RssiEquation();
-        ArrayList<HashMap<Long, HashMap<Long, Double>>> rs1 = primer1.rssiValues;
-        HashMap<Long, HashMap<Long, Double>> thisOne = rs1.get(0);
-        HashMap dist1 = re1.getTagDistance(rs1.get(0), (int) -84.4);
-        primer1.tagDistances.add(0,dist1);
-        System.out.println(primer1.tagDistances);
+        HashMap<Long, ArrayList<Pair<Long,Double>>> dist1 = retrieveDistances(beacon1, 0, 0, 0, -84);
+        HashMap<Long, ArrayList<Pair<Long,Double>>> dist2 = retrieveDistances(beacon2, 500, 0, 0, -84);
+        HashMap<Long, ArrayList<Pair<Long,Double>>> dist3 = retrieveDistances(beacon3, 0, 500, 0, -84);
+        HashMap<Long, ArrayList<Pair<Long,Double>>> dist4 = retrieveDistances(beacon4, 500, 500, 0, -84);
+        
+
+    }
+    
+    static HashMap retrieveDistances(LogData beacon,int x,int y,int z, int measuredPower) {
+        PrimerClass primer = new PrimerClass();
+        primer.setRadioCoordinates(x, y, z);
+        primer.setTRVals(beacon.getTimes(),beacon.getIDs(),beacon.getRSSIs());
+        HashMap<Long, ArrayList<Pair<Long,Double>>> rssi = primer.idRSSIs;
+        RssiEquation re = new RssiEquation();
+        HashMap<Long, ArrayList<Pair<Long,Double>>> dist = re.getTagDistance2(rssi, measuredPower);
+        return dist;
     }
     
     //Only reliable for up to 59 minutes, can extend if required.
