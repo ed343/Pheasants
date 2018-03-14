@@ -3,21 +3,44 @@ package Multilateration;
 import Jama.Matrix;
 import static java.lang.Math.pow;
 import java.util.ArrayList;
-// this is all dependent on the tag that I am trying to find
-// i should also pass in the index of the tag so that i ca search all
-// tagDistances for all radios for their distance to it
+
+// this is all dependent on the tag that I am trying to find at a specific time
 public class MLATEquation {
-    int radioIndex=0;
     int matrixSize=0;
     ArrayList<Double[]> radiosCoordinates= new ArrayList<>();
-    ArrayList<Double[]> tagDistances=new ArrayList<>();
+    ArrayList<Double> tagDistances=new ArrayList<>();
     
-    public MLATEquation(int radioIndex, int matrixSize, ArrayList radiosCoordinates, 
-            ArrayList tagDistances){
-        this.radioIndex=radioIndex;
-        this.matrixSize=matrixSize;
-        this.radiosCoordinates=radiosCoordinates;
+    public MLATEquation(int matSize, ArrayList<Double[]> radCoordinates,
+                        ArrayList<Double> tagDistances){
+        this.matrixSize=matSize;
+        for (Double[] d : radCoordinates){
+            this.radiosCoordinates.add(d.clone());
+        }
         this.tagDistances=tagDistances;
+    }
+    
+    boolean fix(){
+        // if by any chance one radio does not pick up one tag at one time
+        // we don't take that radio into consideration 
+        // when doing multilateration
+        int count=0;
+        for (int i=0; i<tagDistances.size(); i++){
+            System.out.println("distance: " + tagDistances.get(i));
+            if (tagDistances.get(i)==-999.999){
+                this.radiosCoordinates.remove(i-count);
+                int aux=matrixSize-1;
+                this.matrixSize=aux;
+                // to preserve indices even if we remove from radiosCoordinates
+                count++; 
+            }
+        }
+        
+        if (radiosCoordinates.size()<=3){
+            System.out.println("Not enough radios for multilateration");
+            return false;
+        }
+        System.out.println("Matrix size is " + matrixSize);
+        return true;
     }
     /* Method returns the computed A matrix for the equation AX=B
      */
@@ -43,7 +66,7 @@ public class MLATEquation {
     Matrix getB(){
         double[] B=new double[matrixSize];
         for (int i=0; i<matrixSize; i++){
-            B[i]=pow(2,tagDistances.get(i)[radioIndex])
+            B[i]=pow(2,tagDistances.get(i))
                     -pow(radiosCoordinates.get(i)[0],2)
                     -pow(radiosCoordinates.get(i)[1],2)
                     -pow(radiosCoordinates.get(i)[2],2);
@@ -62,7 +85,6 @@ public class MLATEquation {
         Matrix A=this.getA();
         Matrix B=this.getB();
         Matrix sol=A.solve(B);
-        
         return sol;
     }
 }
