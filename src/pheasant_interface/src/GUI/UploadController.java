@@ -47,9 +47,10 @@ public class UploadController {
 
 
         LogData converter = new LogData(path);
-        System.out.println(converter.getGains());
+        System.out.println(converter.getTimes());
         System.out.println(converter.getRSSIs());
         System.out.println(converter.getIDs());
+
 
         MainApplication.logfiles.add(converter);
     }

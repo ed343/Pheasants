@@ -51,6 +51,18 @@
                 </font>
             </Button>
         </HBox>
+
+        <HBox spacing="5">
+            <Label text="   Beacon #4 data:"><font><Font size="14.0"/></font></Label>
+
+            <Button fx:id="data4" onAction="#handleUpload" minHeight="30.0" minWidth="120.0" mnemonicParsing="false" text="Choose file...">
+                <font>
+                    <Font size="14.0" />
+                </font>
+            </Button>
+        </HBox>
+
+
         <HBox alignment="BOTTOM_RIGHT">
             <Button fx:id="run" onAction="#handleRun" minHeight="50.0" minWidth="180.0" mnemonicParsing="false" text="Run">
                 <font>
