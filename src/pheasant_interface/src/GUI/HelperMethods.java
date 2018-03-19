@@ -25,8 +25,6 @@ public class HelperMethods {
             stringArray.add(myInt.toString());
         }
 
-        System.out.println(stringArray);
-
         return stringArray;
     }
 
@@ -42,7 +40,6 @@ public class HelperMethods {
         al.clear();
         al.addAll(hs);
 
-        System.out.println(al);
         return al;
     }
 

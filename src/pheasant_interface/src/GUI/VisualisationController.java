@@ -1,7 +1,5 @@
 package GUI;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -11,7 +9,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -19,6 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -34,18 +32,42 @@ public class VisualisationController {
     int mapWidth=480;
     int mapHeight=280;
 
+    // ArrayList to hold the coordinates of beacons that will be displayed
+    ArrayList<double[]> beacons = new ArrayList<>();
+
     public void initialize() throws IOException {
 
         // downloading static map of the location
 
         ImageView imageView;
 
-        String imagePath = "https://maps.googleapis.com/maps/api/staticmap?center=50.728,-3.527&zoom=16&size=480x280&key=AIzaSyD9duo3FCZAGzoydpTGoM2Gwwcba3OXxSs";
+        // this data will be read from beacon registration/selection
+        double[] beacon1 = {50.728146, -3.527182};
+        double[] beacon2 = {50.729000, -3.523541};
+        double[] beacon3 = {50.727346, -3.523541};
+        double[] beacon4 = {50.729438, -3.526964};
+
+        beacons.add(beacon1);
+        beacons.add(beacon2);
+        beacons.add(beacon3);
+        beacons.add(beacon4);
+
+        // (minX, maxY, maxX, minY)
+        // not sure if it will work with negative coordinates
+        // calculating the center between the beacons, considering the polygon drawn around all beacons
+        double[] frame = getRect(beacons);
+        double centerX = frame[0] + (frame[2]-frame[0])/2;
+        System.out.println("centerX:"+ centerX);
+        double centerY = frame[3]+(frame[1]-frame[3])/2;
+        System.out.println("centerY:" + centerY);
+
+        // downloading static map of the location using Google Maps API
+        String imagePath = "https://maps.googleapis.com/maps/api/staticmap?center="+centerX+","+centerY+"&zoom=16&size=480x280&maptype=terrain&key=AIzaSyD9duo3FCZAGzoydpTGoM2Gwwcba3OXxSs";
 
         Boolean backgroundLoading = false;
         Image image = new Image(imagePath, backgroundLoading);
 
-        // checking for errors (from JavaFX book)
+        // checking for errors (from JavaFX book) - most likely to happen if there is no internet connection
         if (image.isBackgroundLoading()){
             image.errorProperty().addListener((prop, oldValue, newValue) -> {
                 if (newValue) {
@@ -71,13 +93,13 @@ public class VisualisationController {
         }
 
         imageView = new ImageView(image);
-        Rectangle r = new Rectangle(100,100, 20, 20);
         Pane pane = new Pane();
         pane.getChildren().add(imageView);
+
+        // calling function to place the beacons on the map
         pane = placeBeacons(pane);
-        System.out.println(pane.getChildren());
 
-
+        // adding side panels with lists of tags and beacons
         VBox lists = new VBox();
         lists.setPadding(new Insets(0,25,25,25));
         lists.setPrefSize(250.0, 400);
@@ -111,8 +133,6 @@ public class VisualisationController {
         // adding elements to the HBox from FXML file
         imagebox.setPadding(new Insets(20, 10, 10, 20));
         imagebox.getChildren().addAll(pane, lists);
-
-
     }
 
     /**
@@ -121,40 +141,57 @@ public class VisualisationController {
      */
     public Pane placeBeacons(Pane p) {
 
-        //176.472818
-        //61.2675036658992
-        Rectangle r1 = new Rectangle(176.472818,61.2675036658992,5,5);
-        //176.476459
-        //61.26570480986848
-        Rectangle r2 = new Rectangle(176.476459,61.26570480986848,5,5);
-        //176.476459
-        //61.269188747188906
-        Rectangle r3 = new Rectangle(176.476459,61.269188747188906,5,5);
-        //176.473036
-        //61.26478219885438
-        Rectangle r4 = new Rectangle(176.473036,61.26478219885438,5,5);
+        /**
+         * returned code from the previous version
+         * NEED THE WAY TO CONVERT THE COORDINATES WHILE TAKING INTO ACCOUNT EDGES OF THE DOWNLOADED GOOGLE MAP
+         * RATHER THAN MY CALCULATIONS FOR THE 'RECTANGLE'
 
-        // get x value
-        double x = (r1.getX()+180)*(mapWidth/360);
+        for (double[] beacon: beacons) {
 
-        // convert from degrees to radians
-        double latRad = r1.getY()*Math.PI/180;
+            // get x value
+            double x = (getY(beacon)+180)*(mapWidth/360);
 
-        // get y value
-        double mercN = Math.log(Math.tan((Math.PI/4)+(latRad/2)));
-        double y     = (mapHeight/2)-(mapWidth*mercN/(2*Math.PI));
+            // convert from degrees to radians
+            double latRad = getX(beacon)*Math.PI/180;
 
-        System.out.println(x);
-        System.out.println(y);
+            // get y value
+            double mercN = Math.log(Math.tan((Math.PI/4)+(latRad/2)));
+            double y     = (mapHeight/2)-(mapWidth*mercN/(2*Math.PI));
 
-        Pane pane = new Pane(r1, r2);
+            System.out.println(x);
+            setX(beacon, x);
+            System.out.println(y);
+            setY(beacon, y);
+        }*/
 
-        Group g = new Group(pane);
+        ArrayList<Rectangle> newCoords = new ArrayList<>() ;
+        double[] frame = getRect(beacons);
+
+        double width = frame[2]-frame[0];
+        double height = frame[1]-frame[3];
+
+        double xratio = mapWidth/width;     // longitude
+        double yratio = mapHeight/height;   // latitude
+
+        System.out.println("xratio: " + xratio);
+        System.out.println("yratio: " + yratio);
+
+        for (double[] beacon: beacons) {
+            double x = (getX(beacon)-frame[0])*xratio;
+            double y = (getY(beacon)-frame[3])*yratio;
+
+            Rectangle r = new Rectangle(Math.abs(x-5),Math.abs(y-5),5,5);
+
+            newCoords.add(r);
+        }
 
 
-        // could work but doesn't
-        g.setScaleX(g.getScaleX() * 2);
-        g.setScaleY(g.getScaleY() * 2);
+        Group g = new Group();
+
+
+        for (Rectangle r : newCoords) {
+           g.getChildren().add(r);
+        }
 
         p.getChildren().addAll(g);
 
@@ -168,5 +205,60 @@ public class VisualisationController {
 
         Stage stage = (Stage) visualisation.getScene().getWindow();
         stage.setScene(scene);
+    }
+
+    /**
+     * get x (longitude) coordinate of the beacon
+     */
+    public double getX(double [] coord) {
+        return coord[0];
+    }
+
+    /**
+     * get  y (latitude) coordinate of the beacon
+     */
+    public double getY(double[] coord) {
+        return coord[1];
+    }
+
+    public void setX(double[] coord, double x) {
+        coord[0] = x;
+    }
+
+    public void setY(double[] coord, double y) {
+        coord[1] = y;
+    }
+
+    /**
+     * getting coordinates of the rectangle that will cover all the beacons
+     */
+    public double[] getRect(ArrayList<double[]> beacons) {
+
+        double maxY = -200;
+        double maxX = -200;
+        double minX = 200;
+        double minY = 200;
+
+        for (double[] beacon: beacons) {
+
+            if (getX(beacon) > maxX) {
+                maxX = getX(beacon);
+            }
+            if (getX(beacon) < minX) {
+                minX = getX(beacon);
+            }
+
+            if(getY(beacon) > maxY){
+                maxY = getY(beacon);
+            }
+
+            if(getY(beacon) < minY) {
+                minY = getY(beacon);
+            }
+        }
+
+        double [] frame = {minX, maxY, maxX, minY};
+
+        return frame;
     }
 }
