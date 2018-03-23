@@ -17,8 +17,12 @@ public class PrimerClass {
     //following from James' new code, we should probably only need the following
     ArrayList<HashMap<Long, ArrayList<Pair<Long,Double>>>> idRSSIs = 
                                                               new ArrayList<>();
-    //possibly the one below will become an arrayList as well
-    ArrayList<HashMap<Long, ArrayList<Pair<Long,Double>>>> idDistances = 
+    // one entry for each radio
+    // the entry is a hashmap keyed by tag IDs
+    // and values are a hashmap keyed by times
+    // and values are the distances between the current radio and the tag at the
+    // current time
+    ArrayList<HashMap<Long, HashMap<Long,Double>>> idDistances = 
                                                               new ArrayList<>();
 
 
@@ -121,7 +125,7 @@ public class PrimerClass {
      * tags it picked up.
      */
 
-    ArrayList<HashMap<Long, ArrayList<Pair<Long,Double>>>> getTagDistances(){
+    ArrayList<HashMap<Long, HashMap<Long,Double>>> getTagDistances(){
         return this.idDistances;
     }
 
