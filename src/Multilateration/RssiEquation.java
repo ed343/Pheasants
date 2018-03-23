@@ -21,16 +21,14 @@ public class RssiEquation {
      *
      * Both n and measuredPower are determined empirically.
      */
-    public ArrayList<HashMap<Long, ArrayList<Pair<Long, Double>>>>
+    public ArrayList<HashMap<Long, HashMap<Long, Double>>>
     getTagDistance(ArrayList<HashMap<Long, ArrayList<Pair<Long, Double>>>> rssi,
                    ArrayList<Double> measuredPower) {
-        // ASSUMPTION ALL THE TAGS ARE SYNCHRONISED
-
         // For each tag, I want to get its time/rssi arrays from all radios
         // I search for detections at the times in the list, keep times and rssi 
         // vals in separate arrays and we compute the distance from the current 
         // radio to the current tag at the current time.
-        ArrayList<HashMap<Long, ArrayList<Pair<Long, Double>>>> radios_dist
+        ArrayList<HashMap<Long, HashMap<Long, Double>>> radios_dist
                                                             = new ArrayList<>();
 
         // loop over all radios
@@ -41,7 +39,7 @@ public class RssiEquation {
 
             // create hashmap with tag IDs as keys and a list of distances at 
             // given times as values
-            HashMap<Long, ArrayList<Pair<Long, Double>>> tags_dist_map = 
+            HashMap<Long, HashMap<Long, Double>> tags_dist_map = 
                                                          new HashMap<>();
 
             // for every tag the current radio has picked up
@@ -71,8 +69,8 @@ public class RssiEquation {
                 // initialisation for the distance to-be computed 
                 // and for an auxilliary list
                 double distance;
-                ArrayList<Pair<Long, Double>> time_dist_pair_list = 
-                                              new ArrayList<>();
+                HashMap<Long, Double> time_dist_hm = 
+                                              new HashMap<>();
                 
                 // for all the Pairs in the arraylist we got for this tag
                 for (int k = 0; k < inner.size(); k++) {
@@ -86,10 +84,9 @@ public class RssiEquation {
                     
                     // create new Pair with time of detection and the newly 
                     // computed distance at that time
-                    Pair<Long, Double> p = new Pair<>(times[k], distance);
-                    time_dist_pair_list.add(p);
+                    time_dist_hm.put(times[k], distance);
                 }
-                tags_dist_map.put(keys_long[j], time_dist_pair_list);
+                tags_dist_map.put(keys_long[j], time_dist_hm);
             }
             radios_dist.add(tags_dist_map);
         }
