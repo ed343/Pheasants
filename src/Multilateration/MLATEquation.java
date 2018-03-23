@@ -34,7 +34,8 @@ public class MLATEquation {
                 count++; 
             }
         }
-        
+        System.out.println("No of radios which have picked it up is "
+                        + radiosCoordinates.size());
         if (radiosCoordinates.size()<=3){
             System.out.println("Not enough radios for multilateration");
             return false;
