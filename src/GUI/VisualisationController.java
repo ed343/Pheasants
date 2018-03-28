@@ -31,6 +31,9 @@ public class VisualisationController {
 
     int mapWidth=480;
     int mapHeight=280;
+    int zoom = 16;
+    double centerX;
+    double centerY;
 
     // ArrayList to hold the coordinates of beacons that will be displayed
     ArrayList<double[]> beacons = new ArrayList<>();
@@ -42,6 +45,7 @@ public class VisualisationController {
         ImageView imageView;
 
         // this data will be read from beacon registration/selection
+        // {latitude (y), longitude (x)}
         double[] beacon1 = {50.728146, -3.527182};
         double[] beacon2 = {50.729000, -3.523541};
         double[] beacon3 = {50.727346, -3.523541};
@@ -56,13 +60,27 @@ public class VisualisationController {
         // not sure if it will work with negative coordinates
         // calculating the center between the beacons, considering the polygon drawn around all beacons
         double[] frame = getRect(beacons);
-        double centerX = frame[0] + (frame[2]-frame[0])/2;
-        System.out.println("centerX:"+ centerX);
-        double centerY = frame[3]+(frame[1]-frame[3])/2;
-        System.out.println("centerY:" + centerY);
+
+        centerX = frame[3] + (frame[1]-frame[3])/2;
+        centerY = frame[2]+(frame[0]-frame[2])/2;
+        System.out.println("centerY (lat):" + centerY);    
+        System.out.println("centerX (lon):"+ centerX);
 
         // downloading static map of the location using Google Maps API
-        String imagePath = "https://maps.googleapis.com/maps/api/staticmap?center="+centerX+","+centerY+"&zoom=16&size=480x280&maptype=terrain&key=AIzaSyD9duo3FCZAGzoydpTGoM2Gwwcba3OXxSs";
+        // to make marker very small use size:tiny
+        /**String imagePath = "https://maps.googleapis.com/maps/api/staticmap?"
+                + "center="+centerY+","+centerX+"&"
+                + "zoom=16&size=480x280&maptype=terrain&"
+                + "markers=size:mid%7Ccolor:0xff0000%7Clabel:1%7C"+getY(beacons.get(0))+","+getX(beacons.get(0))+"&"
+                + "markers=size:mid%7Ccolor:0xff0000%7Clabel:2%7C"+getY(beacons.get(1))+","+getX(beacons.get(1))+"&"
+                + "markers=size:mid%7Ccolor:0xff0000%7Clabel:3%7C"+getY(beacons.get(2))+","+getX(beacons.get(2))+"&"
+                + "markers=size:mid%7Ccolor:0xff0000%7Clabel:4%7C"+getY(beacons.get(3))+","+getX(beacons.get(3))+"&"
+                + "key=AIzaSyD9duo3FCZAGzoydpTGoM2Gwwcba3OXxSs"; */
+        
+        String imagePath = "https://maps.googleapis.com/maps/api/staticmap?"
+                + "center="+centerY+","+centerX+"&"
+                + "zoom=16&size=480x280&maptype=terrain&"
+                + "key=AIzaSyD9duo3FCZAGzoydpTGoM2Gwwcba3OXxSs";
 
         Boolean backgroundLoading = false;
         Image image = new Image(imagePath, backgroundLoading);
@@ -91,6 +109,12 @@ public class VisualisationController {
                     "2. Or paste some dummy image instead and make the user aware of that.");
             imagebox.getChildren().add(l);
         }
+        
+        // here if error at downloading the map occured, probably I don't want to carry on and need to 
+        // prompt the user to connect to internet and retry, rather than display everything. 
+        // For example, could use return for that.
+        
+        
 
         imageView = new ImageView(image);
         Pane pane = new Pane();
@@ -141,61 +165,52 @@ public class VisualisationController {
      */
     public Pane placeBeacons(Pane p) {
 
-        /**
-         * returned code from the previous version
-         * NEED THE WAY TO CONVERT THE COORDINATES WHILE TAKING INTO ACCOUNT EDGES OF THE DOWNLOADED GOOGLE MAP
-         * RATHER THAN MY CALCULATIONS FOR THE 'RECTANGLE'
-
-        for (double[] beacon: beacons) {
-
-            // get x value
-            double x = (getY(beacon)+180)*(mapWidth/360);
-
-            // convert from degrees to radians
-            double latRad = getX(beacon)*Math.PI/180;
-
-            // get y value
-            double mercN = Math.log(Math.tan((Math.PI/4)+(latRad/2)));
-            double y     = (mapHeight/2)-(mapWidth*mercN/(2*Math.PI));
-
-            System.out.println(x);
-            setX(beacon, x);
-            System.out.println(y);
-            setY(beacon, y);
-        }*/
-
         ArrayList<Rectangle> newCoords = new ArrayList<>() ;
-        double[] frame = getRect(beacons);
+        
+        double[] corners = getMapCorners(centerY, centerX);
 
-        double width = frame[2]-frame[0];
-        double height = frame[1]-frame[3];
+        double realWidth = corners[1]-corners[3];
+        double realHeight = corners[0]-corners[2];
 
-        double xratio = mapWidth/width;     // longitude
-        double yratio = mapHeight/height;   // latitude
-
-        System.out.println("xratio: " + xratio);
-        System.out.println("yratio: " + yratio);
+        double xratio = mapWidth/realWidth;     // longitude
+        double yratio = mapHeight/realHeight;   // latitude
 
         for (double[] beacon: beacons) {
-            double x = (getX(beacon)-frame[0])*xratio;
-            double y = (getY(beacon)-frame[3])*yratio;
+            
+            double x = (getX(beacon)-corners[3])*xratio;
+            
+            // equation different from x coords, since geographical coordinates go from bottom to top
+            // while image coordinates go top to bottom
+            double y = (corners[0] - getY(beacon))*yratio;
 
-            Rectangle r = new Rectangle(Math.abs(x-5),Math.abs(y-5),5,5);
+            Rectangle r = new Rectangle(x,y,5,5);
 
             newCoords.add(r);
+                       
         }
-
-
         Group g = new Group();
-
 
         for (Rectangle r : newCoords) {
            g.getChildren().add(r);
         }
 
         p.getChildren().addAll(g);
-
+        
+        System.out.println("N:" + corners[0]);
+        System.out.println("E:" + corners[1]);
+        System.out.println("S:" + corners[2]);
+        System.out.println("W:" + corners[3]);
+        
         return p;
+    }
+    
+    public double[] getMapCorners (double centerX, double centerY) {
+        CoordinateTranslation ct = new CoordinateTranslation();
+        
+        CoordinateTranslation.G_LatLng center = new CoordinateTranslation.G_LatLng(centerX, centerY);
+        double[] coords = ct.getCorners(center, zoom, mapWidth, mapHeight);
+        
+        return coords;
     }
 
     public void handleCancel() throws IOException {
@@ -210,14 +225,14 @@ public class VisualisationController {
     /**
      * get x (longitude) coordinate of the beacon
      */
-    public double getX(double [] coord) {
+    public double getY(double [] coord) {
         return coord[0];
     }
 
     /**
      * get  y (latitude) coordinate of the beacon
      */
-    public double getY(double[] coord) {
+    public double getX(double[] coord) {
         return coord[1];
     }
 
@@ -257,7 +272,7 @@ public class VisualisationController {
             }
         }
 
-        double [] frame = {minX, maxY, maxX, minY};
+        double [] frame = {maxY, maxX, minY, minX};
 
         return frame;
     }
