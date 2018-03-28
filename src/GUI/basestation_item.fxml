@@ -13,7 +13,7 @@
             <Font size="14.0"/>
         </font>
     </Label>
-        <TextField text="Beacon #"/>
+        <TextField text="Basestation #"/>
     </HBox>
 
     <HBox spacing="5">

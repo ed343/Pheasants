@@ -16,32 +16,32 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class BeaconController {
+public class BasestationController {
 
     @FXML
-    ScrollPane beacon_pane;
+    ScrollPane basestation_pane;
 
     @FXML
-    VBox beaconList;
+    VBox basestationList;
 
     @FXML
-    HBox beaconButtons;
+    HBox basestationButtons;
 
-    int noBeacons = 3;
+    int noBasestations = 4;
 
     public void initialize() {
 
-        for (int i=1; i<=noBeacons; i++) {
-            VBox newBeacon = addBeacon(i);
-            beaconList.getChildren().add(newBeacon);
+        for (int i=1; i<=noBasestations; i++) {
+            VBox newBasestation = addBasestation(i);
+            basestationList.getChildren().add(newBasestation);
         }
 
-        //beaconList.getChildren().add(beaconButtons);
+        //beaconList.getChildren().add(basestationButtons);
     }
 
     @FXML
-    public void saveBeacons(ActionEvent event){
-        // saving beacon information in the application memory
+    public void saveBasestation(ActionEvent event){
+        // saving basestation information in the application memory
     }
 
     @FXML
@@ -50,7 +50,7 @@ public class BeaconController {
      *
      * NEED TO FIGURE OUT HOW TO USE THIS AS ONACTION METHOD FOR ADDBEACON BUTTON - ATM PROBLEM IS PASSING BEACON NUMBER PARAMETERE
      */
-    public VBox addBeacon(int beaconNumber){
+    public VBox addBasestation(int basestationNumber){
 
         VBox vb = new VBox();
         vb.setSpacing(10);
@@ -60,7 +60,7 @@ public class BeaconController {
         hb1.setSpacing(5);
 
         Label l = new Label("Name:");
-        TextField tf = new TextField("Beacon #"+beaconNumber);
+        TextField tf = new TextField("Basestation #"+basestationNumber);
 
         hb1.getChildren().addAll(l, tf);
 
@@ -90,16 +90,16 @@ public class BeaconController {
 
         vb.getChildren().addAll(hb1, hb2, hb3, sep);
 
-        vb.setId("beacon"+beaconNumber);
+        vb.setId("basestation"+basestationNumber);
 
         return vb;
 
     }
 
-    public void addExtraBeacon() {
-        noBeacons++;
-        VBox newBeacon = addBeacon(noBeacons);
-        beaconList.getChildren().add(newBeacon);
+    public void addExtraBasestation() {
+        noBasestations++;
+        VBox newBasestation = addBasestation(noBasestations);
+        basestationList.getChildren().add(newBasestation);
     }
 
     public void goBack(ActionEvent event) throws IOException {
@@ -107,7 +107,7 @@ public class BeaconController {
         Parent sceneParent = sceneLoader.load();
         Scene scene = new Scene(sceneParent, 400, 400);
 
-        Stage stage = (Stage) beacon_pane.getScene().getWindow();
+        Stage stage = (Stage) basestation_pane.getScene().getWindow();
         stage.setScene(scene);
     }
 

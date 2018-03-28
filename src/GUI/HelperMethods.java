@@ -34,9 +34,9 @@ public class HelperMethods {
      * @return
      */
     public static ArrayList deduplicate(ArrayList list) {
-        ArrayList<String> al = new ArrayList<>(list);
+        ArrayList al = new ArrayList<>(list);
         // add elements to al, including duplicates
-        Set<String> hs = new HashSet<>(al);
+        Set hs = new HashSet<>(al);
         al.clear();
         al.addAll(hs);
 

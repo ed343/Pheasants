@@ -7,11 +7,11 @@
 <?import javafx.scene.text.Font?>
 
 <?import javafx.scene.control.ScrollPane?>
-<ScrollPane fx:id="beacon_pane" prefHeight="562.0" prefWidth="598.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.BeaconController">
+<ScrollPane fx:id="basestation_pane" prefHeight="562.0" prefWidth="598.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GUI.BasestationController">
 
     <VBox>
 
-<VBox fx:id="beaconList">
+<VBox fx:id="basestationList">
     <padding><Insets bottom="25" left="25" right="25" top="25" /></padding>
     <children>
 
@@ -30,17 +30,17 @@
     </children>
 </VBox>
 
-    <HBox fx:id= "beaconButtons" alignment="BOTTOM_RIGHT" minWidth="550.0" spacing="10">
+    <HBox fx:id= "basestationButtons" alignment="BOTTOM_RIGHT" minWidth="550.0" spacing="10">
         <padding><Insets bottom="25" /></padding>
 
 
-        <Button onAction="#addExtraBeacon" text="Add another beacon">
+        <Button onAction="#addExtraBasestation" text="Add another basestation">
             <font>
                 <Font size="16.0" />
             </font>
         </Button>
 
-        <Button onAction="#saveBeacons" text="Save">
+        <Button onAction="#saveBasestation" text="Save">
             <font>
                 <Font size="16.0" />
             </font>

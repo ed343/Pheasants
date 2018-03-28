@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
+import javafx.scene.paint.Color;
 
 public class VisualisationController {
 
@@ -35,8 +36,13 @@ public class VisualisationController {
     double centerX;
     double centerY;
 
-    // ArrayList to hold the coordinates of beacons that will be displayed
-    ArrayList<double[]> beacons = new ArrayList<>();
+    // ArrayList to hold the coordinates of basestations that will be displayed
+    ArrayList<double[]> basestations = new ArrayList<>();
+    
+    ArrayList<Long> intTags = HelperMethods.deduplicate(MainApplication.logfiles.get(0).getIDs());
+    ArrayList<String> tagIDs = HelperMethods.convertList(intTags);
+    
+    ArrayList<double[]> tagCoords;
 
     public void initialize() throws IOException {
 
@@ -46,20 +52,20 @@ public class VisualisationController {
 
         // this data will be read from beacon registration/selection
         // {latitude (y), longitude (x)}
-        double[] beacon1 = {50.728146, -3.527182};
-        double[] beacon2 = {50.729000, -3.523541};
-        double[] beacon3 = {50.727346, -3.523541};
-        double[] beacon4 = {50.729438, -3.526964};
+        double[] basestation1 = {50.728146, -3.527182};
+        double[] basestation2 = {50.729000, -3.523541};
+        double[] basestation3 = {50.727346, -3.523541};
+        double[] basestation4 = {50.729438, -3.526964};
 
-        beacons.add(beacon1);
-        beacons.add(beacon2);
-        beacons.add(beacon3);
-        beacons.add(beacon4);
+        basestations.add(basestation1);
+        basestations.add(basestation2);
+        basestations.add(basestation3);
+        basestations.add(basestation4);
 
         // (minX, maxY, maxX, minY)
         // not sure if it will work with negative coordinates
-        // calculating the center between the beacons, considering the polygon drawn around all beacons
-        double[] frame = getRect(beacons);
+        // calculating the center between the basestations, considering the polygon drawn around all basestations
+        double[] frame = getRect(basestations);
 
         centerX = frame[3] + (frame[1]-frame[3])/2;
         centerY = frame[2]+(frame[0]-frame[2])/2;
@@ -120,10 +126,13 @@ public class VisualisationController {
         Pane pane = new Pane();
         pane.getChildren().add(imageView);
 
-        // calling function to place the beacons on the map
-        pane = placeBeacons(pane);
+        // calling function to place the basestations on the map
+        pane = placeBasestations(pane);
+        
+        // calling function to place tags on the map
+        pane = placeTags(pane);
 
-        // adding side panels with lists of tags and beacons
+        // adding side panels with lists of tags and basestations
         VBox lists = new VBox();
         lists.setPadding(new Insets(0,25,25,25));
         lists.setPrefSize(250.0, 400);
@@ -134,25 +143,27 @@ public class VisualisationController {
         ListView<String> tags = new ListView<>();
         tags.setPrefWidth(200.0);
         // getting tag IDs from log file
-        ArrayList<Long> intTags = MainApplication.logfiles.get(0).getIDs();
-        ArrayList<String> stringTags = HelperMethods.deduplicate(HelperMethods.convertList(intTags));
-        tags.getItems().addAll(stringTags);
+        intTags = HelperMethods.deduplicate(MainApplication.logfiles.get(0).getIDs());
+        System.out.println("tags:");
+        System.out.println(intTags);
+        tagIDs = HelperMethods.deduplicate(HelperMethods.convertList(intTags));
+        tags.getItems().addAll(tagIDs);
         tags.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         // alternative way to show ListView of height for all tags
         //tags.setPrefHeight(stringTags.size() * 23 + 2);
 
-        ListView<String> beacons = new ListView<>();
-        beacons.getItems().addAll("Beacon 1", "Beacon 2", "Beacon 3", "Beacon 4");
-        beacons.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        beacons.setMinHeight(beacons.getItems().size() * 23 +2);
+        ListView<String> basestations = new ListView<>();
+        basestations.getItems().addAll("Basestation 1", "Basestation 2", "Basestation 3", "Basestation 4");
+        basestations.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        basestations.setMinHeight(basestations.getItems().size() * 23 +2);
 
         // adding checkbox
         CheckBox patterns= new CheckBox();
         patterns.setText("Draw movement patterns");
         patterns.setSelected(false);
 
-        lists.getChildren().addAll(tags, beacons, patterns, buttons);
+        lists.getChildren().addAll(tags, basestations, patterns, buttons);
 
         // adding elements to the HBox from FXML file
         imagebox.setPadding(new Insets(20, 10, 10, 20));
@@ -160,14 +171,16 @@ public class VisualisationController {
     }
 
     /**
-     * Here I want to get the coordinates of beacons (either geographical (from beacon registration) or converted to
+     * Here I want to get the coordinates of basestations (either geographical (from beacon registration) or converted to
      * simple coordinate system and place them as extra things on the pane that will
+     * 
+     * TO DO: check if basestations don't fit in the frame of map, need to change zoom setting 
      */
-    public Pane placeBeacons(Pane p) {
+    public Pane placeBasestations(Pane p) {
 
         ArrayList<Rectangle> newCoords = new ArrayList<>() ;
         
-        double[] corners = getMapCorners(centerY, centerX);
+        double[] corners = getMapCorners(centerY, centerX, zoom);
 
         double realWidth = corners[1]-corners[3];
         double realHeight = corners[0]-corners[2];
@@ -175,13 +188,13 @@ public class VisualisationController {
         double xratio = mapWidth/realWidth;     // longitude
         double yratio = mapHeight/realHeight;   // latitude
 
-        for (double[] beacon: beacons) {
+        for (double[] bs: basestations) {
             
-            double x = (getX(beacon)-corners[3])*xratio;
+            double x = (getX(bs)-corners[3])*xratio;
             
             // equation different from x coords, since geographical coordinates go from bottom to top
             // while image coordinates go top to bottom
-            double y = (corners[0] - getY(beacon))*yratio;
+            double y = (corners[0] - getY(bs))*yratio;
 
             Rectangle r = new Rectangle(x,y,5,5);
 
@@ -196,15 +209,66 @@ public class VisualisationController {
 
         p.getChildren().addAll(g);
         
-        System.out.println("N:" + corners[0]);
-        System.out.println("E:" + corners[1]);
-        System.out.println("S:" + corners[2]);
-        System.out.println("W:" + corners[3]);
-        
         return p;
     }
     
-    public double[] getMapCorners (double centerX, double centerY) {
+    
+    public Pane placeTags (Pane p) {
+        
+        ArrayList<Rectangle> tagMarks = new ArrayList<>() ;
+        ArrayList<double[]> tagCoords = new ArrayList<>() ;
+        
+        // test tag        
+        double[] tag1 = {50.728392, -3.52536};
+        
+        tagCoords.add(tag1);
+        
+        double[] corners = getMapCorners(centerY, centerX, zoom);
+
+        double realWidth = corners[1]-corners[3];
+        double realHeight = corners[0]-corners[2];
+
+        double xratio = mapWidth/realWidth;     // longitude
+        double yratio = mapHeight/realHeight;   // latitude
+
+        for (double[] tag: tagCoords) {
+            
+            double x = (getX(tag)-corners[3])*xratio;
+            
+            // equation different from x coords, since geographical coordinates go from bottom to top
+            // while image coordinates go top to bottom
+            double y = (corners[0] - getY(tag))*yratio;
+
+            Rectangle r = new Rectangle(x,y,5,5);
+            r.setFill(Color.CORAL);
+
+            tagMarks.add(r);
+                       
+        }
+        Group g = new Group();
+
+        for (Rectangle r : tagMarks) {
+           g.getChildren().add(r);
+        }
+
+        p.getChildren().addAll(g);
+        
+        return p;
+        }
+    
+    public void moveTags(Pane p) {
+        
+    }
+    
+    /**
+     * Method that calculates the corners of the downloaded Google Map, allowing
+     * the right conversion between the geographical coordinates and visualisation image.
+     * Uses CoordinateTranslation class. 
+     * @param centerX
+     * @param centerY
+     * @return 
+     */
+    public double[] getMapCorners (double centerX, double centerY, int zoom) {
         CoordinateTranslation ct = new CoordinateTranslation();
         
         CoordinateTranslation.G_LatLng center = new CoordinateTranslation.G_LatLng(centerX, centerY);
@@ -236,39 +300,31 @@ public class VisualisationController {
         return coord[1];
     }
 
-    public void setX(double[] coord, double x) {
-        coord[0] = x;
-    }
-
-    public void setY(double[] coord, double y) {
-        coord[1] = y;
-    }
-
     /**
-     * getting coordinates of the rectangle that will cover all the beacons
+     * getting coordinates of the rectangle that will cover all the basestations
      */
-    public double[] getRect(ArrayList<double[]> beacons) {
+    public double[] getRect(ArrayList<double[]> basestations) {
 
         double maxY = -200;
         double maxX = -200;
         double minX = 200;
         double minY = 200;
 
-        for (double[] beacon: beacons) {
+        for (double[] bs: basestations) {
 
-            if (getX(beacon) > maxX) {
-                maxX = getX(beacon);
+            if (getX(bs) > maxX) {
+                maxX = getX(bs);
             }
-            if (getX(beacon) < minX) {
-                minX = getX(beacon);
-            }
-
-            if(getY(beacon) > maxY){
-                maxY = getY(beacon);
+            if (getX(bs) < minX) {
+                minX = getX(bs);
             }
 
-            if(getY(beacon) < minY) {
-                minY = getY(beacon);
+            if(getY(bs) > maxY){
+                maxY = getY(bs);
+            }
+
+            if(getY(bs) < minY) {
+                minY = getY(bs);
             }
         }
 
