@@ -15,8 +15,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import javafx.scene.paint.Color;
@@ -39,10 +37,14 @@ public class VisualisationController {
     // ArrayList to hold the coordinates of basestations that will be displayed
     ArrayList<double[]> basestations = new ArrayList<>();
     
+    // will be the list of actual tags taken from the log file
     ArrayList<Long> intTags = HelperMethods.deduplicate(MainApplication.logfiles.get(0).getIDs());
     ArrayList<String> tagIDs = HelperMethods.convertList(intTags);
     
-    ArrayList<double[]> tagCoords;
+    ArrayList<double[]> tagCoords = new ArrayList<>() ;
+        
+    // test tag        
+    double[] tag1 = {50.728392, -3.52536}; 
 
     public void initialize() throws IOException {
 
@@ -61,6 +63,8 @@ public class VisualisationController {
         basestations.add(basestation2);
         basestations.add(basestation3);
         basestations.add(basestation4);
+        
+        tagCoords.add(tag1);
 
         // (minX, maxY, maxX, minY)
         // not sure if it will work with negative coordinates
@@ -131,6 +135,8 @@ public class VisualisationController {
         
         // calling function to place tags on the map
         pane = placeTags(pane);
+        pane.setStyle("-fx-background-color: yellow;");
+
 
         // adding side panels with lists of tags and basestations
         VBox lists = new VBox();
@@ -190,12 +196,11 @@ public class VisualisationController {
 
         for (double[] bs: basestations) {
             
-            double x = (getX(bs)-corners[3])*xratio;
-            
+            double x = (getX(bs)-corners[3])*xratio;            
             // equation different from x coords, since geographical coordinates go from bottom to top
             // while image coordinates go top to bottom
             double y = (corners[0] - getY(bs))*yratio;
-
+            
             Rectangle r = new Rectangle(x,y,5,5);
 
             newCoords.add(r);
@@ -216,12 +221,6 @@ public class VisualisationController {
     public Pane placeTags (Pane p) {
         
         ArrayList<Rectangle> tagMarks = new ArrayList<>() ;
-        ArrayList<double[]> tagCoords = new ArrayList<>() ;
-        
-        // test tag        
-        double[] tag1 = {50.728392, -3.52536};
-        
-        tagCoords.add(tag1);
         
         double[] corners = getMapCorners(centerY, centerX, zoom);
 
@@ -233,8 +232,7 @@ public class VisualisationController {
 
         for (double[] tag: tagCoords) {
             
-            double x = (getX(tag)-corners[3])*xratio;
-            
+            double x = (getX(tag)-corners[3])*xratio;            
             // equation different from x coords, since geographical coordinates go from bottom to top
             // while image coordinates go top to bottom
             double y = (corners[0] - getY(tag))*yratio;
@@ -258,6 +256,23 @@ public class VisualisationController {
     
     public void moveTags(Pane p) {
         
+    }
+    
+    // CALLING UPDATE TAG RESULTS IN INCREASED PANE.
+    // AT THE MOMENT CAN'T FIGURE OUT WHERE PANE SIZE COMES FROM AND HOW TO UPDATE
+    // JUST THE IMAGE.
+    // THIS LINK COULD BE USEFUL: https://stackoverflow.com/questions/26811445/how-to-access-a-child-of-an-object-in-javafx
+    public void updateTag(int index, Pane p) {
+        double[] oldCoords = tagCoords.get(index);
+        double ny = oldCoords[0]+0.01;
+        double nx = oldCoords[1];
+        double[] newCoord = {ny, nx};
+        System.out.println("newCoord:");
+        System.out.println(newCoord[0] + "; "+newCoord[1]);
+        tagCoords.set(index, newCoord); 
+        System.out.println(imagebox.getChildren());
+        
+        p= placeTags(p);
     }
     
     /**
