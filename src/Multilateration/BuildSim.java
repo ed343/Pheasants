@@ -21,18 +21,23 @@ public class BuildSim {
         ArrayList<ArrayList<Double>> allRSSIs = generateRSSIs(times.size());
         long dis = 4067;
         ArrayList<Long> ids = generateIDSingle(dis,times.size());
-        LogData beacon1 = new LogData(times,ids,allRSSIs.get(0));
-        LogData beacon2 = new LogData(times,ids,allRSSIs.get(1));
-        LogData beacon3 = new LogData(times,ids,allRSSIs.get(2));
-        LogData beacon4 = new LogData(times,ids,allRSSIs.get(3));
-        HashMap<Long, ArrayList<Pair<Long,Double>>> dist1 = retrieveDistances(beacon1, 0, 0, 0, -84);
+        LogData beacon1 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlas.log");
+        //LogData beacon2 = new LogData(times,ids,allRSSIs.get(1));
+        //LogData beacon3 = new LogData(times,ids,allRSSIs.get(2));
+        //LogData beacon4 = new LogData(times,ids,allRSSIs.get(3));
+        System.out.println(beacon1.RSSIs);
+        System.out.println(beacon1.filtRSSIs);
+        System.out.println(beacon1.normRSSIs);
+        
+        //HashMap<Long, ArrayList<Pair<Long,Double>>> dist1 = retrieveDistances(beacon1, 0, 0, 0, -84);
+        /*
         HashMap<Long, ArrayList<Pair<Long,Double>>> dist2 = retrieveDistances(beacon2, 500, 0, 0, -84);
         HashMap<Long, ArrayList<Pair<Long,Double>>> dist3 = retrieveDistances(beacon3, 0, 500, 0, -84);
         HashMap<Long, ArrayList<Pair<Long,Double>>> dist4 = retrieveDistances(beacon4, 500, 500, 0, -84);
-        
+        */
 
     }
-    
+    /*
     static HashMap retrieveDistances(LogData beacon,int x,int y,int z, int measuredPower) {
         PrimerClass primer = new PrimerClass();
         primer.setRadioCoordinates(x, y, z);
@@ -42,6 +47,7 @@ public class BuildSim {
         HashMap<Long, ArrayList<Pair<Long,Double>>> dist = re.getTagDistance2(rssi, measuredPower);
         return dist;
     }
+    */
     
     //Only reliable for up to 59 minutes, can extend if required.
     static ArrayList<Long> generateTimes(int minutes) {
@@ -75,16 +81,18 @@ public class BuildSim {
         ArrayList<Double> cRSSI = new ArrayList<>();
         ArrayList<Double> dRSSI = new ArrayList<>();
         Random rand = new Random();
-        double a = rand.nextInt(40)+30;
-        double b = rand.nextInt(40)+30;
-        double c1 = b-30;
-        double c = 70-c1;
-        double d1 = a-30;
-        double d = 70-d1;
+        double a = rand.nextInt(250)+0;
+        double b = rand.nextInt(250)+0;
+        double c1 = b-0;
+        double c = 250-c1;
+        double d1 = a-0;
+        double d = 250-d1;
+        /*
         a = -a;
         b = -b;
         c = -c;
         d = -d;
+                */
         for(int i=0; i<length;i++) {
             aRSSI.add(a);
             bRSSI.add(b);
