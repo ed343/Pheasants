@@ -5,6 +5,17 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import org.apache.commons.math3.filter.DefaultMeasurementModel;
+import org.apache.commons.math3.filter.DefaultProcessModel;
+import org.apache.commons.math3.filter.KalmanFilter;
+import org.apache.commons.math3.filter.MeasurementModel;
+import org.apache.commons.math3.filter.ProcessModel;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.random.JDKRandomGenerator;
+import org.apache.commons.math3.random.RandomGenerator;
 
 /**
  *
@@ -22,10 +33,12 @@ public class LogData {
     ArrayList<Double> TDets= new ArrayList<>();
     ArrayList<Double> SDets= new ArrayList<>();
     ArrayList<Double> RSSIs= new ArrayList<>();
+    ArrayList<Double> normRSSIs= new ArrayList<>();
     ArrayList<Double> SNRs= new ArrayList<>();
     ArrayList<Double> Euclid_SNRs= new ArrayList<>();
     ArrayList<Double> Headrooms= new ArrayList<>();
     ArrayList<Double> Gains= new ArrayList<>();
+    ArrayList<Double> filtRSSIs= new ArrayList<>();
     
     //Constructor
     LogData(String fp) {
@@ -33,12 +46,16 @@ public class LogData {
         this.FilePath = fp;
         //Automatically extract data from log file when object is created.
         this.extractData(fp);
+        filterRSSIs();
+        normaliseRSSIs(-30, -80);
     }
     
     LogData(ArrayList<Long> times, ArrayList<Long> ids, ArrayList<Double> rssis) {
         this.Times = times;
         this.IDs = ids;
         this.RSSIs = rssis;
+        filterRSSIs();
+        normaliseRSSIs(-30, -80);
     }
     
     
@@ -65,6 +82,8 @@ public class LogData {
         long flatDT = Long.parseLong(fullString);
         return flatDT;
     }
+    
+    
     
     /*
     *  Function to extract the data held in a log file.
@@ -184,6 +203,67 @@ public class LogData {
         }
     }
     
+    // Function to normalise filtered RSSIs to range (x,y).
+    void normaliseRSSIs(double x, double y) {
+        x = -x;
+        y = -y;
+        double oldRange = 250-0;
+        double newRange = y-x;
+        double hWay = x+(y-x)/2;
+        for(int i=0;i<this.filtRSSIs.size();i++) {
+            double oldVal = this.filtRSSIs.get(i);
+            double newVal = (((oldVal-0)*newRange)/oldRange)+30;
+            double diff = hWay - newVal;
+            double normVal = hWay+diff;
+            this.normRSSIs.add(-normVal);
+            
+            
+        }
+        
+               
+    }
+    
+    //Function that applies 
+    void filterRSSIs() {
+        double voltage = 0;
+        RandomGenerator rand = new JDKRandomGenerator(10);
+        for(int j=0; j<this.RSSIs.size(); j++) {
+            double rssiMeasurement = this.RSSIs.get(j);
+            double measurementNoise = this.SNRs.get(j);
+            double processNoise = 1e-5d;
+            RealMatrix A = new Array2DRowRealMatrix(new double[] { 1d });
+            RealMatrix B = null;
+            RealMatrix H = new Array2DRowRealMatrix(new double[] { 1d });
+            RealVector x = new ArrayRealVector(new double[] { rssiMeasurement });
+            RealMatrix Q = new Array2DRowRealMatrix(new double[] { processNoise });
+            RealMatrix P0 = new Array2DRowRealMatrix(new double[] { 1d });
+            RealMatrix R = new Array2DRowRealMatrix(new double[] { measurementNoise });
+            
+            ProcessModel pm = new DefaultProcessModel(A, B, Q, x, P0);
+            MeasurementModel mm = new DefaultMeasurementModel(H, R);
+            KalmanFilter filter = new KalmanFilter(pm, mm);  
+            RealVector pNoise = new ArrayRealVector(1);
+            RealVector mNoise = new ArrayRealVector(1);
+            for (int i = 0; i < 60; i++) {
+                filter.predict();
+                
+                pNoise.setEntry(0, processNoise * rand.nextGaussian());
+                
+                x = A.operate(x).add(pNoise);
+                
+                mNoise.setEntry(0, measurementNoise * rand.nextGaussian());
+                
+                RealVector z = H.operate(x).add(mNoise);
+                
+                filter.correct(z);
+                voltage = filter.getStateEstimation()[0];
+            }
+            this.filtRSSIs.add(voltage);
+        }
+    
+}
+
+    
     String getFilePath() {
         return this.FilePath;
     }
@@ -233,4 +313,3 @@ public class LogData {
     }
     
 }
-
