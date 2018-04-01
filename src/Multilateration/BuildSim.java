@@ -21,6 +21,7 @@ public class BuildSim {
         ArrayList<ArrayList<Double>> allRSSIs = generateRSSIs(times.size());
         long dis = 4067;
         ArrayList<Long> ids = generateIDSingle(dis,times.size());
+        // USE FULL PATH OF LOG FILE HERE
         LogData beacon1 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlas.log");
         //LogData beacon2 = new LogData(times,ids,allRSSIs.get(1));
         //LogData beacon3 = new LogData(times,ids,allRSSIs.get(2));
