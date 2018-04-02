@@ -17,6 +17,9 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+import javafx.application.Platform;
 import javafx.scene.paint.Color;
 
 public class VisualisationController {
@@ -45,6 +48,10 @@ public class VisualisationController {
         
     // test tag        
     double[] tag1 = {50.728392, -3.52536}; 
+    
+    Pane pane;
+    
+    Label statusLbl;
 
     public void initialize() throws IOException {
 
@@ -127,15 +134,15 @@ public class VisualisationController {
         
 
         imageView = new ImageView(image);
-        Pane pane = new Pane();
+        pane = new Pane();
         pane.getChildren().add(imageView);
 
         // calling function to place the basestations on the map
-        pane = placeBasestations(pane);
+        pane = placeBasestations();
         
         // calling function to place tags on the map
-        pane = placeTags(pane);
-        pane.setStyle("-fx-background-color: yellow;");
+        placeTags();
+        //pane.setStyle("-fx-background-color: yellow;");
 
 
         // adding side panels with lists of tags and basestations
@@ -168,13 +175,23 @@ public class VisualisationController {
         CheckBox patterns= new CheckBox();
         patterns.setText("Draw movement patterns");
         patterns.setSelected(false);
-
-        lists.getChildren().addAll(tags, basestations, patterns, buttons);
+                        
+        lists.getChildren().addAll(tags, basestations, patterns, buttons, statusLbl);
 
         // adding elements to the HBox from FXML file
         imagebox.setPadding(new Insets(20, 10, 10, 20));
         imagebox.getChildren().addAll(pane, lists);
+        
+        Runnable task = () -> updateTag(0);
+        // Run the task in a background thread
+        Thread backgroundThread = new Thread(task);
+        // Terminate the running thread if the application exits
+        backgroundThread.setDaemon(true);
+        // Start the thread
+        backgroundThread.start();
+        
     }
+
 
     /**
      * Here I want to get the coordinates of basestations (either geographical (from beacon registration) or converted to
@@ -182,7 +199,7 @@ public class VisualisationController {
      * 
      * TO DO: check if basestations don't fit in the frame of map, need to change zoom setting 
      */
-    public Pane placeBasestations(Pane p) {
+    public Pane placeBasestations() {
 
         ArrayList<Rectangle> newCoords = new ArrayList<>() ;
         
@@ -212,13 +229,13 @@ public class VisualisationController {
            g.getChildren().add(r);
         }
 
-        p.getChildren().addAll(g);
-        
-        return p;
+        pane.getChildren().addAll(g);
+                
+        return pane;
     }
     
     
-    public Pane placeTags (Pane p) {
+    public void placeTags () {
         
         ArrayList<Rectangle> tagMarks = new ArrayList<>() ;
         
@@ -249,12 +266,11 @@ public class VisualisationController {
            g.getChildren().add(r);
         }
 
-        p.getChildren().addAll(g);
+        pane.getChildren().addAll(g);
         
-        return p;
         }
     
-    public void moveTags(Pane p) {
+    public void moveTags() {
         
     }
     
@@ -262,17 +278,28 @@ public class VisualisationController {
     // AT THE MOMENT CAN'T FIGURE OUT WHERE PANE SIZE COMES FROM AND HOW TO UPDATE
     // JUST THE IMAGE.
     // THIS LINK COULD BE USEFUL: https://stackoverflow.com/questions/26811445/how-to-access-a-child-of-an-object-in-javafx
-    public void updateTag(int index, Pane p) {
-        double[] oldCoords = tagCoords.get(index);
-        double ny = oldCoords[0]+0.01;
-        double nx = oldCoords[1];
-        double[] newCoord = {ny, nx};
-        System.out.println("newCoord:");
-        System.out.println(newCoord[0] + "; "+newCoord[1]);
-        tagCoords.set(index, newCoord); 
-        System.out.println(imagebox.getChildren());
-        
-        p= placeTags(p);
+    public void updateTag(int index) {
+        for (int i=0; i<5; i++) {
+            
+            try {
+                
+                double[] oldCoords = tagCoords.get(index);
+                double ny = oldCoords[0]+0.0005;
+                double nx = oldCoords[1];
+                double[] newCoord = {ny, nx};
+                System.out.println("newCoord:");
+                System.out.println(newCoord[0] + "; "+newCoord[1]);
+                tagCoords.set(index, newCoord); 
+                
+                // Update the Label on the JavaFx Application Thread
+                Platform.runLater(() -> placeTags());
+                Thread.sleep(1000);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
     
     /**
