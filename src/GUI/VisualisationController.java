@@ -176,7 +176,7 @@ public class VisualisationController {
         patterns.setText("Draw movement patterns");
         patterns.setSelected(false);
                         
-        lists.getChildren().addAll(tags, basestations, patterns, buttons, statusLbl);
+        lists.getChildren().addAll(tags, basestations, patterns, buttons);
 
         // adding elements to the HBox from FXML file
         imagebox.setPadding(new Insets(20, 10, 10, 20));

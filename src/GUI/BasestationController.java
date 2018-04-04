@@ -9,7 +9,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -35,8 +34,6 @@ public class BasestationController {
             VBox newBasestation = addBasestation(i);
             basestationList.getChildren().add(newBasestation);
         }
-
-        //beaconList.getChildren().add(basestationButtons);
     }
 
     @FXML
@@ -48,7 +45,6 @@ public class BasestationController {
     /**
      * Method generates a single beacon registration window that can be added to the panel
      *
-     * NEED TO FIGURE OUT HOW TO USE THIS AS ONACTION METHOD FOR ADDBEACON BUTTON - ATM PROBLEM IS PASSING BEACON NUMBER PARAMETERE
      */
     public VBox addBasestation(int basestationNumber){
 

@@ -11,6 +11,7 @@ public class PrimerClass {
     // for the following two entries, the index refers to the radio instance
     // i.e. radiosCoordinates[0] gives the coordinates of the first radio
     //
+    // THIS INFO WILL BE TAKEN FROM BASESTATION REGISTRATION
     private ArrayList<Double[]> radiosCoordinates= new ArrayList<>();
     ArrayList<Double> measuredPower= new ArrayList<>();
 

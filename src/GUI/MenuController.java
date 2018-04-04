@@ -16,7 +16,7 @@ public class MenuController {
 
     public void handleRegister() throws IOException {
 
-        FXMLLoader sceneLoader=new FXMLLoader(getClass().getResource("beacons.fxml"));
+        FXMLLoader sceneLoader=new FXMLLoader(getClass().getResource("basestations.fxml"));
         Parent sceneParent = sceneLoader.load();
         Scene scene = new Scene(sceneParent, 700, 500);
 

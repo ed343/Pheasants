@@ -115,6 +115,7 @@ public class MLAT {
         
         // tag_registry holds all tags across all radios and their coordinates
         // at each time they were detected
+        // tag, time, coordinate
         HashMap<Long, HashMap<Long, Double[]>> tag_registry = new HashMap<>();
         // used for initialising each element of tag_registry, i.e. a hashmap,
         // with the times each one was picked up as keys
