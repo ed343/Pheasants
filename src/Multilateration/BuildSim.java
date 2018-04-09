@@ -17,38 +17,23 @@ import javafx.util.Pair;
 public class BuildSim {
     
     public static void main(String[] args) {
-        ArrayList<Long> times = generateTimes(30);
-        ArrayList<ArrayList<Double>> allRSSIs = generateRSSIs(times.size());
-        long dis = 4067;
-        ArrayList<Long> ids = generateIDSingle(dis,times.size());
-        // USE FULL PATH OF LOG FILE HERE
-        LogData beacon1 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlas.log");
-        //LogData beacon2 = new LogData(times,ids,allRSSIs.get(1));
-        //LogData beacon3 = new LogData(times,ids,allRSSIs.get(2));
-        //LogData beacon4 = new LogData(times,ids,allRSSIs.get(3));
-        System.out.println(beacon1.RSSIs);
-        System.out.println(beacon1.filtRSSIs);
-        System.out.println(beacon1.normRSSIs);
+        MLATSim mSim = new MLATSim();
+        HashMap<Long, HashMap<Long, Double[]>> hm = mSim.runMLAT();
         
-        //HashMap<Long, ArrayList<Pair<Long,Double>>> dist1 = retrieveDistances(beacon1, 0, 0, 0, -84);
-        /*
-        HashMap<Long, ArrayList<Pair<Long,Double>>> dist2 = retrieveDistances(beacon2, 500, 0, 0, -84);
-        HashMap<Long, ArrayList<Pair<Long,Double>>> dist3 = retrieveDistances(beacon3, 0, 500, 0, -84);
-        HashMap<Long, ArrayList<Pair<Long,Double>>> dist4 = retrieveDistances(beacon4, 500, 500, 0, -84);
-        */
 
     }
-    /*
-    static HashMap retrieveDistances(LogData beacon,int x,int y,int z, int measuredPower) {
+    
+    static ArrayList<HashMap<Long, HashMap<Long, Double>>> retrieveDistances(LogData beacon,int x,int y,int z, int measuredPower) {
         PrimerClass primer = new PrimerClass();
         primer.setRadioCoordinates(x, y, z);
-        primer.setTRVals(beacon.getTimes(),beacon.getIDs(),beacon.getRSSIs());
-        HashMap<Long, ArrayList<Pair<Long,Double>>> rssi = primer.idRSSIs;
+        primer.setTRVals(beacon.getTimes(),beacon.getIDs(),beacon.getNormRSSIs());
+        primer.setRadioMeasuredPower(measuredPower);
+        ArrayList<HashMap<Long,ArrayList<Pair<Long, Double>>>> rssi = primer.idRSSIs;
         RssiEquation re = new RssiEquation();
-        HashMap<Long, ArrayList<Pair<Long,Double>>> dist = re.getTagDistance2(rssi, measuredPower);
+        ArrayList<HashMap<Long,HashMap<Long,Double>>> dist = re.getTagDistance(rssi, primer.measuredPower);
         return dist;
     }
-    */
+    
     
     //Only reliable for up to 59 minutes, can extend if required.
     static ArrayList<Long> generateTimes(int minutes) {
@@ -126,4 +111,18 @@ public class BuildSim {
         allRSSIs.add(dRSSI);
         return allRSSIs;
     }
+    
+    static ArrayList<Double> genSNRs(int length) {
+        ArrayList<Double> sNRs = new ArrayList<>();
+        Random rand = new Random();
+        for(int i=0; i<length; i++) {
+            double s = rand.nextInt(50);
+            sNRs.add(s);
+        }
+        return sNRs;
+    }
+    
 }
+
+
+
