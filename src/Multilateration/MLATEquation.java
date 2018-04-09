@@ -67,7 +67,7 @@ public class MLATEquation {
     Matrix getB(){
         double[] B=new double[matrixSize];
         for (int i=0; i<matrixSize; i++){
-            B[i]=pow(2,tagDistances.get(i))
+            B[i]=pow(tagDistances.get(i),2)
                     -pow(radiosCoordinates.get(i)[0],2)
                     -pow(radiosCoordinates.get(i)[1],2)
                     -pow(radiosCoordinates.get(i)[2],2);
