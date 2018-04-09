@@ -1,3 +1,4 @@
+
 package Multilateration;
 
 import java.io.BufferedReader;
@@ -50,10 +51,11 @@ public class LogData {
         normaliseRSSIs(-30, -80);
     }
     
-    LogData(ArrayList<Long> times, ArrayList<Long> ids, ArrayList<Double> rssis) {
+    LogData(ArrayList<Long> times, ArrayList<Long> ids, ArrayList<Double> rssis, ArrayList<Double> snrs)  {
         this.Times = times;
         this.IDs = ids;
         this.RSSIs = rssis;
+        this.SNRs = snrs;
         filterRSSIs();
         normaliseRSSIs(-30, -80);
     }
@@ -310,6 +312,10 @@ public class LogData {
 
     ArrayList<Double> getGains() {
         return this.Gains;
+    }
+    
+    ArrayList<Double> getNormRSSIs() {
+        return this.normRSSIs;
     }
     
 }
