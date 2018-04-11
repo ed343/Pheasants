@@ -34,6 +34,8 @@ public class VisualisationController {
     AnchorPane visualisation;
     @FXML
     HBox buttons;
+    @FXML
+    Pane pane;
 
     int mapWidth = 480;
     int mapHeight = 280;
@@ -50,15 +52,18 @@ public class VisualisationController {
 
     ArrayList<double[]> tagCoords = new ArrayList<>();
 
-    // test tag        
+    // test tags       
     double[] tag1 = {50.728392, -3.52536};
     double[] tag2 = {50.728292, -3.52586};
 
-    Pane pane;
+    // parameters used for map scaling and tag placement
+    double[] corners;
+    double realWidth;
+    double realHeight;
 
-    Label statusLbl;
+    double xratio; // longitude
+    double yratio;  // latitude
     
-    private Service<Void> backgroundThread;
 
     public void initialize() throws IOException {
 
@@ -89,6 +94,14 @@ public class VisualisationController {
         centerY = frame[2] + (frame[0] - frame[2]) / 2;
         System.out.println("centerY (lat):" + centerY);
         System.out.println("centerX (lon):" + centerX);
+        
+       corners = getMapCorners(centerY, centerX, zoom);
+
+        realWidth = corners[1] - corners[3];
+        realHeight = corners[0] - corners[2];
+
+        xratio = mapWidth / realWidth;     // longitude
+        yratio = mapHeight / realHeight;   // latitude
 
       String imagePath = "https://maps.googleapis.com/maps/api/staticmap?"
                 + "center=" + centerY + "," + centerX + "&"
@@ -191,14 +204,6 @@ public class VisualisationController {
 
         ArrayList<Rectangle> newCoords = new ArrayList<>();
 
-        double[] corners = getMapCorners(centerY, centerX, zoom);
-
-        double realWidth = corners[1] - corners[3];
-        double realHeight = corners[0] - corners[2];
-
-        double xratio = mapWidth / realWidth;     // longitude
-        double yratio = mapHeight / realHeight;   // latitude
-
         for (double[] bs : basestations) {
 
             double x = (getX(bs) - corners[3]) * xratio;
@@ -237,14 +242,6 @@ public class VisualisationController {
     public void placeTags() {
 
         ArrayList<Rectangle> tagMarks = new ArrayList<>();
-
-        double[] corners = getMapCorners(centerY, centerX, zoom);
-
-        double realWidth = corners[1] - corners[3];
-        double realHeight = corners[0] - corners[2];
-
-        double xratio = mapWidth / realWidth;     // longitude
-        double yratio = mapHeight / realHeight;   // latitude
 
         for (double[] tag : tagCoords) {
             
