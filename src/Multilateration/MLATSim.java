@@ -122,13 +122,13 @@ Enter measured power:
         */
         
         // CHANGE TO PATH OF LOG FILES ON YOUR MACHINE.
-            LogData log1 = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-1.log");
+            LogData log1 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--1.log");
             dataArr.add(log1);
-            LogData log2 = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-2.log");
+            LogData log2 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--2.log");
             dataArr.add(log2);
-            LogData log3 = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-3.log");
+            LogData log3 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--3.log");
             dataArr.add(log3);
-            LogData log4 = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-1.log");
+            LogData log4 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--1.log");
             dataArr.add(log4);
         //}
         
@@ -399,6 +399,11 @@ Enter measured power:
             }
         }
         return hm;
+    }
+    
+    public static void main(String[] args) {
+        MLATSim m = new MLATSim();
+        m.runMLAT();
     }
 }
 

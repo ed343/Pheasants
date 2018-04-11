@@ -3,7 +3,52 @@ package GUI;
 public class CoordinateTranslation {
     
     final int MERCATOR_RANGE = 256;
+    final int R = 6378137; // EARTH RADIUS (IN METERS)
     
+    /**
+     * Converts geographical coordinate (lat, lon) to Cartesian coordinate (x,y,z)
+     * @param lat
+     * @param lon
+     * @return 
+     */
+    public double[] lonLatToCartesian(double lat, double lon) {
+        
+        lon = degreesToRadians(lon);
+        lat = degreesToRadians(lat);
+        
+        double x = R * Math.cos(lat) * Math.cos(lon);
+
+        double y = R * Math.cos(lat) * Math.sin(lon);
+
+        double z = R * Math.sin(lat);
+        
+        double[] coords = {x,y,z};
+        
+        return coords;
+    }
+    
+    /**
+     * Converts Cartesian coordinate (x,y,z) to geographical coordinate (lat, lon).
+     * @param cartCoords
+     * @return 
+     */
+    public double[] cartesianToLatLon(double[] cartCoords) {
+        
+        double x = cartCoords[0];
+        double y = cartCoords[1];
+        double z = cartCoords[2];                
+        
+        double lat = Math.asin(z / R);
+        double lon = Math.atan2(y, x);
+        
+        lat = radiansToDegrees(lat);
+        lon = radiansToDegrees(lon);
+        
+        double[] coords = {lat, lon};
+           
+        return coords;
+    }
+     
     public double bound( double value, double opt_min, double opt_max){
 
         if (opt_min>value) {
@@ -109,6 +154,34 @@ public class CoordinateTranslation {
         System.out.println("E:" + corners[1]);
         System.out.println("S:" + corners[2]);
         System.out.println("W:" + corners[3]);
+        
+        double x = ct.lonLatToCartesian(centerLat, centerLon)[0];
+        double y = ct.lonLatToCartesian(centerLat, centerLon)[1];
+        double z = ct.lonLatToCartesian(centerLat, centerLon)[2];
+
+        double[] c = {x,y,z};
+        System.out.println(c[0]); // x
+        System.out.println(c[1]); // y
+        System.out.println(c[2]); // z
+        
+        System.out.println("---------");
+        
+        double[] t = {450, 13, 1.5};
+        double[] re = ct.cartesianToLatLon(t);
+        System.out.println(re[0]);
+        System.out.println(re[1]);
+        
+        double[] te = { 237.24549, -262.59965, -6562.23780};
+        double[] res = ct.cartesianToLatLon(te);
+        System.out.println("-----------");
+        System.out.println(res[0]);
+        System.out.println(res[1]);
+        
+        double[] latlon = ct.cartesianToLatLon(c);
+        System.out.println("-----------");
+        System.out.println(latlon[0]); //latitude
+        System.out.println(latlon[1]); //longitude
+
         
     }
 }
