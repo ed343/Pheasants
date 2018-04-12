@@ -11,7 +11,7 @@ public class CoordinateTranslation {
      * @param lon
      * @return 
      */
-    public double[] lonLatToCartesian(double lat, double lon) {
+    public Double[] lonLatToCartesian(double lat, double lon) {
         
         lon = degreesToRadians(lon);
         lat = degreesToRadians(lat);
@@ -22,7 +22,7 @@ public class CoordinateTranslation {
 
         double z = R * Math.sin(lat);
         
-        double[] coords = {x,y,z};
+        Double[] coords = {x,y,z};
         
         return coords;
     }
@@ -32,7 +32,7 @@ public class CoordinateTranslation {
      * @param cartCoords
      * @return 
      */
-    public double[] cartesianToLatLon(double[] cartCoords) {
+    public Double[] cartesianToLatLon(Double[] cartCoords) {
         
         double x = cartCoords[0];
         double y = cartCoords[1];
@@ -44,7 +44,7 @@ public class CoordinateTranslation {
         lat = radiansToDegrees(lat);
         lon = radiansToDegrees(lon);
         
-        double[] coords = {lat, lon};
+        Double[] coords = {lat, lon};
            
         return coords;
     }
@@ -123,7 +123,7 @@ public class CoordinateTranslation {
         }           
     }
     
-    public double[] getCorners (G_LatLng center, int zoom, int mapWidth, int mapHeight) {
+    public Double[] getCorners (G_LatLng center, int zoom, int mapWidth, int mapHeight) {
         double scale = Math.pow(2, zoom);
         MercatorProjection proj = new MercatorProjection();
         
@@ -133,11 +133,12 @@ public class CoordinateTranslation {
 	G_Point NEPoint = new G_Point(centerPx.x+(mapWidth/2)/scale, centerPx.y-(mapHeight/2)/scale);        
 	G_LatLng NELatLon = proj.fromPointToLatLng(NEPoint);
         
-        double[] coords= {NELatLon.lat, NELatLon.lng, SWLatLon.lat, SWLatLon.lng};
+        Double[] coords= {NELatLon.lat, NELatLon.lng, SWLatLon.lat, SWLatLon.lng};
         
         return coords;
     }
     
+    @SuppressWarnings("empty-statement")
     public static void main(String[] args) {
         
         CoordinateTranslation ct = new CoordinateTranslation();
@@ -148,7 +149,7 @@ public class CoordinateTranslation {
         int mapWidth = 480;
         int mapHeight = 280;
         G_LatLng centerPoint = new G_LatLng(centerLat, centerLon);
-        double[] corners = ct.getCorners(centerPoint, zoom, mapWidth, mapHeight);
+        Double[] corners = ct.getCorners(centerPoint, zoom, mapWidth, mapHeight);
         
         System.out.println("N:" + corners[0]);
         System.out.println("E:" + corners[1]);
@@ -159,25 +160,25 @@ public class CoordinateTranslation {
         double y = ct.lonLatToCartesian(centerLat, centerLon)[1];
         double z = ct.lonLatToCartesian(centerLat, centerLon)[2];
 
-        double[] c = {x,y,z};
+        Double[] c = {x,y,z};
         System.out.println(c[0]); // x
         System.out.println(c[1]); // y
         System.out.println(c[2]); // z
         
         System.out.println("---------");
         
-        double[] t = {450, 13, 1.5};
-        double[] re = ct.cartesianToLatLon(t);
-        System.out.println(re[0]);
-        System.out.println(re[1]);
+        //Double[] t = {450, 13, 1.5};
+        //Double[] re = ct.cartesianToLatLon(t);
+        //System.out.println(re[0]);
+        //System.out.println(re[1]);
         
-        double[] te = { 237.24549, -262.59965, -6562.23780};
-        double[] res = ct.cartesianToLatLon(te);
+        Double[] te = { 237.24549, -262.59965, -6562.23780};
+        Double[] res = ct.cartesianToLatLon(te);
         System.out.println("-----------");
         System.out.println(res[0]);
         System.out.println(res[1]);
         
-        double[] latlon = ct.cartesianToLatLon(c);
+        Double[] latlon = ct.cartesianToLatLon(c);
         System.out.println("-----------");
         System.out.println(latlon[0]); //latitude
         System.out.println(latlon[1]); //longitude
