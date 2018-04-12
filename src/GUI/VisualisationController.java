@@ -27,6 +27,8 @@ import javafx.concurrent.Service;
 import javafx.scene.paint.Color;
 
 public class VisualisationController {
+    
+    public VisualisationController(){}
 
     @FXML
     HBox imagebox;
@@ -44,20 +46,20 @@ public class VisualisationController {
     double centerY;
 
     // ArrayList to hold the coordinates of basestations that will be displayed
-    ArrayList<double[]> basestations = new ArrayList<>();
+    ArrayList<Double[]> basestations = new ArrayList<>();
 
     // will be the list of actual tags taken from the log file
-    ArrayList<Long> intTags = HelperMethods.deduplicate(MainApplication.logfiles.get(0).getIDs());
-    ArrayList<String> tagIDs = HelperMethods.convertList(intTags);
+    //ArrayList<Long> intTags = HelperMethods.deduplicate(MainApplication.logfiles.get(0).getIDs());
+    //ArrayList<String> tagIDs = HelperMethods.convertList(intTags);
 
-    ArrayList<double[]> tagCoords = new ArrayList<>();
+    ArrayList<Double[]> tagCoords = new ArrayList<>();
 
     // test tags       
-    double[] tag1 = {50.728392, -3.52536};
-    double[] tag2 = {50.728292, -3.52586};
+    Double[] tag1 = {50.728392, -3.52536};
+    Double[] tag2 = {50.728292, -3.52586};
 
     // parameters used for map scaling and tag placement
-    double[] corners;
+    Double[] corners;
     double realWidth;
     double realHeight;
 
@@ -72,10 +74,10 @@ public class VisualisationController {
 
         // this data will be read from beacon registration/selection
         // {latitude (y), longitude (x)}
-        double[] basestation1 = {50.728146, -3.527182};
-        double[] basestation2 = {50.729000, -3.523541};
-        double[] basestation3 = {50.727346, -3.523541};
-        double[] basestation4 = {50.729438, -3.526964};
+        Double[] basestation1 = {50.728146, -3.527182};
+        Double[] basestation2 = {50.729000, -3.523541};
+        Double[] basestation3 = {50.727346, -3.523541};
+        Double[] basestation4 = {50.729438, -3.526964};
 
         basestations.add(basestation1);
         basestations.add(basestation2);
@@ -88,7 +90,7 @@ public class VisualisationController {
         // (minX, maxY, maxX, minY)
         // not sure if it will work with negative coordinates
         // calculating the center between the basestations, considering the polygon drawn around all basestations
-        double[] frame = getRect(basestations);
+        Double[] frame = getRect(basestations);
 
         centerX = frame[3] + (frame[1] - frame[3]) / 2;
         centerY = frame[2] + (frame[0] - frame[2]) / 2;
@@ -159,11 +161,13 @@ public class VisualisationController {
         ListView<String> tags = new ListView<>();
         tags.setPrefWidth(200.0);
         // getting tag IDs from log file
+        /*
         intTags = HelperMethods.deduplicate(MainApplication.logfiles.get(0).getIDs());
         System.out.println("tags:");
         System.out.println(intTags);
         tagIDs = HelperMethods.deduplicate(HelperMethods.convertList(intTags));
         tags.getItems().addAll(tagIDs);
+        */
         tags.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         // alternative way to show ListView of height for all tags
@@ -204,7 +208,7 @@ public class VisualisationController {
 
         ArrayList<Rectangle> newCoords = new ArrayList<>();
 
-        for (double[] bs : basestations) {
+        for (Double[] bs : basestations) {
 
             double x = (getX(bs) - corners[3]) * xratio;
             // equation different from x coords, since geographical coordinates go from bottom to top
@@ -243,7 +247,7 @@ public class VisualisationController {
 
         ArrayList<Rectangle> tagMarks = new ArrayList<>();
 
-        for (double[] tag : tagCoords) {
+        for (Double[] tag : tagCoords) {
             
             double x = (getX(tag) - corners[3]) * xratio;
             // equation different from x coords, since geographical coordinates go from bottom to top
@@ -282,10 +286,10 @@ public class VisualisationController {
                         Platform.runLater(new Runnable() {
 
                             public void run() {
-                                double[] oldCoords = tagCoords.get(index);
+                                Double[] oldCoords = tagCoords.get(index);
                                 double ny = oldCoords[0]+0.0002;
                                 double nx = oldCoords[1];
-                                double[] newCoord = {ny, nx};
+                                Double[] newCoord = {ny, nx};
                                 System.out.println("newCoord:");
                                 System.out.println(newCoord[0] + "; "+newCoord[1]);
                                 tagCoords.set(index, newCoord);
@@ -311,11 +315,11 @@ public class VisualisationController {
      * @param centerY
      * @return
      */
-    public double[] getMapCorners(double centerX, double centerY, int zoom) {
+    public Double[] getMapCorners(double centerX, double centerY, int zoom) {
         CoordinateTranslation ct = new CoordinateTranslation();
 
         CoordinateTranslation.G_LatLng center = new CoordinateTranslation.G_LatLng(centerX, centerY);
-        double[] coords = ct.getCorners(center, zoom, mapWidth, mapHeight);
+        Double[] coords = ct.getCorners(center, zoom, mapWidth, mapHeight);
 
         return coords;
     }
@@ -332,28 +336,28 @@ public class VisualisationController {
     /**
      * get x (longitude) coordinate of the beacon
      */
-    public double getY(double[] coord) {
+    public double getY(Double[] coord) {
         return coord[0];
     }
 
     /**
      * get y (latitude) coordinate of the beacon
      */
-    public double getX(double[] coord) {
+    public double getX(Double[] coord) {
         return coord[1];
     }
 
     /**
      * getting coordinates of the rectangle that will cover all the basestations
      */
-    public double[] getRect(ArrayList<double[]> basestations) {
+    public Double[] getRect(ArrayList<Double[]> basestations) {
 
         double maxY = -200;
         double maxX = -200;
         double minX = 200;
         double minY = 200;
 
-        for (double[] bs : basestations) {
+        for (Double[] bs : basestations) {
 
             if (getX(bs) > maxX) {
                 maxX = getX(bs);
@@ -371,7 +375,7 @@ public class VisualisationController {
             }
         }
 
-        double[] frame = {maxY, maxX, minY, minX};
+        Double[] frame = {maxY, maxX, minY, minX};
 
         return frame;
     }
