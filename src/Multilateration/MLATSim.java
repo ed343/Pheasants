@@ -2,6 +2,7 @@ package Multilateration;
 
 import Jama.Matrix;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 import javafx.util.Pair;
@@ -10,6 +11,7 @@ public class MLATSim {
     
     static int radioIndex = 0;
     static PrimerClass primer;
+    ArrayList<Double[]> basestations = new ArrayList<>();
     
     HashMap<Long, HashMap<Long, Double[]>> runMLAT() {
         // ArrayList to store the Data extracted from all Log files.
@@ -48,6 +50,40 @@ public class MLATSim {
                 z = reader.nextDouble();
             }
         */
+        Double[] basestation1 = {50.728146, -3.527182};
+        Double[] basestation2 = {50.729000, -3.523541};
+        Double[] basestation3 = {50.727346, -3.523541};
+        Double[] basestation4 = {50.729438, -3.526964};
+
+        basestations.add(basestation1);
+        basestations.add(basestation2);
+        basestations.add(basestation3);
+        basestations.add(basestation4);
+        GUI.VisualisationController vis = new GUI.VisualisationController();
+        Double[] frame = vis.getRect(basestations);
+
+        double centerX = frame[3] + (frame[1] - frame[3]) / 2;
+        double centerY = frame[2] + (frame[0] - frame[2]) / 2;
+        System.out.println("centerY (lat):" + centerY);
+        System.out.println("centerX (lon):" + centerX);
+        
+        Double[] corners = vis.getMapCorners(centerY, centerX, 16);
+        double south = corners[2];
+        double west = corners[3];
+        GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
+        Double[] lbCorner = ct.lonLatToCartesian(south, west);
+        double ox = lbCorner[0];
+        double oy = lbCorner[1];
+        double oz = lbCorner[2];
+        for(int i=0; i<basestations.size();i++) {
+            Double[] bs = basestations.get(i);
+            Double[] cart = ct.lonLatToCartesian(bs[0], bs[1]);
+            double bx = cart[0];
+            double by = cart[1];
+            double bz = cart[2];
+            primer.setRadioCoordinates((bx-ox), (by-oy), (bz-oz));
+        }
+        /*
         primer.setRadioCoordinates(5, 4, 2);
         System.out.println("The coordinates of the first radio are (5,4,2)");
         primer.setRadioCoordinates(451, 1, 1.5);
@@ -56,6 +92,7 @@ public class MLATSim {
         System.out.println("The coordinates of the first radio are (450,13,1)");
         primer.setRadioCoordinates(451, 541, 2);
         System.out.println("The coordinates of the first radio are (451,541,2)");
+        */
         //}
         
         // 3. insert all radio 1-Meter RSSI
@@ -122,13 +159,13 @@ Enter measured power:
         */
         
         // CHANGE TO PATH OF LOG FILES ON YOUR MACHINE.
-            LogData log1 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--1.log");
+            LogData log1 = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-1.log");
             dataArr.add(log1);
-            LogData log2 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--2.log");
+            LogData log2 = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-2.log");
             dataArr.add(log2);
-            LogData log3 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--3.log");
+            LogData log3 = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-3.log");
             dataArr.add(log3);
-            LogData log4 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--1.log");
+            LogData log4 = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-1.log");
             dataArr.add(log4);
         //}
         
@@ -324,8 +361,7 @@ Enter measured power:
                 Double[] aux_arr;
                 // add the 3 coordinates we got from the method
                 Double[] aux_coord = new Double[]{inner.get(time)[0],
-                    inner.get(time)[1],
-                    inner.get(time)[2]};
+                    inner.get(time)[1]};
                 aux_arr=aux_coord;
                 // put it back
                 init_inner_tag_reg.put(time, aux_arr);
@@ -385,12 +421,17 @@ Enter measured power:
                     Matrix sol = A.solve(B); //these are our coordinates
                     // the matrix is 4x1, and entries 1,2,3
                     // give us the x, y, z coord
+                    GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
                     Double[] coords = new Double[]{sol.get(1, 0), sol.get(2, 0),
                         sol.get(3, 0)};
+                    Double[] geoCoords = ct.cartesianToLatLon(coords);
                     HashMap time_coords_map = new HashMap();
-                    time_coords_map.put(time, coords);
+                    time_coords_map.put(time, geoCoords);
                     hm.put(key, time_coords_map);
-                    sol.print(10, 5);
+                    System.out.println(" ");
+                    System.out.println("The geographical location of this tag is: "+ Arrays.deepToString(geoCoords));
+                    System.out.println(" ");
+                    //sol.print(10, 5);
                 } else {
                     // we don't have enough valid distances, i.e.
                     // no other radios picked up this tag at this time
@@ -406,4 +447,3 @@ Enter measured power:
         m.runMLAT();
     }
 }
-
