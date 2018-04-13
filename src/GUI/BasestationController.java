@@ -18,6 +18,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import javafx.event.EventHandler;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 
 public class BasestationController {
 
@@ -189,6 +192,7 @@ public class BasestationController {
         Label l = new Label("Name:");
         TextField tf = new TextField();
         tf.setText(rs.getString("name"));
+        tf.setDisable(true);
 
         hb1.getChildren().addAll(l, tf);
 
@@ -199,9 +203,11 @@ public class BasestationController {
         TextField te = new TextField();
         te.setPrefSize(60, 25);
         te.setText(rs.getString("latitude"));
+        te.setDisable(true);
         Label lab = new Label("Longitude coordinate:");
         TextField te1 = new TextField();
         te1.setText(rs.getString("longitude"));
+        te1.setDisable(true);
         te1.setPrefSize(60, 25);
 
         hb2.getChildren().addAll(la, te, lab, te1);
@@ -212,10 +218,68 @@ public class BasestationController {
         Label labe = new Label("Measured power:");
         TextField text = new TextField();
         text.setText(rs.getString("measuredpower"));
+        text.setDisable(true);
         text.setPrefSize(60, 25);
         Label label = new Label("db");
+        
+        Button update_save = new Button("Update");
+        
+        update_save.setOnAction(new EventHandler<ActionEvent>() {
+        @Override public void handle(ActionEvent e) {
+            if (update_save.getText().equals("Update")) {
+                text.setDisable(false);
+                te1.setDisable(false);
+                te.setDisable(false);
+                tf.setDisable(false);
+                update_save.setText("Save");
+            }
+            
+            else if (update_save.getText().equals("Save")) {
+                
+                // HERE DO UPDATE ON DATABASE 
+                
+                text.setDisable(true);
+                te1.setDisable(true);
+                te.setDisable(true);
+                tf.setDisable(true);
+                update_save.setText("Update");
+            }
 
-        hb3.getChildren().addAll(labe, text, label);
+            
+            }
+        });
+        
+        Button delete = new Button("Delete");
+        
+        delete.setOnAction(new EventHandler<ActionEvent>() {
+        @Override public void handle(ActionEvent e) {
+
+            // HERE DO DELETE ON DATABASE
+
+            text.setDisable(false);
+            text.setText("");
+            te1.setDisable(false);
+            te1.setText("");
+            te.setDisable(false);
+            te.setText("");
+            tf.setDisable(false);
+            tf.setText("");
+
+            // TODO: remove whole VBox with all the context. Might need to access it as child of the Pane
+            
+            }
+        });
+        
+        HBox hb4 = new HBox();
+        hb4.setPrefSize(400, 35);
+        hb4.setSpacing(5);
+        
+        hb4.getChildren().addAll(update_save, delete);
+        hb4.setAlignment(Pos.BASELINE_RIGHT);
+        
+        hb3.getChildren().addAll(labe, text, label, hb4);
+        
+        
 
         Separator sep = new Separator();
 
