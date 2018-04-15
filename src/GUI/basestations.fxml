@@ -15,18 +15,6 @@
     <padding><Insets bottom="25" left="25" right="25" top="25" /></padding>
     <children>
 
-    <!--
-        <fx:include fx:id="beacon1" source="beacon_item.fxml" />
-
-        <Separator prefHeight="0.0" prefWidth="550.0" />
-
-        <fx:include fx:id="beacon2" source="beacon_item.fxml" />
-
-        <Separator prefHeight="0.0" prefWidth="550.0" />
-
-        <fx:include fx:id="beacon3" source="beacon_item.fxml" />
-
-    -->
     </children>
 </VBox>
 

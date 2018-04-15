@@ -13,23 +13,24 @@
             <Font size="14.0"/>
         </font>
     </Label>
-        <TextField text="Basestation #"/>
+        <TextField prefHeight="25.0" prefWidth="100.0" text="Basestation #"/>
+        
     </HBox>
 
     <HBox spacing="5">
-    <Label text="Latitude coordinate:">
+    <Label text="Longitude/latitude coordinates:">
         <font>
             <Font size="14.0"/>
         </font>
     </Label>
-        <TextField prefHeight="25.0" prefWidth="60.0"/>
-    <Label text="Longitude coordinate:">
+    
+    <TextField prefHeight="25.0" prefWidth="30.0"/>
+    <Label text="/">
         <font>
             <Font size="14.0"/>
         </font>
     </Label>
-
-    <TextField prefHeight="25.0" prefWidth="59.0"/>
+    <TextField prefHeight="25.0" prefWidth="30.0"/>
     </HBox>
 
     <HBox spacing="5">
@@ -38,7 +39,7 @@
             <Font size="14.0"/>
         </font>
     </Label>
-    <TextField prefHeight="25.0" prefWidth="60.0"/>
+    <TextField prefHeight="25.0" prefWidth="45.0"/>
 
     <Label text="db">
         <font>

@@ -137,6 +137,8 @@ public class BasestationController {
     /**
      * Method generates a single beacon registration window that can be added to
      * the panel
+     * 
+     * I THINK BECAUSE OF THIS METHOD I DON'T USE BASESTATION_ITEM.FXML ANYMORE
      *
      */
     public VBox addBasestation(int basestationNumber) {
@@ -156,21 +158,21 @@ public class BasestationController {
         HBox hb2 = new HBox();
         hb2.setSpacing(5);
 
-        Label la = new Label("Latitude coordinate:");
+        Label la = new Label("Longitude/latitude coordinates:");
         TextField te = new TextField();
         te.setPrefSize(60, 25);
-        Label lab = new Label("Longitude coordinate:");
+        Label slash = new Label("/");
         TextField te1 = new TextField();
         te1.setPrefSize(60, 25);
 
-        hb2.getChildren().addAll(la, te, lab, te1);
+        hb2.getChildren().addAll(la, te, slash, te1);
 
         HBox hb3 = new HBox();
         hb3.setSpacing(5);
 
         Label labe = new Label("Measured power:");
         TextField text = new TextField();
-        text.setPrefSize(60, 25);
+        text.setPrefSize(50, 25);
         Label label = new Label("db");
 
         hb3.getChildren().addAll(labe, text, label);
@@ -208,19 +210,19 @@ public class BasestationController {
 
         HBox hb2 = new HBox();
         hb2.setSpacing(5);
-
-        Label la = new Label("Latitude coordinate:");
+        
+        Label la = new Label("Longitude/latitude coordinates:");
         TextField te = new TextField();
         te.setPrefSize(60, 25);
         te.setText(rs.getString("latitude"));
         te.setDisable(true);
-        Label lab = new Label("Longitude coordinate:");
+        Label slash = new Label("/");
         TextField te1 = new TextField();
         te1.setText(rs.getString("longitude"));
         te1.setDisable(true);
         te1.setPrefSize(60, 25);
 
-        hb2.getChildren().addAll(la, te, lab, te1);
+        hb2.getChildren().addAll(la, te, slash, te1);
 
         HBox hb3 = new HBox();
         hb3.setSpacing(5);
@@ -229,7 +231,7 @@ public class BasestationController {
         TextField text = new TextField();
         text.setText(rs.getString("measuredpower"));
         text.setDisable(true);
-        text.setPrefSize(60, 25);
+        text.setPrefSize(50, 25);
         Label label = new Label("db");
 
         Button update_save = new Button("Update");
@@ -259,6 +261,7 @@ public class BasestationController {
                         Logger.getLogger(BasestationController.class.getName()).
                                 log(Level.SEVERE, null, ex);
                     }
+
                     text.setDisable(true);
                     te1.setDisable(true);
                     te.setDisable(true);
@@ -297,8 +300,7 @@ public class BasestationController {
                 tf.setDisable(false);
                 tf.setText("");
 
-                // TODO: remove whole VBox with all the context. 
-                // Might need to access it as child of the Pane
+                basestationList.getChildren().remove(vb);  
             }
         });
 

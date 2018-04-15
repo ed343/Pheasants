@@ -11,15 +11,15 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
 
 public class UploadController {
 
 
     @FXML
     private AnchorPane data_upload;
-
-    @FXML
-    private Button run;
 
 
     public void initialize() {
@@ -30,6 +30,7 @@ public class UploadController {
     public void handleUpload(ActionEvent event) {
 
         Button b = (Button) event.getSource();
+        HBox currentHBox = (HBox) b.getParent();
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose file...");
@@ -41,10 +42,15 @@ public class UploadController {
         Stage stage = (Stage) data_upload.getScene().getWindow();
         File selected = fileChooser.showOpenDialog(stage);
         String path = selected.getAbsolutePath();
+        String filename = selected.getName();
 
-        // probably here is the place to set that when the file is selected, the path or name
-        // of the file is printed on the side
-
+        Label uploaded = new Label("    " +filename);
+        uploaded.setFont(new Font("Courier New", 14.0));
+        
+        // adding the name of the uploaded file instead of the button
+        currentHBox.getChildren().remove(b);
+        currentHBox.getChildren().add(uploaded);        
+        
 
         LogData converter = new LogData(path);
         System.out.println(converter.getTimes());
@@ -60,6 +66,15 @@ public class UploadController {
         FXMLLoader sceneLoader=new FXMLLoader(getClass().getResource("data_visualisation.fxml"));
         Parent sceneParent = sceneLoader.load();
         Scene scene = new Scene(sceneParent, 800, 500);
+
+        Stage stage = (Stage) data_upload.getScene().getWindow();
+        stage.setScene(scene);
+    }
+    
+    public void handleCancel() throws IOException {
+        FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("menu.fxml"));
+        Parent sceneParent = sceneLoader.load();
+        Scene scene = new Scene(sceneParent, 400, 400);
 
         Stage stage = (Stage) data_upload.getScene().getWindow();
         stage.setScene(scene);

@@ -37,7 +37,9 @@ public class VisualisationController {
     @FXML
     HBox buttons;
     @FXML
-    Pane pane;
+    Pane pane;    
+    @FXML
+    CheckBox drawTrace;
 
     int mapWidth = 480;
     int mapHeight = 280;
@@ -178,18 +180,18 @@ public class VisualisationController {
         basestations.setMinHeight(basestations.getItems().size() * 23 + 2);
 
         // adding checkbox
-        CheckBox patterns = new CheckBox();
-        patterns.setText("Draw movement patterns");
-        patterns.setSelected(false);
+        drawTrace = new CheckBox();
+        drawTrace.setText("Draw movement patterns");
+        drawTrace.setSelected(false);
 
-        lists.getChildren().addAll(tags, basestations, patterns, buttons);
+        lists.getChildren().addAll(tags, basestations, drawTrace, buttons);
 
         // adding elements to the HBox from FXML file
         imagebox.setPadding(new Insets(20, 10, 10, 20));
         imagebox.getChildren().addAll(pane, lists);
 
         // THIS IS WHERE A VISUALISATION THREAD WILL BE STARTED
-        // if remains for loop, should be changed to traverse tagID list for all tags
+        // remains for loop, should be changed to traverse tagID list for all tags
         for (int i=0; i<2; i++) {
             updateTag(i);
         }
@@ -255,7 +257,7 @@ public class VisualisationController {
             double y = (corners[0] - getY(tag)) * yratio;
 
             Rectangle r = new Rectangle(x, y, 5, 5);
-            r.setFill(Color.CORAL);
+            r.setFill(Color.OLIVE);
 
             tagMarks.add(r);
 
@@ -293,11 +295,19 @@ public class VisualisationController {
                                 System.out.println("newCoord:");
                                 System.out.println(newCoord[0] + "; "+newCoord[1]);
                                 tagCoords.set(index, newCoord);
-                                // placing tags doesn't work
-                                // check out this answer: https://stackoverflow.com/a/9167420
 
-                                placeTags();
-                                removeTag();
+                                
+                                // if checkbox in GUI is not selected, previous position of the tag is removed (default)
+                                if (!drawTrace.isSelected()) {
+                                    placeTags();
+                                    removeTag();
+                                }
+                                
+                                // if checkbox in GUI is selected, previous tag locations are kept on the map
+                                else if (drawTrace.isSelected()) {
+                                    placeTags();
+                                }
+
                             }
                         });
                     }
