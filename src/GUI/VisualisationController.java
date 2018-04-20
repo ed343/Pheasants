@@ -23,7 +23,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.ArrayList;
 import javafx.application.Platform;
-import javafx.concurrent.Service;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.paint.Color;
 
 public class VisualisationController {
@@ -40,6 +41,8 @@ public class VisualisationController {
     Pane pane;    
     @FXML
     CheckBox drawTrace;
+    @FXML
+    Slider slider;
 
     int mapWidth = 480;
     int mapHeight = 280;
@@ -67,6 +70,8 @@ public class VisualisationController {
 
     double xratio; // longitude
     double yratio;  // latitude
+    
+    int currentTime = 0; // variable to hold current time of the visualisation
     
 
     public void initialize() throws IOException {
@@ -106,6 +111,9 @@ public class VisualisationController {
 
         xratio = mapWidth / realWidth;     // longitude
         yratio = mapHeight / realHeight;   // latitude
+        
+        VBox leftbox = new VBox();
+        
 
       String imagePath = "https://maps.googleapis.com/maps/api/staticmap?"
                 + "center=" + centerY + "," + centerX + "&"
@@ -127,6 +135,7 @@ public class VisualisationController {
                             + "2. Or paste some dummy image instead and make the user aware of that."
                     );
                     imagebox.getChildren().add(l);
+                    return;
                 }
             });
         } else if (image.isError()) {
@@ -137,7 +146,33 @@ public class VisualisationController {
                     + "1. Check your internet connection and reload the map (button)\n"
                     + "2. Or paste some dummy image instead and make the user aware of that.");
             imagebox.getChildren().add(l);
+            return;
         }
+        
+        slider = new Slider();
+        slider.setMin(0);
+        slider.setMax(9);
+        slider.setValue(0);
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+        slider.setMajorTickUnit(1);
+        slider.setMinorTickCount(0);
+        slider.setBlockIncrement(1);
+        
+        // this listener reacts to the change on the slider:
+        //      should start visualisation from the point were slider is set to
+        //      but doesn't do that yet
+        slider.valueProperty().addListener(new ChangeListener<Number>() {
+            public void changed(ObservableValue<? extends Number> ov,
+                Number old_val, Number new_val) {
+                    currentTime = new_val.intValue();
+                    System.out.println(currentTime);
+                    // start visualisation for both tags
+                    //for (int i=0; i<2; i++) {
+                    //    updateTag(i);
+        //}
+            }
+        });
 
         // here if error at downloading the map occured, probably I don't want to carry on and need to 
         // prompt the user to connect to internet and retry, rather than display everything. 
@@ -145,6 +180,7 @@ public class VisualisationController {
         imageView = new ImageView(image);
         pane = new Pane();
         pane.getChildren().add(imageView);
+        leftbox.getChildren().addAll(pane, slider);
 
         // calling function to place the basestations on the map
         pane = placeBasestations();
@@ -152,24 +188,26 @@ public class VisualisationController {
         // calling function to place tags on the map
         placeTags();
         //pane.setStyle("-fx-background-color: yellow;");
+        
 
         // adding side panels with lists of tags and basestations
-        VBox lists = new VBox();
-        lists.setPadding(new Insets(0, 25, 25, 25));
-        lists.setPrefSize(250.0, 400);
-        lists.setSpacing(20.0);
+        VBox rightbox = new VBox();
+        rightbox.setPadding(new Insets(0, 25, 25, 25));
+        rightbox.setPrefSize(250.0, 400);
+        rightbox.setSpacing(20.0);
 
         // Learn JavaFX 8 page 488 has info about accessing selected items from ListView
         ListView<String> tags = new ListView<>();
         tags.setPrefWidth(200.0);
         // getting tag IDs from log file
-        /*
-        intTags = HelperMethods.deduplicate(MainApplication.logfiles.get(0).getIDs());
+        
+        //intTags = (int)HelperMethods.deduplicate(MainApplication.logfiles.get(0).getIDs());
         System.out.println("tags:");
-        System.out.println(intTags);
-        tagIDs = HelperMethods.deduplicate(HelperMethods.convertList(intTags));
+        ArrayList al = new ArrayList<> (MainApplication.logfiles.get(0).getIDs());
+        System.out.println(al);
+        ArrayList tagIDs = HelperMethods.deduplicate(HelperMethods.convertList(al));
         tags.getItems().addAll(tagIDs);
-        */
+        
         tags.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         // alternative way to show ListView of height for all tags
@@ -184,11 +222,11 @@ public class VisualisationController {
         drawTrace.setText("Draw movement patterns");
         drawTrace.setSelected(false);
 
-        lists.getChildren().addAll(tags, basestations, drawTrace, buttons);
+        rightbox.getChildren().addAll(tags, basestations, drawTrace, buttons);
 
         // adding elements to the HBox from FXML file
         imagebox.setPadding(new Insets(20, 10, 10, 20));
-        imagebox.getChildren().addAll(pane, lists);
+        imagebox.getChildren().addAll(leftbox, rightbox);
 
         // THIS IS WHERE A VISUALISATION THREAD WILL BE STARTED
         // remains for loop, should be changed to traverse tagID list for all tags
@@ -270,13 +308,23 @@ public class VisualisationController {
 
         pane.getChildren().add(g);
     }
+    
+    public void updateSlider(int time) {
+        slider.setValue(time);
+    }
      
      public void updateTag(int index) {
          new Thread() {
 
                 // runnable for that thread
                 public void run() {
-                    for (int i = 0; i < 5; i++) {
+                    // this will be for loop for all locations that we have
+                    for (int i = 0; i < 10; i++) {
+                        //currentTime = i;
+                        System.out.println("current time: "+currentTime);
+                        int time = i;
+                       
+                        
                         try {
                             // sleep for a second
                             Thread.sleep(1000);
@@ -289,8 +337,8 @@ public class VisualisationController {
 
                             public void run() {
                                 Double[] oldCoords = tagCoords.get(index);
-                                double ny = oldCoords[0]+0.0002;
-                                double nx = oldCoords[1];
+                                double ny = oldCoords[0];
+                                double nx = oldCoords[1]+0.0002;
                                 Double[] newCoord = {ny, nx};
                                 System.out.println("newCoord:");
                                 System.out.println(newCoord[0] + "; "+newCoord[1]);
@@ -301,11 +349,13 @@ public class VisualisationController {
                                 if (!drawTrace.isSelected()) {
                                     placeTags();
                                     removeTag();
+                                    updateSlider(time);
                                 }
                                 
                                 // if checkbox in GUI is selected, previous tag locations are kept on the map
                                 else if (drawTrace.isSelected()) {
                                     placeTags();
+                                    updateSlider(time);
                                 }
 
                             }

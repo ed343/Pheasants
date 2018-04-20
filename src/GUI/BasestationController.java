@@ -151,7 +151,7 @@ public class BasestationController {
         hb1.setSpacing(5);
 
         Label l = new Label("Name:");
-        TextField tf = new TextField("Basestation #" + basestationNumber);
+        TextField tf = new TextField();
 
         hb1.getChildren().addAll(l, tf);
 
