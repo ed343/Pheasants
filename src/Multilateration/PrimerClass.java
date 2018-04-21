@@ -51,6 +51,13 @@ public class PrimerClass {
         return true; // change once implemented
     }
     
+     boolean setRadioCoordinates(Double[] coordlist){
+        // try catch with error handling
+        //Double[] coordinates= new Double[]{x,y,z};
+        radiosCoordinates.add(coordlist);
+        return true; // change once implemented
+    }
+    
     /* Method accepts double values for p, the RSSI measured at 1m from 
      * the radio. For example: -84 dB. 
      * Also known as the 1 Meter RSSI.
