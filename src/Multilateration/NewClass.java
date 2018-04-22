@@ -73,14 +73,14 @@ public class NewClass {
     
     public static void main(String args[]){         
         
-        Double[] start = {2.0, 5.0, 0.12};        
+        Double[] start = {4028782.80, -248650.79, 4938371.316};        
         Double[][] locations = new Double[18][3];
         bss = new ArrayList<>();
-        
-        Double[] bs1 = {0.5, 10.0, 0.12};
-        Double[] bs2 = {20.5, 10.0, 0.22};
-        Double[] bs3 = {20.5, 1.0, 0.15};
-        Double[] bs4 = {0.5, 1.0, 0.1};
+
+        Double[] bs1 = {4028807.901663863, -248650.79535150624, 4938371.316965836};
+        Double[] bs2 = {4028794.2982123313, -248606.7586559792, 4938384.631943058};
+        Double[] bs3 = {4028779.3045908133, -248644.0189771986, 4938394.987999302};
+        Double[] bs4 = {4028778.767492502, -248642.9270798688, 4938395.481144028};
         
         bss.add((Double[])bs1);
         bss.add((Double[])bs2);
