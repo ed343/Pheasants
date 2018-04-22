@@ -10,10 +10,6 @@ import java.util.HashMap;
 import java.util.Random;
 import javafx.util.Pair;
 
-/**
- *
- * @author ed343
- */
 public class NewClass {
     
     final double R = 6378137; // EARTH RADIUS (IN METERS)
@@ -56,6 +52,7 @@ public class NewClass {
         return rssi;
     }
     
+    // not using this
     public int generateID() {
         Random rand = new Random(); 
         int value = rand.nextInt(50);
@@ -65,17 +62,12 @@ public class NewClass {
     
     public ArrayList<Long> generateTimes() {
         ArrayList al = new ArrayList();
-        Double start = 10.0;
+        Long start = 10L;
         for (int i=0;i<18; i++) {
-            al.add(start+4.0);
-            start+=4.0;
+            al.add(start+4);
+            start+=4;
         }  
-        
         return al;
-    }
-    
-    public void runningIt() {
-        
     }
  
     
@@ -99,41 +91,45 @@ public class NewClass {
         // populating location list with pheasant coordinates if it moves in a line
         nc.getPheasantLocs(start, locations);  
         
-        int id = nc.generateID();
-        System.out.println("Pheasant ID: " + id);
+        //Not using this
+        //int id = nc.generateID();
+        //System.out.println("Pheasant ID: " + id);
         
         ArrayList<Double> log1= new ArrayList<>();
         ArrayList<Double> log2= new ArrayList<>();
         ArrayList<Double> log3= new ArrayList<>();
         ArrayList<Double> log4= new ArrayList<>();
         
-        
+        // need to create logs for each of the radios, fixed only adding to 
+        // log 1 to addding to each log
         for (Double[] loc: locations) {
             Double dist1 = nc.getDistance(bs1, loc);
             Double rssi1 = nc.getRSSI(dist1);
             log1.add(rssi1);
-            
+                        
             Double dist2 = nc.getDistance(bs2, loc);
             Double rssi2 = nc.getRSSI(dist2);
-            log1.add(rssi2);
+            log2.add(rssi2);
             
             Double dist3 = nc.getDistance(bs3, loc);
             Double rssi3 = nc.getRSSI(dist3);
-            log1.add(rssi3);
+            log3.add(rssi3);
             
             Double dist4 = nc.getDistance(bs4, loc);
             Double rssi4 = nc.getRSSI(dist4);
-            log1.add(rssi4);          
+            log4.add(rssi4);    
         }
-        
+
         //get times
         ArrayList<Long> timez = nc.generateTimes();
-        
         // get tags
+        // simply replicate this radio
         tags=new ArrayList<>();
-        tags.add(44001004238L);
+        for(int i=0; i<18; i++){
+            tags.add(44001004238L);
+        }
         
-        //running it
+        //run the thingamabob
 
         primer = new PrimerClass();
         primer.setNumberOfRadios(4);
@@ -144,10 +140,18 @@ public class NewClass {
             primer.setRadioMeasuredPower(-44);
         }
         
-        primer.setTRVals(timez, tags, log1);
+        // set lists in primer for each radio
         
+        primer.setTRVals(timez, tags, log1);
+        primer.setTRVals(timez, tags, log2);
+        primer.setTRVals(timez, tags, log3);
+        primer.setTRVals(timez, tags, log4);
+        
+       
         RssiEquation req = new RssiEquation();
         primer.idDistances = req.getTagDistance(primer.idRSSIs, primer.measuredPower);
+        
+        //MLAT magic below
         
         // tag_registry holds all tags across all radios and their coordinates
         // at each time they were detected
@@ -355,8 +359,8 @@ public class NewClass {
                     // the matrix is 4x1, and entries 1,2,3
                     // give us the x, y, z coord
                     GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
-                    Double[] coords = new Double[]{sol.get(1, 0), sol.get(2, 0),
-                        sol.get(3, 0)};
+                    Double[] coords = new Double[]{sol.get(1, 0), -1*sol.get(2, 0),
+                        -1*sol.get(3, 0)};
                     System.out.println("small coord system coords");
                     System.out.println(coords[0]);
                     System.out.println(coords[1]);
