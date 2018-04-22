@@ -7,8 +7,12 @@ package Multilateration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javafx.util.Pair;
+import org.apache.commons.math3.distribution.*;
 
 /**
  *
@@ -17,8 +21,9 @@ import javafx.util.Pair;
 public class BuildSim {
     
     public static void main(String[] args) {
-        MLATSim mSim = new MLATSim();
-        HashMap<Long, HashMap<Long, Double[]>> hm = mSim.runMLAT();
+        //MLATSim mSim = new MLATSim();
+        //HashMap<Long, HashMap<Long, Double[]>> hm = mSim.runMLAT();
+        ArrayList<Long> t = gTPoisson(120,1104165200,3,1,6);
         
 
     }
@@ -34,7 +39,62 @@ public class BuildSim {
         return dist;
     }
     
-    
+    static ArrayList<Long> gTPoisson(int iters, long startTime,int mean, int start, int end) {
+        // Create times array
+        ArrayList<Long> times = new ArrayList<>();
+        // Add the start time to the array
+        times.add(startTime);
+        long currentTime = startTime;
+        // Create a list of integers, ranging from start(INPUT 4) to end(INPUT 5) inclusive.
+        List<Integer> range = IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList());
+        // Array to hold probabilities for all integers in range.
+        ArrayList<Double> rProbs = new ArrayList<>();
+        // Create a poisson distribution with mean of mean(INPUT 3)
+        PoissonDistribution pdist = new PoissonDistribution(mean);
+        double cp =0;
+        for(int i=0;i<range.size();i++) {
+            // Calculate probabilities for all integers in range and add to array.
+            double prob = pdist.cumulativeProbability(range.get(i));
+            rProbs.add(prob);
+            // Calculate the cumulative probabilty for members of range.
+            cp += prob;
+        }
+        
+        for(int i=0;i<iters;i++) {
+            // Generate a random double between 0 and cp.
+            double p = Math.random() * cp;
+            double cumulativeProbability = 0.0;
+            long t2add = 0;
+            // Psuedorandomly determine the next inter-detection time.
+            for (int j=0;j<rProbs.size();j++) {
+                cumulativeProbability += rProbs.get(j);
+                if (p <= cumulativeProbability) {
+                    t2add = range.get(j);
+                    break;
+                }    
+            }
+            // Add inter-detection time to current time.
+            currentTime += t2add;
+            // Ensure times are correct in relation to minutes.
+            long minutes = currentTime % 100;
+            if(minutes>=60) {
+                currentTime += 40;
+            }
+            // Ensure times are correct in relation to hours.
+            long hHold = currentTime % 10000;
+            long hour = hHold - (hHold%100);
+            if(hour>=6000) {
+                currentTime += 4000;
+            }
+            // Add next time to time array.
+            times.add(currentTime);
+            
+        }
+
+        
+        
+        return times;
+    }
     //Only reliable for up to 59 minutes, can extend if required.
     static ArrayList<Long> generateTimes(int minutes) {
         ArrayList<Long> times= new ArrayList<>();
@@ -123,6 +183,3 @@ public class BuildSim {
     }
     
 }
-
-
-
