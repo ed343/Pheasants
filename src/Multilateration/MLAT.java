@@ -1,6 +1,7 @@
 package Multilateration;
 
 import Jama.Matrix;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -74,7 +75,7 @@ public class MLAT {
             // Retrieve LogData object
             LogData log = dataArr.get(i);
             //Get times for this base station.
-            ArrayList<Long> tData = log.getTimes();
+            ArrayList<BigInteger> tData = log.getTimes();
             //Get IDs for this basestation.
             ArrayList<Long> idData = log.getIDs();
             //Get normalised RSSI values for this basestation.
@@ -147,7 +148,7 @@ public class MLAT {
                             get(convertedLong).size(); k++) {
                         
                         // get these times and their corresponding rssis
-                        ArrayList<Pair<Long, Double>> times
+                        ArrayList<Pair<BigInteger, Double>> times
                                 = primer.idRSSIs.get(i).get(convertedLong);
                         
                         // list will hold only the times
@@ -193,7 +194,7 @@ public class MLAT {
                     }
                     
                     // get the detections from the current radio
-                    ArrayList<Pair<Long, Double>> tim
+                    ArrayList<Pair<BigInteger, Double>> tim
                             = primer.idRSSIs.get(i).get(convertedLong);
                     
                     // list will hold only the times
@@ -336,4 +337,3 @@ public class MLAT {
         return hm;
     }
 }
-
