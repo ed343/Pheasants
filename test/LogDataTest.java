@@ -5,6 +5,7 @@
  */
 package Multilateration;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -27,9 +28,9 @@ public class LogDataTest {
         System.out.println("Testing getDT method from the LogData class...");
         String dt = "2017-11-16 09:48:10";
         LogData instance = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-1.log");
-        long expResult = 0L;
-        long result = instance.getDT(dt);
-        assertEquals(1116094810, result);
+        BigInteger result = instance.getDT(dt);
+        BigInteger expres = new BigInteger("1116094810");
+        assertEquals(expres, result);
         System.out.println("Test for getDT passed");
     }
     
@@ -87,9 +88,9 @@ public class LogDataTest {
     public void testGetTimes() {
         System.out.println("Testing getTimes method from the LogData class...");
         LogData instance = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlas.log");
-        long expResult = 1128110800;
-        ArrayList<Long> result = instance.getTimes();
-        long res = result.get(0);
+        BigInteger expResult = new BigInteger("20171128110800");
+        ArrayList<BigInteger> result = instance.getTimes();
+        BigInteger res = result.get(0);
         assertEquals(expResult, res);
         System.out.println("Test for getTime passed");
     }
