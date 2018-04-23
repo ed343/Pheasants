@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import org.apache.commons.math3.filter.DefaultMeasurementModel;
 import org.apache.commons.math3.filter.DefaultProcessModel;
@@ -27,7 +28,7 @@ import org.apache.commons.math3.random.RandomGenerator;
  */
 public class LogData {
     String FilePath;
-    ArrayList<Long> Times= new ArrayList<>();
+    ArrayList<BigInteger> Times= new ArrayList<>();
     ArrayList<Long> IDs= new ArrayList<>();
     ArrayList<Double> Frequencies= new ArrayList<>();
     ArrayList<Double> TBuffers= new ArrayList<>();
@@ -58,7 +59,7 @@ public class LogData {
     }
     
     
-    LogData(ArrayList<Long> times, ArrayList<Long> ids, ArrayList<Double> rssis, ArrayList<Double> snrs)  {
+    LogData(ArrayList<BigInteger> times, ArrayList<Long> ids, ArrayList<Double> rssis, ArrayList<Double> snrs)  {
         this.Times = times;
         this.IDs = ids;
         this.RSSIs = rssis;
@@ -81,14 +82,15 @@ public class LogData {
     *  The number corresponding to the converted date/time string.
     *
     */
-    long getDT(String dt) {
+    BigInteger getDT(String dt) {
         String month = dt.substring(5,7);
         String day = dt.substring(8,10);
         String hour = dt.substring(11,13);
         String minute = dt.substring(14,16);
         String second = dt.substring(17,19);
         String fullString = month+day+hour+minute+second;
-        long flatDT = Long.parseLong(fullString);
+        BigInteger flatDT = new BigInteger(fullString);
+        
         return flatDT;
     }
     
@@ -127,7 +129,7 @@ public class LogData {
                     //Extract date/time string from log.
                     String time = line.substring(0, 19);
                     //Convert date/time string to number.
-                    long flatTime = getDT(time);
+                    BigInteger flatTime = getDT(time);
                     //Add flattened times to Times arraylist.
                     this.Times.add(flatTime);
                     //IDs
@@ -282,7 +284,7 @@ public class LogData {
         return this.FilePath;
     }
     
-    ArrayList<Long> getTimes() {
+    ArrayList<BigInteger> getTimes() {
         return this.Times;
     }
     
