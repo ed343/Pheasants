@@ -1,0 +1,206 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Multilateration;
+
+import Jama.Matrix;
+import java.util.ArrayList;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+/**
+ *
+ * @author James
+ */
+public class MLATEquationTest {
+    
+    public MLATEquationTest() {
+    }    
+
+    /**
+     * Test of fix method, of class MLATEquation.
+     */
+    @Test
+    public void testFix() {
+        System.out.println("Test for the fix method from the MLATEquation class");
+        // Array to hold coordinates.
+        ArrayList<Double[]> coords = new ArrayList<>();
+        // Array to hold distances.
+        ArrayList<Double> dists = new ArrayList<>();
+        
+        // Radio coordinates
+        Double[] rad1= {4028807.901663863,-248650.79535150624,4938371.316965836};
+        Double[] rad2= {4028794.2982123313,-248606.7586559792,4938384.631943058};
+        Double[] rad3= {4028779.3045908133,-248644.0189771986,4938394.987999302};
+        Double[] rad4= {4028778.767492502,-248642.9270798688,4938395.481144028};
+        // Add three sets
+        coords.add(rad1);
+        coords.add(rad2);
+        coords.add(rad3);
+        
+        // Distances
+        double dist1 = 1.8;
+        double dist2 = 3.5;
+        double dist3 = 2.4;
+        double dist4 = 3.1;
+        // Add three sets
+        dists.add(dist1);
+        dists.add(dist2);
+        dists.add(dist3);
+        
+        //Create MLATEquation object
+        MLATEquation eq1 = new MLATEquation(3,coords,dists);
+        // Ensure that using only three radios returns false.
+        assertFalse(eq1.fix());
+        
+        // Add final set of radio coords.
+        coords.add(rad4);
+        // Add final distance.
+        dists.add(dist4);
+        
+        // Create second MLATEquation object
+        MLATEquation eq2 = new MLATEquation(4,coords,dists);
+        // Ensure that using four radios returns true.
+        assertTrue(eq2.fix());
+        
+        System.out.println("Test for fix passed");
+    }
+
+    /**
+     * Test of getA method, of class MLATEquation.
+     */
+    @Test
+    public void testGetA() {
+        System.out.println("Test for the getA method from the MLATEquation class");
+        // Array to hold coordinates.
+        ArrayList<Double[]> coords = new ArrayList<>();
+        // Array to hold distances.
+        ArrayList<Double> dists = new ArrayList<>();
+        
+        // Radio coordinates
+        Double[] rad1= {4028807.901663863,-248650.79535150624,4938371.316965836};
+        Double[] rad2= {4028794.2982123313,-248606.7586559792,4938384.631943058};
+        Double[] rad3= {4028779.3045908133,-248644.0189771986,4938394.987999302};
+        Double[] rad4= {4028778.767492502,-248642.9270798688,4938395.481144028};
+        // Add four sets
+        coords.add(rad1);
+        coords.add(rad2);
+        coords.add(rad3);
+        coords.add(rad4);
+        // Distances
+        double dist1 = 1.8;
+        double dist2 = 3.5;
+        double dist3 = 2.4;
+        double dist4 = 3.1;
+        // Add four
+        dists.add(dist1);
+        dists.add(dist2);
+        dists.add(dist3);
+        dists.add(dist4);
+        
+        //Create MLATEquation object
+        MLATEquation eq = new MLATEquation(4,coords,dists);
+        //Execute getA method
+        Matrix A = eq.getA();
+        
+        // Expected members of A
+        double one1 = -8057615.803327726;
+        double one2 = -497301.590703;
+        double one3 = 9876742.63393;
+        double two1 = -8057588.59642;
+        double two2 = -497213.517312;
+        double two3 = 9876769.26389;
+        double three1 = -8057558.60918;
+        double three2 = -497288.037954;
+        double three3 = 9876789.976;
+        double four1 = -8057557.53499;
+        double four2 = -497285.85416;
+        double four3 = 9876790.96229;
+        
+        // Test that every member of A is correct
+        assertEquals(A.get(0, 0),1,0.1);
+        assertEquals(A.get(0, 1),one1,0.1);
+        assertEquals(A.get(0, 2),one2,0.1);
+        assertEquals(A.get(0, 3),one3,0.1);
+        assertEquals(A.get(1, 0),1,0.1);
+        assertEquals(A.get(1, 1),two1,0.1);
+        assertEquals(A.get(1, 2),two2,0.1);
+        assertEquals(A.get(1, 3),two3,0.1);
+        assertEquals(A.get(2, 0),1,0.1);
+        assertEquals(A.get(2, 1),three1,0.1);
+        assertEquals(A.get(2, 2),three2,0.1);
+        assertEquals(A.get(2, 3),three3,0.1);
+        assertEquals(A.get(3, 0),1,0.1);
+        assertEquals(A.get(3, 1),four1,0.1);
+        assertEquals(A.get(3, 2),four2,0.1);
+        assertEquals(A.get(3, 3),four3,0.1);
+        
+        // Check that size of A is correct
+        assertTrue(A.getColumnDimension()==4);
+        assertTrue(A.getRowDimension()==4);
+        
+        System.out.println("Test for getA passed");
+    }
+
+    /**
+     * Test of getB method, of class MLATEquation.
+     */
+    @Test
+    public void testGetB() {
+        System.out.println("Test for the getB method from the MLATEquation class");
+        // Array to hold coordinates.
+        ArrayList<Double[]> coords = new ArrayList<>();
+        // Array to hold distances.
+        ArrayList<Double> dists = new ArrayList<>();
+        
+        // Radio coordinates
+        Double[] rad1= {4028807.901663863,-248650.79535150624,4938371.316965836};
+        Double[] rad2= {4028794.2982123313,-248606.7586559792,4938384.631943058};
+        Double[] rad3= {4028779.3045908133,-248644.0189771986,4938394.987999302};
+        Double[] rad4= {4028778.767492502,-248642.9270798688,4938395.481144028};
+        // Add four sets
+        coords.add(rad1);
+        coords.add(rad2);
+        coords.add(rad3);
+        coords.add(rad4);
+        // Distances
+        double dist1 = 1.8;
+        double dist2 = 3.5;
+        double dist3 = 2.4;
+        double dist4 = 3.1;
+        // Add four
+        dists.add(dist1);
+        dists.add(dist2);
+        dists.add(dist3);
+        dists.add(dist4);
+        
+        //Create MLATEquation object
+        MLATEquation eq = new MLATEquation(4,coords,dists);
+        
+        //Execute getB method
+        Matrix B = eq.getB();
+        
+        // B values calculated analytically
+        double b1 = -4.0680631590765766e+13;
+        double b2 = -4.068063159075675e+13;
+        double b3 = -4.068063159076324e+13;
+        double b4 = -4.068063159075939e+13;
+        
+        //Check each member of B is correct.
+        assertEquals(B.get(0,0),b1,0.001);
+        assertEquals(B.get(1,0),b2,0.001);
+        assertEquals(B.get(2,0),b3,0.001);
+        assertEquals(B.get(3,0),b4,0.001);
+        
+        System.out.println("Test for getB passed");
+    }
+
+
+    
+}
