@@ -23,7 +23,8 @@ public class BuildSim {
     public static void main(String[] args) {
         //MLATSim mSim = new MLATSim();
         //HashMap<Long, HashMap<Long, Double[]>> hm = mSim.runMLAT();
-        ArrayList<Long> t = gTPoisson(120,1104165200,3,1,6);
+        ArrayList<Long> t = gTPoisson(120,1104165200);
+        System.out.println(t);
         
 
     }
@@ -39,22 +40,22 @@ public class BuildSim {
         return dist;
     }
     
-    static ArrayList<Long> gTPoisson(int iters, long startTime,int mean, int start, int end) {
+    static ArrayList<Long> gTPoisson(int iters, long startTime) {
         // Create times array
         ArrayList<Long> times = new ArrayList<>();
         // Add the start time to the array
         times.add(startTime);
         long currentTime = startTime;
         // Create a list of integers, ranging from start(INPUT 4) to end(INPUT 5) inclusive.
-        List<Integer> range = IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList());
+        List<Integer> range = IntStream.rangeClosed(0, 2).boxed().collect(Collectors.toList());
         // Array to hold probabilities for all integers in range.
         ArrayList<Double> rProbs = new ArrayList<>();
         // Create a poisson distribution with mean of mean(INPUT 3)
-        PoissonDistribution pdist = new PoissonDistribution(mean);
+        PoissonDistribution pdist = new PoissonDistribution(1);
         double cp =0;
-        for(int i=0;i<range.size();i++) {
+        for (Integer range1 : range) {
             // Calculate probabilities for all integers in range and add to array.
-            double prob = pdist.cumulativeProbability(range.get(i));
+            double prob = pdist.cumulativeProbability(range1);
             rProbs.add(prob);
             // Calculate the cumulative probabilty for members of range.
             cp += prob;
@@ -71,23 +72,24 @@ public class BuildSim {
                 if (p <= cumulativeProbability) {
                     t2add = range.get(j);
                     break;
-                }    
+                }
             }
-            // Add inter-detection time to current time.
-            currentTime += t2add;
-            // Ensure times are correct in relation to minutes.
-            long minutes = currentTime % 100;
-            if(minutes>=60) {
-                currentTime += 40;
+            if(t2add==2) {
+               currentTime = updateTimes(currentTime);
+               times.add(currentTime);
+               currentTime = updateTimes(currentTime);
+               times.add(currentTime);
             }
-            // Ensure times are correct in relation to hours.
-            long hHold = currentTime % 10000;
-            long hour = hHold - (hHold%100);
-            if(hour>=6000) {
-                currentTime += 4000;
+            else if(t2add==1) {
+                currentTime = updateTimes(currentTime);
+                currentTime = updateTimes(currentTime);
+                times.add(currentTime);
             }
-            // Add next time to time array.
-            times.add(currentTime);
+            else {
+                currentTime = updateTimes(currentTime);
+                currentTime = updateTimes(currentTime);
+            }
+
             
         }
 
@@ -95,6 +97,21 @@ public class BuildSim {
         
         return times;
     }
+    
+    static long updateTimes(long currentTime) {
+        currentTime += 4;
+        // Ensure times are correct in relation to minutes.
+        if(currentTime % 100>=60) {
+            currentTime += 40;
+        }
+        // Ensure times are correct in relation to hours.
+        if((currentTime % 10000)%100>=6000) {
+            currentTime += 4000;
+        }
+        return currentTime;
+        
+    }
+    
     //Only reliable for up to 59 minutes, can extend if required.
     static ArrayList<Long> generateTimes(int minutes) {
         ArrayList<Long> times= new ArrayList<>();
@@ -183,3 +200,6 @@ public class BuildSim {
     }
     
 }
+
+
+
