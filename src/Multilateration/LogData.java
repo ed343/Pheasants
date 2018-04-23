@@ -48,13 +48,13 @@ public class LogData {
         //Automatically extract data from log file when object is created.
         this.extractData(fp);
         filterRSSIs();
-        normaliseRSSIs(-30, -70);
+        normaliseRSSIs(-30, -70,"filter");
     }
     
     LogData(String fp, int test) {
         this.FilePath = fp;
         this.extractData(fp);
-        normaliseRSSIs(-30, -70);
+        normaliseRSSIs(-30, -70, "no");
     }
     
     
@@ -64,7 +64,7 @@ public class LogData {
         this.RSSIs = rssis;
         this.SNRs = snrs;
         filterRSSIs();
-        normaliseRSSIs(-30, -70);
+        normaliseRSSIs(-30, -70,"filter");
     }
     
     
@@ -213,14 +213,19 @@ public class LogData {
     }
     
     // Function to normalise filtered RSSIs to range (x,y).
-    void normaliseRSSIs(double x, double y) {
+    void normaliseRSSIs(double x, double y,String f) {
+        ArrayList<Double> rssis = new ArrayList<>();
+        if(f=="filter")
+            rssis = this.filtRSSIs;
+        else
+            rssis = this.RSSIs;
         x = -x;
         y = -y;
         double oldRange = 250-0;
         double newRange = y-x;
         double hWay = x+(y-x)/2;
-        for(int i=0;i<this.filtRSSIs.size();i++) {
-            double oldVal = this.filtRSSIs.get(i);
+        for(int i=0;i<rssis.size();i++) {
+            double oldVal = rssis.get(i);
             double newVal = (((oldVal-0)*newRange)/oldRange)+x;
             double diff = hWay - newVal;
             double normVal = hWay+diff;
