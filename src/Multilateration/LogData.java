@@ -91,7 +91,6 @@ public class LogData {
         String second = dt.substring(17,19);
         String fullString = year+month+day+hour+minute+second;
         BigInteger flatDT = new BigInteger(fullString);
-        System.out.println(flatDT);
         
         return flatDT;
     }
