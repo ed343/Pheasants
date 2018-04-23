@@ -14,7 +14,7 @@ public class MLATSim {
     static PrimerClass primer;
     ArrayList<Double[]> basestations = new ArrayList<>();
     
-    HashMap<Long, HashMap<Long, Double[]>> runMLAT() {
+    HashMap<Long, HashMap<BigInteger, Double[]>> runMLAT() {
         // ArrayList to store the Data extracted from all Log files.
         // each entry in the ArrayList keeps the data associated with one radio
         ArrayList<LogData> dataArr = new ArrayList<>();
@@ -246,12 +246,12 @@ Enter measured power:
         
         // tag_registry holds all tags across all radios and their coordinates
         // at each time they were detected
-        HashMap<Long, HashMap<Long, Double[]>> tag_registry = new HashMap<>();
+        HashMap<Long, HashMap<BigInteger, Double[]>> tag_registry = new HashMap<>();
         // used for initialising each element of tag_registry, i.e. a hashmap,
         // with the times each one was picked up as keys
-        HashMap<Long, Double[]> init_inner_tag_reg;
+        HashMap<BigInteger, Double[]> init_inner_tag_reg;
         // the times each tag was picked up
-        HashMap<Long, ArrayList<Long>> tag_detect_times = new HashMap<>();
+        HashMap<Long, ArrayList<BigInteger>> tag_detect_times = new HashMap<>();
         
         // for each radio
         for (int i = 0; i < primer.no_of_radios; i++) {
@@ -281,14 +281,14 @@ Enter measured power:
                                 = primer.idRSSIs.get(i).get(convertedLong);
                         
                         // list will hold only the times
-                        ArrayList<Long> tms = new ArrayList<>();
+                        ArrayList<BigInteger> tms = new ArrayList<>();
                         
                         // for all detection pairs
                         for (Pair p : times) {
                             
                             // get the time
                             String aux_str = String.valueOf(p.getKey());
-                            Long detection_time = Long.parseLong(aux_str);
+                            BigInteger detection_time = new BigInteger(aux_str);
                             
                             // if multiple detections at the same time,
                             // keep just one
@@ -312,13 +312,13 @@ Enter measured power:
                     // get all the times we already have for this radio
                     Object[] times = tag_registry.get(convertedLong).
                             keySet().toArray();
-                    ArrayList<Long> time_long = new ArrayList<>();
+                    ArrayList<BigInteger> time_long = new ArrayList<>();
                     
                     // iterate over all the times we have already recorded it 
                     // has been picked up
                     for (int k = 0; k < times.length; k++) {
                         String stringToConv = String.valueOf(times[k]);
-                        Long convertedtime = Long.parseLong(stringToConv);
+                        BigInteger convertedtime = new BigInteger(stringToConv);
                         time_long.add(convertedtime);
                     }
                     
@@ -327,13 +327,13 @@ Enter measured power:
                             = primer.idRSSIs.get(i).get(convertedLong);
                     
                     // list will hold only the times
-                    ArrayList<Long> tms = new ArrayList<>();
+                    ArrayList<BigInteger> tms = new ArrayList<>();
                     
                     // for all detections
                     for (Pair p : tim) {
                         // get&convert the time
                         String aux_str = String.valueOf(p.getKey());
-                        Long aux_long = Long.parseLong(aux_str);
+                        BigInteger aux_long = new BigInteger(aux_str);
                         
                         // if multiple detections at the same time,
                         // keep just one
@@ -343,7 +343,7 @@ Enter measured power:
                     }
                     // check if this radio detected the tag at times it was not
                     // detected by other radios
-                    for (Long l : tms) {
+                    for (BigInteger l : tms) {
                         // didn't have this time previously
                         // need to put it in tag_registry
                         if (!time_long.contains(l)) {
@@ -374,16 +374,16 @@ Enter measured power:
         
         // create hashmap to hold the hashmap we'll get from
         // getTagCoordinatesbyLeadRadio
-        HashMap<Long, HashMap<Long, Double[]>> hm_returned;
+        HashMap<Long, HashMap<BigInteger, Double[]>> hm_returned;
         // call function
         hm_returned = applyMLAT(tag_detect_times);
         // for all tags returned
         for (Long key : hm_returned.keySet()) {
             // get the current tag's inner hashmap that has times as keys
             // and coordinates as values
-            HashMap<Long, Double[]> inner = hm_returned.get(key);
+            HashMap<BigInteger, Double[]> inner = hm_returned.get(key);
             // for all times as keys in inner
-            for (Long time : inner.keySet()) {
+            for (BigInteger time : inner.keySet()) {
                 // get the inner hashmap we already have for this tag
                 init_inner_tag_reg = tag_registry.get(key);
                 // get the array of coordinates from this hashmap
@@ -408,26 +408,29 @@ Enter measured power:
     /  a distance of -999,999
     */
     
-    public static HashMap<Long, HashMap<Long, Double[]>> applyMLAT(
-            HashMap<Long, ArrayList<Long>> tag_detect_times){
+    public static HashMap<Long, HashMap<BigInteger, Double[]>> applyMLAT(
+            HashMap<Long, ArrayList<BigInteger>> tag_detect_times){
         // initialise the hashmap we're going to return
-        HashMap<Long, HashMap<Long, Double[]>> hm = new HashMap<>();
+        HashMap<Long, HashMap<BigInteger, Double[]>> hm = new HashMap<>();
         for (Long key : tag_detect_times.keySet()) {
-            ArrayList<Long> times = tag_detect_times.get(key);
-            for (Long time: times){
+            ArrayList<BigInteger> times = tag_detect_times.get(key);
+            for (BigInteger time: times){
                 ArrayList<Double> distances= new ArrayList<>();
+                BigInteger three = new BigInteger("3");
+                BigInteger four = new BigInteger("4");
+                BigInteger one = new BigInteger("1");
                 for(int i = 0; i < primer.no_of_radios; i++) {
                     // get the distance between the ith radio and the key tag at
                     // the time time
-                    for(Long time_margin=time-3; time_margin<time+4;
-                            time_margin++){
+                    for(BigInteger time_margin=time.subtract(three); time_margin.compareTo(time.add(four))==-1;
+                            time_margin.add(one)){
                         try {
                             distances.add(primer.idDistances.get(i).get(key).
                                     get(time));
                             break;
                         }
                         catch(NullPointerException e){
-                            if (time_margin==time+3)
+                            if (time_margin.compareTo(time.add(three))==0)
                             {
                                 //eliminate this radio
                                 distances.add(-999.999);
@@ -435,6 +438,7 @@ Enter measured power:
                         }
                     }
                 }
+                System.out.println(primer.idDistances);
                 MLATEquation eq = new MLATEquation(distances.size(),
                         primer.getRadiosCoordinates(),
                         distances);
@@ -480,4 +484,3 @@ Enter measured power:
         m.runMLAT();
     }
 }
-
