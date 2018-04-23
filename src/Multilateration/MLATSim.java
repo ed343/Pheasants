@@ -1,6 +1,7 @@
 package Multilateration;
 
 import Jama.Matrix;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -203,7 +204,7 @@ Enter measured power:
             // Retrieve LogData object
             LogData log = dataArr.get(i);
             //Get times for this base station.
-            ArrayList<Long> tData = log.getTimes();
+            ArrayList<BigInteger> tData = log.getTimes();
             //Get IDs for this basestation.
             ArrayList<Long> idData = log.getIDs();
             //Get RSSI values for this basestation.
@@ -276,7 +277,7 @@ Enter measured power:
                             get(convertedLong).size(); k++) {
                         
                         // get these times and their corresponding rssis
-                        ArrayList<Pair<Long, Double>> times
+                        ArrayList<Pair<BigInteger, Double>> times
                                 = primer.idRSSIs.get(i).get(convertedLong);
                         
                         // list will hold only the times
@@ -322,7 +323,7 @@ Enter measured power:
                     }
                     
                     // get the detections from the current radio
-                    ArrayList<Pair<Long, Double>> tim
+                    ArrayList<Pair<BigInteger, Double>> tim
                             = primer.idRSSIs.get(i).get(convertedLong);
                     
                     // list will hold only the times
