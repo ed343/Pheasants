@@ -77,8 +77,8 @@ public class MLAT {
             ArrayList<Long> tData = log.getTimes();
             //Get IDs for this basestation.
             ArrayList<Long> idData = log.getIDs();
-            //Get RSSI values for this basestation.
-            ArrayList<Double> rssiData = log.getRSSIs();
+            //Get normalised RSSI values for this basestation.
+            ArrayList<Double> rssiData = log.getNormRSSIs();
             primer.setTRVals(tData, idData, rssiData);
         }
         
@@ -320,15 +320,12 @@ public class MLAT {
                     Matrix sol = A.solve(B); //these are our coordinates
                     // the matrix is 4x1, and entries 1,2,3
                     // give us the x, y, z coord
-                    Double[] coords = new Double[]{sol.get(1, 0), sol.get(2, 0)*(-1.0),
-                        sol.get(3, 0)*(-1.0)};
+                    Double[] coords = new Double[]{sol.get(1, 0), sol.get(2, 0),
+                        sol.get(3, 0)};
                     HashMap time_coords_map = new HashMap();
                     time_coords_map.put(time, coords);
                     hm.put(key, time_coords_map);
-                    System.out.println("x coordinate is: "+coords[0]);
-                    System.out.println("y coordinate is: "+coords[1]);
-                    System.out.println("z coordinate is: "+coords[2]+'\n');
-                  
+                    sol.print(10, 5);
                 } else {
                     // we don't have enough valid distances, i.e.
                     // no other radios picked up this tag at this time
@@ -339,3 +336,4 @@ public class MLAT {
         return hm;
     }
 }
+
