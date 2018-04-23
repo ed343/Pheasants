@@ -1,5 +1,6 @@
 package Multilateration;
 
+import java.math.BigInteger;
 import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,14 +17,14 @@ public class PrimerClass {
     ArrayList<Double> measuredPower= new ArrayList<>();
 
     //following from James' new code, we should probably only need the following
-    ArrayList<HashMap<Long, ArrayList<Pair<Long,Double>>>> idRSSIs = 
+    ArrayList<HashMap<Long, ArrayList<Pair<BigInteger,Double>>>> idRSSIs = 
                                                               new ArrayList<>();
     // one entry for each radio
     // the entry is a hashmap keyed by tag IDs
     // and values are a hashmap keyed by times
     // and values are the distances between the current radio and the tag at the
     // current time
-    ArrayList<HashMap<Long, HashMap<Long,Double>>> idDistances = 
+    ArrayList<HashMap<Long, HashMap<BigInteger,Double>>> idDistances = 
                                                               new ArrayList<>();
 
 
@@ -51,13 +52,6 @@ public class PrimerClass {
         return true; // change once implemented
     }
     
-     boolean setRadioCoordinates(Double[] coordlist){
-        // try catch with error handling
-        //Double[] coordinates= new Double[]{x,y,z};
-        radiosCoordinates.add(coordlist);
-        return true; // change once implemented
-    }
-    
     /* Method accepts double values for p, the RSSI measured at 1m from 
      * the radio. For example: -84 dB. 
      * Also known as the 1 Meter RSSI.
@@ -75,10 +69,10 @@ public class PrimerClass {
      * have as key the first tag detected by the first radio and as value it
      * will have an ArrayList of the Pairs(times, rssi value).
      */
-    boolean setTRVals(ArrayList<Long>time, ArrayList<Long> tagID, 
+    boolean setTRVals(ArrayList<BigInteger>time, ArrayList<Long> tagID, 
                                     ArrayList<Double> rssi) {
         // get all the tags that were passed as a parameter in tagID
-        HashMap<Long, ArrayList<Pair<Long,Double>>> hm= new HashMap();
+        HashMap<Long, ArrayList<Pair<BigInteger,Double>>> hm= new HashMap();
         Set<Long> uniqueIDs = new HashSet<>(tagID);
         Object[] uIArr = uniqueIDs.toArray();
         
@@ -87,13 +81,13 @@ public class PrimerClass {
             // parse it as a Long
             long val = Long.parseLong(uIArr[i].toString());
             // create an empty list of detections
-            ArrayList<Pair<Long,Double>> detList = new ArrayList<>();
+            ArrayList<Pair<BigInteger,Double>> detList = new ArrayList<>();
             // whenever the current tag shows up in the tag list,  
             // keep its corresponding detection times
             for(int j=0; j<tagID.size();j++) {
                 if(tagID.get(j)==val) {
                     // add all the current tag's detections to its list
-                    Pair<Long,Double> timeRSSI = new Pair<>(
+                    Pair<BigInteger,Double> timeRSSI = new Pair<>(
                                                  time.get(j),rssi.get(j));
                     detList.add(timeRSSI);
                 }
@@ -126,14 +120,14 @@ public class PrimerClass {
 
     /* Method returns the list of all parsed rssi values for the current radios.
     */
-    ArrayList<HashMap<Long, ArrayList<Pair<Long,Double>>>> getRssiValues(){
+    ArrayList<HashMap<Long, ArrayList<Pair<BigInteger,Double>>>> getRssiValues(){
         return this.idRSSIs;
     }
     /* Method returns all the tag distances computed for the current radio and the
      * tags it picked up.
      */
 
-    ArrayList<HashMap<Long, HashMap<Long,Double>>> getTagDistances(){
+    ArrayList<HashMap<Long, HashMap<BigInteger,Double>>> getTagDistances(){
         return this.idDistances;
     }
 
@@ -188,3 +182,4 @@ public class PrimerClass {
     }
     */
 }
+
