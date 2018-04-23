@@ -83,13 +83,15 @@ public class LogData {
     *
     */
     BigInteger getDT(String dt) {
+        String year = dt.substring(0,4);
         String month = dt.substring(5,7);
         String day = dt.substring(8,10);
         String hour = dt.substring(11,13);
         String minute = dt.substring(14,16);
         String second = dt.substring(17,19);
-        String fullString = month+day+hour+minute+second;
+        String fullString = year+month+day+hour+minute+second;
         BigInteger flatDT = new BigInteger(fullString);
+        System.out.println(flatDT);
         
         return flatDT;
     }
