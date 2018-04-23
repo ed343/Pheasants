@@ -1,5 +1,6 @@
 package Multilateration;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javafx.util.Pair;
@@ -21,14 +22,14 @@ public class RssiEquation {
      *
      * Both n and measuredPower are determined empirically.
      */
-    public ArrayList<HashMap<Long, HashMap<Long, Double>>>
-    getTagDistance(ArrayList<HashMap<Long, ArrayList<Pair<Long, Double>>>> rssi,
+    public ArrayList<HashMap<Long, HashMap<BigInteger, Double>>>
+    getTagDistance(ArrayList<HashMap<Long, ArrayList<Pair<BigInteger, Double>>>> rssi,
                    ArrayList<Double> measuredPower) {
         // For each tag, I want to get its time/rssi arrays from all radios
         // I search for detections at the times in the list, keep times and rssi 
         // vals in separate arrays and we compute the distance from the current 
         // radio to the current tag at the current time.
-        ArrayList<HashMap<Long, HashMap<Long, Double>>> radios_dist
+        ArrayList<HashMap<Long, HashMap<BigInteger, Double>>> radios_dist
                                                             = new ArrayList<>();
 
         // loop over all radios
@@ -39,7 +40,7 @@ public class RssiEquation {
 
             // create hashmap with tag IDs as keys and a list of distances at 
             // given times as values
-            HashMap<Long, HashMap<Long, Double>> tags_dist_map = 
+            HashMap<Long, HashMap<BigInteger, Double>> tags_dist_map = 
                                                          new HashMap<>();
 
             // for every tag the current radio has picked up
@@ -52,7 +53,7 @@ public class RssiEquation {
 
                 // get the arraylist of the times this tag was detected
                 // this list correlates the times and the rssi values
-                ArrayList<Pair<Long, Double>> inner = rssi.get(i).
+                ArrayList<Pair<BigInteger, Double>> inner = rssi.get(i).
                                                       get(keys_long[j]);
                 
                 // if this radio hasn't picked this tag up, we move on to 
@@ -63,13 +64,13 @@ public class RssiEquation {
                 
                 // create arrays that will hold the times and rssi values 
                 // extracted separately
-                Long[] times = new Long[inner.size()];
+                BigInteger[] times = new BigInteger[inner.size()];
                 Double[] rssis = new Double[inner.size()];
                 
                 // initialisation for the distance to-be computed 
                 // and for an auxilliary list
                 double distance;
-                HashMap<Long, Double> time_dist_hm = 
+                HashMap<BigInteger, Double> time_dist_hm = 
                                               new HashMap<>();
                 
                 // for all the Pairs in the arraylist we got for this tag
