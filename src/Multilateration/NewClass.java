@@ -72,6 +72,80 @@ public class NewClass {
         return al;
     }
  
+    static ArrayList<BigInteger> gTPoisson(int iters, BigInteger startTime) {
+        // Create times array
+        ArrayList<BigInteger> times = new ArrayList<>();
+        // Add the start time to the array
+        times.add(startTime);
+        BigInteger currentTime = startTime;
+        // Create a list of integers, ranging from start(INPUT 4) to end(INPUT 5) inclusive.
+        List<Integer> range = IntStream.rangeClosed(0, 2).boxed().collect(Collectors.toList());
+        // Array to hold probabilities for all integers in range.
+        ArrayList<Double> rProbs = new ArrayList<>();
+        // Create a poisson distribution with mean of mean(INPUT 3)
+        PoissonDistribution pdist = new PoissonDistribution(1);
+        double cp =0;
+        for (Integer range1 : range) {
+            // Calculate probabilities for all integers in range and add to array.
+            double prob = pdist.cumulativeProbability(range1);
+            rProbs.add(prob);
+            // Calculate the cumulative probabilty for members of range.
+            cp += prob;
+        }
+        
+        for(int i=0;i<iters;i++) {
+            // Generate a random double between 0 and cp.
+            double p = Math.random() * cp;
+            double cumulativeProbability = 0.0;
+            BigInteger t2add = new BigInteger("0");
+            // Psuedorandomly determine the next inter-detection time.
+            for (int j=0;j<rProbs.size();j++) {
+                cumulativeProbability += rProbs.get(j);
+                if (p <= cumulativeProbability) {
+                    t2add = new BigInteger(String.valueOf(range.get(j)));
+                    break;
+                }
+            }
+            if(t2add.compareTo(BigInteger.valueOf(2))==0) {
+               currentTime = updateTimes(currentTime);
+               times.add(currentTime);
+               currentTime = updateTimes(currentTime);
+               times.add(currentTime);
+            }
+            else if(t2add.compareTo(BigInteger.valueOf(1))==0) {
+                currentTime = updateTimes(currentTime);
+                currentTime = updateTimes(currentTime);
+                times.add(currentTime);
+            }
+            else {
+                currentTime = updateTimes(currentTime);
+                currentTime = updateTimes(currentTime);
+            }
+
+            
+        }
+
+        
+        
+        return times;
+    }
+    
+    static BigInteger updateTimes(BigInteger currentTime) {
+        currentTime = currentTime.add(BigInteger.valueOf(4));
+        // Ensure times are correct in relation to minutes.
+        int check1 = currentTime.mod(BigInteger.valueOf(100)).compareTo(BigInteger.valueOf(60));
+        if(check1==1 ||check1 ==0)  {
+            currentTime = currentTime.add(BigInteger.valueOf(40));
+        }
+        // Ensure times are correct in relation to hours.
+        int check2 = currentTime.mod(BigInteger.valueOf(10000)).mod(BigInteger.valueOf(100)).compareTo(BigInteger.valueOf(6000));
+        if(check2==1 || check2==0) {
+            currentTime = currentTime.add(BigInteger.valueOf(4000));
+        }
+        return currentTime;
+        
+    }
+ 
     
     public static void main(String args[]){         
         
