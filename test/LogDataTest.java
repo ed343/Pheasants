@@ -29,7 +29,7 @@ public class LogDataTest {
         String dt = "2017-11-16 09:48:10";
         LogData instance = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-1.log");
         BigInteger result = instance.getDT(dt);
-        BigInteger expres = new BigInteger("1116094810");
+        BigInteger expres = new BigInteger("20171116094810");
         assertEquals(expres, result);
         System.out.println("Test for getDT passed");
     }
