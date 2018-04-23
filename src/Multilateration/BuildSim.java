@@ -5,6 +5,7 @@
  */
 package Multilateration;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,14 +30,14 @@ public class BuildSim {
 
     }
     
-    static ArrayList<HashMap<Long, HashMap<Long, Double>>> retrieveDistances(LogData beacon,int x,int y,int z, int measuredPower) {
+    static ArrayList<HashMap<Long, HashMap<BigInteger, Double>>> retrieveDistances(LogData beacon,int x,int y,int z, int measuredPower) {
         PrimerClass primer = new PrimerClass();
         primer.setRadioCoordinates(x, y, z);
         primer.setTRVals(beacon.getTimes(),beacon.getIDs(),beacon.getNormRSSIs());
         primer.setRadioMeasuredPower(measuredPower);
-        ArrayList<HashMap<Long,ArrayList<Pair<Long, Double>>>> rssi = primer.idRSSIs;
+        ArrayList<HashMap<Long,ArrayList<Pair<BigInteger, Double>>>> rssi = primer.idRSSIs;
         RssiEquation re = new RssiEquation();
-        ArrayList<HashMap<Long,HashMap<Long,Double>>> dist = re.getTagDistance(rssi, primer.measuredPower);
+        ArrayList<HashMap<Long,HashMap<BigInteger,Double>>> dist = re.getTagDistance(rssi, primer.measuredPower);
         return dist;
     }
     
