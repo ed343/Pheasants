@@ -31,8 +31,8 @@ public class MLATSim {
             n = reader.nextInt();
         }
         */
-        primer.setNumberOfRadios(4);
-        System.out.println("Number of base stations(radios) is 4");
+        primer.setNumberOfRadios(9);
+        System.out.println("Number of base stations(radios) is 9");
         /*
         // 2. insert all radio coordinates
         for (int i = 0; i < primer.no_of_radios; i++) {
@@ -50,39 +50,45 @@ public class MLATSim {
                 z = reader.nextDouble();
             }
         */
-        Double[] basestation1 = {50.728146, -3.527182};
-        Double[] basestation2 = {50.729000, -3.523541};
-        Double[] basestation3 = {50.727346, -3.523541};
-        Double[] basestation4 = {50.729438, -3.526964};
-
+        
+        Double[] basestation1 = {50.738486, -3.531713};//Nat
+        Double[] basestation2 = {50.738675, -3.531101};//James
+        Double[] basestation3 = {50.738822, -3.531642};//Cat
+        Double[] basestation4 = {50.738829, -3.531627};//Duplicate placed next to Cat.
+        Double[] basestation5 = {50.738565, -3.531859};//Left most
+        Double[] basestation6 = {50.738840, -3.531109};//Right most
+        Double[] basestation7 = {50.738836, -3.531446}; //Top
+        Double[] basestation8 = {50.738518,-3.531422};//Bottom
+        Double[] basestation9 = {50.738684, -3.531948};//Top left corner
+  
+    
+        
+        
+    
         basestations.add(basestation1);
         basestations.add(basestation2);
         basestations.add(basestation3);
         basestations.add(basestation4);
-        GUI.VisualisationController vis = new GUI.VisualisationController();
-        Double[] frame = vis.getRect(basestations);
-
-        double centerX = frame[3] + (frame[1] - frame[3]) / 2;
-        double centerY = frame[2] + (frame[0] - frame[2]) / 2;
-        System.out.println("centerY (lat):" + centerY);
-        System.out.println("centerX (lon):" + centerX);
+        basestations.add(basestation5);
+        basestations.add(basestation6);
+        basestations.add(basestation7);
+        basestations.add(basestation8);
+        basestations.add(basestation9);
         
-        Double[] corners = vis.getMapCorners(centerY, centerX, 16);
-        double south = corners[2];
-        double west = corners[3];
         GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
-        Double[] lbCorner = ct.lonLatToCartesian(south, west);
-        double ox = lbCorner[0];
-        double oy = lbCorner[1];
-        double oz = lbCorner[2];
         for(int i=0; i<basestations.size();i++) {
             Double[] bs = basestations.get(i);
             Double[] cart = ct.lonLatToCartesian(bs[0], bs[1]);
             double bx = cart[0];
             double by = cart[1];
             double bz = cart[2];
-            primer.setRadioCoordinates((bx-ox), (by-oy), (bz-oz));
+            System.out.println(bx);
+            System.out.println(by);
+            System.out.println(bz);
+            primer.setRadioCoordinates(bx,by,bz);
         }
+            
+        //}
         /*
         primer.setRadioCoordinates(5, 4, 2);
         System.out.println("The coordinates of the first radio are (5,4,2)");
@@ -135,14 +141,24 @@ Enter measured power:
 Enter measured power: 
 -41
         */
-        primer.setRadioMeasuredPower(-54);
-        System.out.println("The measured power of the first radio is -54");
-        primer.setRadioMeasuredPower(-74);
-        System.out.println("The measured power of the second radio is -74");
-        primer.setRadioMeasuredPower(-56);
-        System.out.println("The measured power of the third radio is -56");
-        primer.setRadioMeasuredPower(-41);
-        System.out.println("The measured power of the fourth radio is -41");
+        primer.setRadioMeasuredPower(-44);
+        System.out.println("The measured power of the first radio is -44");
+        primer.setRadioMeasuredPower(-44);
+        System.out.println("The measured power of the second radio is -44");
+        primer.setRadioMeasuredPower(-44);
+        System.out.println("The measured power of the third radio is -44");
+        primer.setRadioMeasuredPower(-44);
+        System.out.println("The measured power of the fourth radio is -44");
+        primer.setRadioMeasuredPower(-44);
+        System.out.println("The measured power of the first radio is -44");
+        primer.setRadioMeasuredPower(-44);
+        System.out.println("The measured power of the second radio is -44");
+        primer.setRadioMeasuredPower(-44);
+        System.out.println("The measured power of the third radio is -44");
+        primer.setRadioMeasuredPower(-44);
+        System.out.println("The measured power of the fourth radio is -44");
+        primer.setRadioMeasuredPower(-44);
+        System.out.println("The measured power of the fourth radio is -44");
         
         //}
         
@@ -157,16 +173,28 @@ Enter measured power:
             }
             //Create a new instance of LogData with path.
         */
-        
+        //[-8311896.937836279, -512953.69944521954, 1.0188486931024548E7]
+        //[-8311896.937836279, -512953.69944521954, 1.0188486931024548E7]
         // CHANGE TO PATH OF LOG FILES ON YOUR MACHINE.
-            LogData log1 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--1.log");
+            LogData log1 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlas_Nat.log");
             dataArr.add(log1);
-            LogData log2 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--2.log");
+            LogData log2 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlasJames.log");
             dataArr.add(log2);
-            LogData log3 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--3.log");
+            LogData log3 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlasCat.log");
             dataArr.add(log3);
-            LogData log4 = new LogData("/Users/Natalia/Documents/university/4th year/ECMM427 group project/ATLAS_log_files/atlas--1.log");
+            LogData log4 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlasCat.log");
             dataArr.add(log4);
+            LogData log5 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlasJames.log");
+            dataArr.add(log5);
+            LogData log6 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlas_Nat.log");
+            dataArr.add(log6);
+            LogData log7 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlas_Nat.log");
+            dataArr.add(log7);
+            LogData log8 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlasCat.log");
+            dataArr.add(log8);
+            LogData log9 = new LogData("/Users/James/Documents/Year4/Group_Project/AtlasLogs/atlasJames.log");
+            dataArr.add(log9);
+            
         //}
         
         // 5. get all rssi values
@@ -179,7 +207,7 @@ Enter measured power:
             //Get IDs for this basestation.
             ArrayList<Long> idData = log.getIDs();
             //Get RSSI values for this basestation.
-            ArrayList<Double> rssiData = log.getRSSIs();
+            ArrayList<Double> rssiData = log.getNormRSSIs();
             primer.setTRVals(tData, idData, rssiData);
         }
         
@@ -417,17 +445,17 @@ Enter measured power:
                 if (x) {
                     // we have enough
                     Matrix A = eq.getA();
+                    System.out.println(A.get(1, 0));
                     Matrix B = eq.getB();
-                    Matrix sol = A.solve(B); //these are our coordinates
-                    // the matrix is 4x1, and entries 1,2,3
+                    System.out.println(B.get(1,0));
+                    Matrix sol = A.solve(B);
+                    System.out.println(sol.get(1,0));//these are our coordinates
+                    System.out.println(sol.get(2,0));
+// the matrix is 4x1, and entries 1,2,3
                     // give us the x, y, z coord
                     GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
-                    Double[] coords = new Double[]{sol.get(1, 0), sol.get(2, 0),
+                    Double[] coords = new Double[]{sol.get(1,0), sol.get(2, 0),
                         sol.get(3, 0)};
-                    System.out.println("small coord system coords");
-                    System.out.println(coords[0]);
-                    System.out.println(coords[1]);
-                    System.out.println(coords[2]);
                     Double[] geoCoords = ct.cartesianToLatLon(coords);
                     HashMap time_coords_map = new HashMap();
                     time_coords_map.put(time, geoCoords);
@@ -451,3 +479,4 @@ Enter measured power:
         m.runMLAT();
     }
 }
+
