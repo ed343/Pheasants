@@ -5,6 +5,7 @@
  */
 package Multilateration;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -78,11 +79,11 @@ public class PrimerClassTest {
     @Test
     public void testSetTRVals() {
         System.out.println("Testing setTRVals method from the PrimerClass class...");
-        ArrayList<Long> time = new ArrayList<Long>();
+        ArrayList<BigInteger> time = new ArrayList<BigInteger>();
         ArrayList<Long> tagID = new ArrayList<Long>();
         ArrayList<Double> rssi = new ArrayList<Double>();
-        long t1 = 1128110800;
-        long t2 = 1128110804;
+        BigInteger t1 = new BigInteger("20171128110800");
+        BigInteger t2 = new BigInteger("20171128110804");
         time.add(t1);
         time.add(t2);
         long id1 = 4056;
@@ -95,16 +96,16 @@ public class PrimerClassTest {
         rssi.add(rs2);
         PrimerClass instance = new PrimerClass();
         instance.setTRVals(time, tagID, rssi);
-        ArrayList<HashMap<Long, ArrayList<Pair<Long,Double>>>> idR = instance.idRSSIs;
+        ArrayList<HashMap<Long, ArrayList<Pair<BigInteger,Double>>>> idR = instance.idRSSIs;
         Set<Long> ids = idR.get(0).keySet();
         long d1 = (long) ids.toArray()[0];
         long d2 = (long) ids.toArray()[1];
         assertEquals(id1, d2);
         assertEquals(id2, d1);
-        double tm1 = idR.get(0).get(d2).get(0).getKey();
-        assertEquals(t1,tm1,0);
-        double tm2 = idR.get(0).get(d1).get(0).getKey();
-        assertEquals(t2,tm2,0);
+        BigInteger tm1 = idR.get(0).get(d2).get(0).getKey();
+        assertEquals(t1,tm1);
+        BigInteger tm2 = idR.get(0).get(d1).get(0).getKey();
+        assertEquals(t2,tm2);
         double r1 = idR.get(0).get(d2).get(0).getValue();
         assertEquals(rs1,r1,0);
         double r2 = idR.get(0).get(d1).get(0).getValue();
@@ -153,11 +154,11 @@ public class PrimerClassTest {
     @Test
     public void testGetRssiValues() {
         System.out.println("Testing getRSSIValues method from the PrimerClass class...");
-        ArrayList<Long> time = new ArrayList<Long>();
+        ArrayList<BigInteger> time = new ArrayList<BigInteger>();
         ArrayList<Long> tagID = new ArrayList<Long>();
         ArrayList<Double> rssi = new ArrayList<Double>();
-        long t1 = 1128110800;
-        long t2 = 1128110804;
+        BigInteger t1 = new BigInteger("20171128110800");
+        BigInteger t2 = new BigInteger("20171128110804");
         time.add(t1);
         time.add(t2);
         long id1 = 4056;
@@ -170,7 +171,7 @@ public class PrimerClassTest {
         rssi.add(rs2);
         PrimerClass instance = new PrimerClass();
         instance.setTRVals(time, tagID, rssi);
-        ArrayList<HashMap<Long, ArrayList<Pair<Long,Double>>>> idR = instance.getRssiValues();
+        ArrayList<HashMap<Long, ArrayList<Pair<BigInteger,Double>>>> idR = instance.getRssiValues();
         Set<Long> ids = idR.get(0).keySet();
         long d1 = (long) ids.toArray()[0];
         long d2 = (long) ids.toArray()[1];
