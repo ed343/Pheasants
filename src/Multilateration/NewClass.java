@@ -4,6 +4,7 @@
 package Multilateration;
 
 import Jama.Matrix;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -60,12 +61,13 @@ public class NewClass {
         return value;
     }
     
-    public ArrayList<Long> generateTimes() {
-        ArrayList al = new ArrayList();
-        Long start = 10L;
+    public ArrayList<BigInteger> generateTimes() {
+        ArrayList<BigInteger> al = new ArrayList<>();
+        BigInteger start = new BigInteger("10");
+        BigInteger four = new BigInteger("4");
         for (int i=0;i<18; i++) {
-            al.add(start+4);
-            start+=4;
+            al.add(start.add(four));
+            start = start.add(four);
         }  
         return al;
     }
@@ -121,7 +123,7 @@ public class NewClass {
         }
 
         //get times
-        ArrayList<Long> timez = nc.generateTimes();
+        ArrayList<BigInteger> timez = nc.generateTimes();
         // get tags
         // simply replicate this radio
         tags=new ArrayList<>();
@@ -134,7 +136,7 @@ public class NewClass {
         primer = new PrimerClass();
         primer.setNumberOfRadios(4);
         for (Double[] bs : bss) {
-            primer.setRadioCoordinates(bs);
+            primer.setRadioCoordinates(bs[0], bs[1],bs[2]);
         }
         for (int i=0; i<=3; i++){
             primer.setRadioMeasuredPower(-44);
@@ -153,14 +155,15 @@ public class NewClass {
         
         //MLAT magic below
         
+        
         // tag_registry holds all tags across all radios and their coordinates
         // at each time they were detected
-        HashMap<Long, HashMap<Long, Double[]>> tag_registry = new HashMap<>();
+        HashMap<Long, HashMap<BigInteger, Double[]>> tag_registry = new HashMap<>();
         // used for initialising each element of tag_registry, i.e. a hashmap,
         // with the times each one was picked up as keys
-        HashMap<Long, Double[]> init_inner_tag_reg;
+        HashMap<BigInteger, Double[]> init_inner_tag_reg;
         // the times each tag was picked up
-        HashMap<Long, ArrayList<Long>> tag_detect_times = new HashMap<>();
+        HashMap<Long, ArrayList<BigInteger>> tag_detect_times = new HashMap<>();
         
         // for each radio
         for (int i = 0; i < primer.no_of_radios; i++) {
@@ -186,18 +189,18 @@ public class NewClass {
                             get(convertedLong).size(); k++) {
                         
                         // get these times and their corresponding rssis
-                        ArrayList<Pair<Long, Double>> times
+                        ArrayList<Pair<BigInteger, Double>> times
                                 = primer.idRSSIs.get(i).get(convertedLong);
                         
                         // list will hold only the times
-                        ArrayList<Long> tms = new ArrayList<>();
+                        ArrayList<BigInteger> tms = new ArrayList<>();
                         
                         // for all detection pairs
                         for (Pair p : times) {
                             
                             // get the time
                             String aux_str = String.valueOf(p.getKey());
-                            Long detection_time = Long.parseLong(aux_str);
+                            BigInteger detection_time = new BigInteger(aux_str);
                             
                             // if multiple detections at the same time,
                             // keep just one
@@ -221,28 +224,28 @@ public class NewClass {
                     // get all the times we already have for this radio
                     Object[] times = tag_registry.get(convertedLong).
                             keySet().toArray();
-                    ArrayList<Long> time_long = new ArrayList<>();
+                    ArrayList<BigInteger> time_long = new ArrayList<>();
                     
                     // iterate over all the times we have already recorded it 
                     // has been picked up
                     for (int k = 0; k < times.length; k++) {
                         String stringToConv = String.valueOf(times[k]);
-                        Long convertedtime = Long.parseLong(stringToConv);
+                        BigInteger convertedtime = new BigInteger(stringToConv);
                         time_long.add(convertedtime);
                     }
                     
                     // get the detections from the current radio
-                    ArrayList<Pair<Long, Double>> tim
+                    ArrayList<Pair<BigInteger, Double>> tim
                             = primer.idRSSIs.get(i).get(convertedLong);
                     
                     // list will hold only the times
-                    ArrayList<Long> tms = new ArrayList<>();
+                    ArrayList<BigInteger> tms = new ArrayList<>();
                     
                     // for all detections
                     for (Pair p : tim) {
                         // get&convert the time
                         String aux_str = String.valueOf(p.getKey());
-                        Long aux_long = Long.parseLong(aux_str);
+                        BigInteger aux_long = new BigInteger(aux_str);
                         
                         // if multiple detections at the same time,
                         // keep just one
@@ -252,7 +255,7 @@ public class NewClass {
                     }
                     // check if this radio detected the tag at times it was not
                     // detected by other radios
-                    for (Long l : tms) {
+                    for (BigInteger l : tms) {
                         // didn't have this time previously
                         // need to put it in tag_registry
                         if (!time_long.contains(l)) {
@@ -283,16 +286,16 @@ public class NewClass {
         
         // create hashmap to hold the hashmap we'll get from
         // getTagCoordinatesbyLeadRadio
-        HashMap<Long, HashMap<Long, Double[]>> hm_returned;
+        HashMap<Long, HashMap<BigInteger, Double[]>> hm_returned;
         // call function
         hm_returned = applyMLAT(tag_detect_times);
         // for all tags returned
         for (Long key : hm_returned.keySet()) {
             // get the current tag's inner hashmap that has times as keys
             // and coordinates as values
-            HashMap<Long, Double[]> inner = hm_returned.get(key);
+            HashMap<BigInteger, Double[]> inner = hm_returned.get(key);
             // for all times as keys in inner
-            for (Long time : inner.keySet()) {
+            for (BigInteger time : inner.keySet()) {
                 // get the inner hashmap we already have for this tag
                 init_inner_tag_reg = tag_registry.get(key);
                 // get the array of coordinates from this hashmap
@@ -306,6 +309,7 @@ public class NewClass {
                 tag_registry.put(key, init_inner_tag_reg);
             }
         }
+    
     }
     /* This function can loops through all tags which we have in
     /   tag_detect_times.
@@ -316,26 +320,29 @@ public class NewClass {
     /  a distance of -999,999
     */
     
-    public static HashMap<Long, HashMap<Long, Double[]>> applyMLAT(
-            HashMap<Long, ArrayList<Long>> tag_detect_times){
+    public static HashMap<Long, HashMap<BigInteger, Double[]>> applyMLAT(
+            HashMap<Long, ArrayList<BigInteger>> tag_detect_times){
         // initialise the hashmap we're going to return
-        HashMap<Long, HashMap<Long, Double[]>> hm = new HashMap<>();
+        HashMap<Long, HashMap<BigInteger, Double[]>> hm = new HashMap<>();
         for (Long key : tag_detect_times.keySet()) {
-            ArrayList<Long> times = tag_detect_times.get(key);
-            for (Long time: times){
+            ArrayList<BigInteger> times = tag_detect_times.get(key);
+            for (BigInteger time: times){
                 ArrayList<Double> distances= new ArrayList<>();
+                BigInteger three = new BigInteger("3");
+                BigInteger four = new BigInteger("4");
+                BigInteger one = new BigInteger("1");
                 for(int i = 0; i < primer.no_of_radios; i++) {
                     // get the distance between the ith radio and the key tag at
                     // the time time
-                    for(Long time_margin=time-3; time_margin<time+4;
-                            time_margin++){
+                    for(BigInteger time_margin=time.subtract(three); time_margin.compareTo(time.add(four))==-1;
+                            time_margin.add(one)){
                         try {
                             distances.add(primer.idDistances.get(i).get(key).
                                     get(time));
                             break;
                         }
                         catch(NullPointerException e){
-                            if (time_margin==time+3)
+                            if (time_margin.compareTo(time.add(three))==0)
                             {
                                 //eliminate this radio
                                 distances.add(-999.999);
@@ -354,16 +361,19 @@ public class NewClass {
                 if (x) {
                     // we have enough
                     Matrix A = eq.getA();
+                    System.out.println(A.get(1, 0));
                     Matrix B = eq.getB();
-                    Matrix sol = A.solve(B); //these are our coordinates
-                    // the matrix is 4x1, and entries 1,2,3
+                    System.out.println(B.get(1,0));
+                    Matrix sol = A.solve(B);
+                    System.out.println(sol.get(1,0));//these are our coordinates
+                    System.out.println(sol.get(2,0));
+// the matrix is 4x1, and entries 1,2,3
                     // give us the x, y, z coord
                     GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
-                    Double[] coords = new Double[]{sol.get(1, 0), -1*sol.get(2, 0),
-                        -1*sol.get(3, 0)};
-                    System.out.println("small coord system coords");
-                    System.out.println(coords[0]);
-                    System.out.println(coords[1]);
+                    Double[] coords = new Double[]{sol.get(1, 0), -1*sol.get(2, 0),-1*sol.get(3, 0)};
+                    System.out.println("small coord system coords");		
+                    System.out.println(coords[0]);		
+                    System.out.println(coords[1]);		
                     System.out.println(coords[2]);
                     Double[] geoCoords = ct.cartesianToLatLon(coords);
                     HashMap time_coords_map = new HashMap();
