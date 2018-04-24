@@ -8,6 +8,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import javafx.event.ActionEvent;
 
 public class MenuController {
 
@@ -22,10 +23,6 @@ public class MenuController {
 
         Stage stage = (Stage) rootpane.getScene().getWindow();
         stage.setScene(scene);
-    }
-
-    public void handleCalibrate() {
-
     }
 
     public void handleAnalyse() throws IOException {
@@ -44,5 +41,10 @@ public class MenuController {
 
     public void handleSettings() {
 
+    }
+    
+    public void handleExit() {
+        Stage stage = (Stage) rootpane.getScene().getWindow();
+        stage.close();
     }
 }

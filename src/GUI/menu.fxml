@@ -11,27 +11,27 @@
 
 <VBox alignment="CENTER" prefHeight="400" prefWidth="400" spacing="15">
    <children>
-      <Button onAction="#handleRegister" minHeight="60.0" minWidth="200.0" mnemonicParsing="false" text="Register and update basestations">
+      <Button onAction="#handleRegister" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="Register and update basestations">
          <font>
             <Font size="14.0" />
          </font>
       </Button>
-      <Button onAction="#handleCalibrate" minHeight="60.0" minWidth="200.0" mnemonicParsing="false" text="Calibrate beacons">
+      <Button onAction="#handleAnalyse" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="Analyse data">
          <font>
             <Font size="14.0" />
          </font>
       </Button>
-      <Button onAction="#handleAnalyse" minHeight="60.0" minWidth="200.0" mnemonicParsing="false" text="Analyse data">
+      <Button onAction="#handleExport" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="Export data">
          <font>
             <Font size="14.0" />
          </font>
       </Button>
-      <Button onAction="#handleExport" minHeight="60.0" minWidth="200.0" mnemonicParsing="false" text="Export data">
+      <Button onAction="#handleSettings" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="Settings / Manual">
          <font>
             <Font size="14.0" />
          </font>
       </Button>
-      <Button onAction="#handleSettings" minHeight="60.0" minWidth="200.0" mnemonicParsing="false" text="Settings / Manual">
+      <Button onAction="#handleExit" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="Exit">
          <font>
             <Font size="14.0" />
          </font>

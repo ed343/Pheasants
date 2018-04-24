@@ -60,8 +60,13 @@ public class VisualisationController {
     ArrayList<Double[]> tagCoords = new ArrayList<>();
 
     // test tags       
-    Double[] tag1 = {50.728392, -3.52536};
+    Double[] tag1 = {50.728392, -3.52536}; //
     Double[] tag2 = {50.728292, -3.52586};
+    
+    // coordinates from simulation output
+    Double[][] simCoords = {{50.59103600154661, -3.5317345994527187}, {50.64313710128131, -3.5317335105407963},
+        {50.692171562848635, -3.531732436520481}, {50.64028020103344, -3.5317317713359855},
+        {50.58919995534941, -3.5317311028859955}, {50.64054430234203, -3.5317300188205034}};
 
     // parameters used for map scaling and tag placement
     Double[] corners;
@@ -159,9 +164,11 @@ public class VisualisationController {
         slider.setMinorTickCount(0);
         slider.setBlockIncrement(1);
         
-        // this listener reacts to the change on the slider:
+        //  this listener reacts to the change on the slider:
         //      should start visualisation from the point were slider is set to
-        //      but doesn't do that yet
+        //      but doesn't do that yet (if we have a list of locations,
+        //      then it would use that location as a starting point and proceed
+        //      with subsequent locations)
         slider.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov,
                 Number old_val, Number new_val) {
@@ -340,6 +347,7 @@ public class VisualisationController {
                                 double ny = oldCoords[0];
                                 double nx = oldCoords[1]+0.0002;
                                 Double[] newCoord = {ny, nx};
+                                //Double[] newCoord = {simCoords[time][0], simCoords[time][1]};
                                 System.out.println("newCoord:");
                                 System.out.println(newCoord[0] + "; "+newCoord[1]);
                                 tagCoords.set(index, newCoord);
