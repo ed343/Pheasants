@@ -1,15 +1,21 @@
 /*
- Generating dummy log files.
- */
+Generating dummy log files.
+*/
 package Multilateration;
 
 import Jama.Matrix;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javafx.util.Pair;
+import org.apache.commons.math3.distribution.PoissonDistribution;
 
 public class NewClass {
     
@@ -17,14 +23,21 @@ public class NewClass {
     static PrimerClass primer;
     static ArrayList<Double[]> bss;
     static ArrayList<Long> tags;
-       
+    static HashMap<Long, HashMap<BigInteger, Double[]>> tag_registry;
+    
+    // these are the final ordered data
+    // use them as shown in the end of method order_times_coords()
+    static ArrayList<Long> all_tags= new ArrayList<>();
+    static ArrayList<ArrayList<BigInteger>> all_times= new ArrayList<>();
+    static ArrayList<ArrayList<Double[]>> all_coords= new ArrayList<>();
+    
     
     public Double[][] getPheasantLocs(Double[] start, Double[][] locations) {
         
         
         Double x = start[0];
         Double y = start[1];
-        Double z = start[2]; 
+        Double z = start[2];
         for (int i=0; i<18; i++) {
             locations[i][0]=x+1.0;
             locations[i][1]=y;
@@ -40,22 +53,22 @@ public class NewClass {
         Double tempx = Math.abs (base[0] - tag[0]);
         Double tempy = Math.abs (base[1] - tag[1]);
         Double tempz = Math.abs (base[2] - tag[2]);
-   
+        
         d = Math.sqrt(Math.pow(tempx, 2) + Math.pow(tempy, 2) + Math.pow(tempz, 2));
-       
-        return d; 
+        
+        return d;
     }
     
     public Double getRSSI(Double d) {
         Double mp = -44.0;
         Double rssi = mp - 10 * 2 * Math.log10(d);
-                
+        
         return rssi;
     }
     
     // not using this
     public int generateID() {
-        Random rand = new Random(); 
+        Random rand = new Random();
         int value = rand.nextInt(50);
         
         return value;
@@ -68,10 +81,10 @@ public class NewClass {
         for (int i=0;i<18; i++) {
             al.add(start.add(four));
             start = start.add(four);
-        }  
+        }
         return al;
     }
- 
+    
     static ArrayList<BigInteger> gTPoisson(int iters, BigInteger startTime) {
         // Create times array
         ArrayList<BigInteger> times = new ArrayList<>();
@@ -107,10 +120,10 @@ public class NewClass {
                 }
             }
             if(t2add.compareTo(BigInteger.valueOf(2))==0) {
-               currentTime = updateTimes(currentTime);
-               times.add(currentTime);
-               currentTime = updateTimes(currentTime);
-               times.add(currentTime);
+                currentTime = updateTimes(currentTime);
+                times.add(currentTime);
+                currentTime = updateTimes(currentTime);
+                times.add(currentTime);
             }
             else if(t2add.compareTo(BigInteger.valueOf(1))==0) {
                 currentTime = updateTimes(currentTime);
@@ -121,10 +134,10 @@ public class NewClass {
                 currentTime = updateTimes(currentTime);
                 currentTime = updateTimes(currentTime);
             }
-
+            
             
         }
-
+        
         
         
         return times;
@@ -145,14 +158,14 @@ public class NewClass {
         return currentTime;
         
     }
- 
     
-    public static void main(String args[]){         
+    
+    public static void main(String args[]){
         
-        Double[] start = {4028782.80, -248650.79, 4938371.316};        
+        Double[] start = {4028782.80, -248650.79, 4938371.316};
         Double[][] locations = new Double[18][3];
         bss = new ArrayList<>();
-
+        
         Double[] bs1 = {4028807.901663863, -248650.79535150624, 4938371.316965836};
         Double[] bs2 = {4028794.2982123313, -248606.7586559792, 4938384.631943058};
         Double[] bs3 = {4028779.3045908133, -248644.0189771986, 4938394.987999302};
@@ -163,9 +176,9 @@ public class NewClass {
         bss.add((Double[])bs3);
         bss.add((Double[])bs4);
         
-        NewClass nc= new NewClass(); 
+        NewClass nc= new NewClass();
         // populating location list with pheasant coordinates if it moves in a line
-        nc.getPheasantLocs(start, locations);  
+        nc.getPheasantLocs(start, locations);
         
         //Not using this
         //int id = nc.generateID();
@@ -176,13 +189,13 @@ public class NewClass {
         ArrayList<Double> log3= new ArrayList<>();
         ArrayList<Double> log4= new ArrayList<>();
         
-        // need to create logs for each of the radios, fixed only adding to 
+        // need to create logs for each of the radios, fixed only adding to
         // log 1 to addding to each log
         for (Double[] loc: locations) {
             Double dist1 = nc.getDistance(bs1, loc);
             Double rssi1 = nc.getRSSI(dist1);
             log1.add(rssi1);
-                        
+            
             Double dist2 = nc.getDistance(bs2, loc);
             Double rssi2 = nc.getRSSI(dist2);
             log2.add(rssi2);
@@ -193,9 +206,9 @@ public class NewClass {
             
             Double dist4 = nc.getDistance(bs4, loc);
             Double rssi4 = nc.getRSSI(dist4);
-            log4.add(rssi4);    
+            log4.add(rssi4);
         }
-
+        
         //get times
         ArrayList<BigInteger> timez = nc.generateTimes();
         // get tags
@@ -206,7 +219,7 @@ public class NewClass {
         }
         
         //run the thingamabob
-
+        
         primer = new PrimerClass();
         primer.setNumberOfRadios(4);
         for (Double[] bs : bss) {
@@ -223,7 +236,7 @@ public class NewClass {
         primer.setTRVals(timez, tags, log3);
         primer.setTRVals(timez, tags, log4);
         
-       
+        
         RssiEquation req = new RssiEquation();
         primer.idDistances = req.getTagDistance(primer.idRSSIs, primer.measuredPower);
         
@@ -232,7 +245,7 @@ public class NewClass {
         
         // tag_registry holds all tags across all radios and their coordinates
         // at each time they were detected
-        HashMap<Long, HashMap<BigInteger, Double[]>> tag_registry = new HashMap<>();
+        tag_registry = new HashMap<>();
         // used for initialising each element of tag_registry, i.e. a hashmap,
         // with the times each one was picked up as keys
         HashMap<BigInteger, Double[]> init_inner_tag_reg;
@@ -291,7 +304,7 @@ public class NewClass {
                         tag_detect_times.put(convertedLong, tms);
                     }
                     tag_registry.put(convertedLong, init_inner_tag_reg);
-                } 
+                }
                 // if the tag is already stored in tag_registry
                 // see if we get new times from this radio
                 else {
@@ -300,7 +313,7 @@ public class NewClass {
                             keySet().toArray();
                     ArrayList<BigInteger> time_long = new ArrayList<>();
                     
-                    // iterate over all the times we have already recorded it 
+                    // iterate over all the times we have already recorded it
                     // has been picked up
                     for (int k = 0; k < times.length; k++) {
                         String stringToConv = String.valueOf(times[k]);
@@ -343,9 +356,9 @@ public class NewClass {
                         }
                         
                     }
-                    // replace the entry we had for this tag with the updated 
+                    // replace the entry we had for this tag with the updated
                     // arraylist of times it was picked up
-                tag_detect_times.put(convertedLong, time_long);    
+                    tag_detect_times.put(convertedLong, time_long);
                 }
             }
         }
@@ -370,6 +383,7 @@ public class NewClass {
             HashMap<BigInteger, Double[]> inner = hm_returned.get(key);
             // for all times as keys in inner
             for (BigInteger time : inner.keySet()) {
+                
                 // get the inner hashmap we already have for this tag
                 init_inner_tag_reg = tag_registry.get(key);
                 // get the array of coordinates from this hashmap
@@ -383,20 +397,21 @@ public class NewClass {
                 tag_registry.put(key, init_inner_tag_reg);
             }
         }
-    
+        order_times_coords();
     }
     /* This function can loops through all tags which we have in
     /   tag_detect_times.
     /  Gets all the times from tag_detect_times and loops through all radios,
     /   looking for detections around that time.
     /  If detection exists, ok, put forward for mlat
-    /   If not, ok, make sure mlat doesn't consider the current radio by adding 
+    /   If not, ok, make sure mlat doesn't consider the current radio by adding
     /  a distance of -999,999
     */
     
     public static HashMap<Long, HashMap<BigInteger, Double[]>> applyMLAT(
             HashMap<Long, ArrayList<BigInteger>> tag_detect_times){
         // initialise the hashmap we're going to return
+        HashMap time_coords_map = new HashMap();
         HashMap<Long, HashMap<BigInteger, Double[]>> hm = new HashMap<>();
         for (Long key : tag_detect_times.keySet()) {
             ArrayList<BigInteger> times = tag_detect_times.get(key);
@@ -441,22 +456,23 @@ public class NewClass {
                     Matrix sol = A.solve(B);
                     System.out.println(sol.get(1,0));//these are our coordinates
                     System.out.println(sol.get(2,0));
-// the matrix is 4x1, and entries 1,2,3
+                    // the matrix is 4x1,
+                    // and entries 1,2,3
                     // give us the x, y, z coord
                     GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
                     Double[] coords = new Double[]{sol.get(1, 0), -1*sol.get(2, 0),-1*sol.get(3, 0)};
-                    System.out.println("small coord system coords");		
-                    System.out.println(coords[0]);		
-                    System.out.println(coords[1]);		
+                    System.out.println("small coord system coords");
+                    System.out.println(coords[0]);
+                    System.out.println(coords[1]);
                     System.out.println(coords[2]);
                     Double[] geoCoords = ct.cartesianToLatLon(coords);
-                    HashMap time_coords_map = new HashMap();
+                    
                     time_coords_map.put(time, geoCoords);
                     hm.put(key, time_coords_map);
                     System.out.println(" ");
                     System.out.println("The geographical location of this tag is: "+ Arrays.deepToString(geoCoords));
                     System.out.println(" ");
-                    //sol.print(10, 5);
+                    sol.print(10, 5);
                 } else {
                     // we don't have enough valid distances, i.e.
                     // no other radios picked up this tag at this time
@@ -471,8 +487,8 @@ public class NewClass {
         
         double x = cartCoords[0];
         double y = cartCoords[1];
-        double z = cartCoords[2];    
-
+        double z = cartCoords[2];
+        
         double lat = Math.asin(z / R);
         
         double lon = Math.atan2(y, x);
@@ -481,11 +497,67 @@ public class NewClass {
         lon = radiansToDegrees(lon);
         
         Double[] coords = {lat, lon};
-           
+        
         return coords;
     }
     
     public double radiansToDegrees (double rad) {
         return rad / (Math.PI /180);
+    }
+    
+    public static HashMap<Long, HashMap<BigInteger, Double[]>> getLocations(){
+        return tag_registry;
+    }
+    
+    public static void order_times_coords(){
+        HashMap<Long, HashMap<BigInteger, Double[]>> tgr=getLocations();
+        for (Map.Entry<Long, HashMap<BigInteger, Double[]>> entry : tgr.entrySet()) {
+            Long key = entry.getKey();
+            HashMap<BigInteger, Double[]> value = entry.getValue();
+            all_tags.add(key);
+            ArrayList<BigInteger> times= new ArrayList<>();
+            ArrayList<Double[]> coords=new ArrayList<>();
+            for (Map.Entry<BigInteger, Double[]> entry2 : value.entrySet()) {
+                BigInteger key2 = entry2.getKey();
+                times.add(key2);
+                Double[] value2= entry2.getValue();
+                coords.add(value2);
+            }
+            // do sorting here on times and coords
+            ArrayList<BigInteger> times_orig=times;
+            times_orig=makeDeepCopyBigInteger(times);
+            
+            ArrayList<Double[]> sorted_coords= new ArrayList<>();
+            Collections.sort(times);
+            for(int i=0; i<times.size(); i++){
+                for(int j=0; j<times.size(); j++){
+                    if (times.get(i)==times_orig.get(j)){
+                        sorted_coords.add(i,coords.get(j));
+                        break;
+                    }
+                }
+            }
+            all_times.add(times);
+            all_coords.add(sorted_coords);
+        }
+        // can use the attributes like this:
+        System.out.println("Tag:");
+        System.out.println(all_tags.get(0));
+        for(int i=0; i<all_times.get(0).size(); i++){
+            System.out.println("Time:");
+            System.out.println(all_times.get(0).get(i));
+            System.out.println("Coords:");
+            System.out.println(all_coords.get(0).get(i)[0]);
+            System.out.println(all_coords.get(0).get(i)[1]);
+            
+        }
+    }
+    private static ArrayList<BigInteger> makeDeepCopyBigInteger(ArrayList<BigInteger> times){
+        ArrayList<BigInteger> copy = new ArrayList<>(times.size());
+        for(BigInteger i : times){
+            BigInteger a = i.add(BigInteger.ZERO);
+            copy.add(a);
+        }
+        return copy;
     }
 }
