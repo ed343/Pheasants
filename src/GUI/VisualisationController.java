@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.paint.Color;
 
 public class VisualisationController {
@@ -60,13 +62,17 @@ public class VisualisationController {
     ArrayList<Double[]> tagCoords = new ArrayList<>();
 
     // test tags       
-    Double[] tag1 = {50.728392, -3.52536}; //
-    Double[] tag2 = {50.728292, -3.52586};
+    Double[] tag1 = {50.73848598629042, -3.531734873115414}; //
+    // Double[] tag2 = {50.728292, -3.52586};
     
-    // coordinates from simulation output
-    Double[][] simCoords = {{50.59103600154661, -3.5317345994527187}, {50.64313710128131, -3.5317335105407963},
-        {50.692171562848635, -3.531732436520481}, {50.64028020103344, -3.5317317713359855},
-        {50.58919995534941, -3.5317311028859955}, {50.64054430234203, -3.5317300188205034}};
+
+     Double[][] simCoords = {{50.66935899306587, -3.531735151179933}, {50.61749281320168,-3.531734487793321}, {50.5719161186626,-3.5317337967155824},
+    {50.620876309181085, -3.5317327213982557}, {50.56981711157608, -3.53173205345777}, {50.62426004860634,-3.5317309551761733},
+    {50.67327479536405, -3.5317298826590307}, {50.62215870599698, -3.53172921314334}, {50.67429433055359, -3.5317281287371323},
+    {50.62554253770395, -3.531727447127234}, {50.674558623196255, -3.531726377091593}, {50.723625947811826, -3.5317253085560707},
+    {50.67482291732843, -3.5317246254610266}, {50.62607057623022,-3.5317239414128334}, {50.57500574649445,-3.531723267096043}, 
+    {50.62396915271218,-3.5317221992209875},{50.67610678750452,-3.531721120078098},{50.627353114712946,-3.5317204335976005}};
+    
 
     // parameters used for map scaling and tag placement
     Double[] corners;
@@ -86,10 +92,17 @@ public class VisualisationController {
 
         // this data will be read from beacon registration/selection
         // {latitude (y), longitude (x)}
+        /**
         Double[] basestation1 = {50.728146, -3.527182};
         Double[] basestation2 = {50.729000, -3.523541};
         Double[] basestation3 = {50.727346, -3.523541};
         Double[] basestation4 = {50.729438, -3.526964};
+        * */
+        
+        Double[] basestation1 = {50.738486, -3.531713};//Nat
+        Double[] basestation2 = {50.738675, -3.531101};//James
+        Double[] basestation3 = {50.738822, -3.531642};//Cat
+        Double[] basestation4 = {50.738829, -3.531627};//Duplicate placed next to Cat.
 
         basestations.add(basestation1);
         basestations.add(basestation2);
@@ -97,7 +110,7 @@ public class VisualisationController {
         basestations.add(basestation4);
 
         tagCoords.add(tag1);
-        tagCoords.add(tag2);
+        //tagCoords.add(tag2);
 
         // (minX, maxY, maxX, minY)
         // not sure if it will work with negative coordinates
@@ -117,12 +130,11 @@ public class VisualisationController {
         xratio = mapWidth / realWidth;     // longitude
         yratio = mapHeight / realHeight;   // latitude
         
-        VBox leftbox = new VBox();
-        
+        VBox leftbox = new VBox();        
 
       String imagePath = "https://maps.googleapis.com/maps/api/staticmap?"
                 + "center=" + centerY + "," + centerX + "&"
-                + "zoom=16&size=480x280&maptype=terrain&"
+                + "zoom=" +zoom + "&size=480x280&maptype=terrain&"
                 + "key=AIzaSyD9duo3FCZAGzoydpTGoM2Gwwcba3OXxSs";
 
         Boolean backgroundLoading = false;
@@ -154,9 +166,34 @@ public class VisualisationController {
             return;
         }
         
+        HBox visualControl = new HBox();
+        visualControl.setMaxWidth(300);
+        visualControl.setPadding(new Insets(20, 0, 0, 0));
+        visualControl.setSpacing(15);
+        
+        Button play = new Button(">");
+        play.setPrefSize(25, 25);
+        
+        
+        play.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                if (play.getText().equals(">")) {
+                    play.setText("||");
+                    // PAUSE VISUALISATION
+                }
+                else {
+                    play.setText(">");
+                    // PLAY VISUALISATION
+                }
+            }
+        });
+ 
+        
         slider = new Slider();
+        slider.setMinWidth(350.0);
+        //slider.setPadding(new Insets(20, 0, 0, 0));
         slider.setMin(0);
-        slider.setMax(9);
+        slider.setMax(9);   // should be a number of locations that tag goes through
         slider.setValue(0);
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
@@ -180,6 +217,8 @@ public class VisualisationController {
         //}
             }
         });
+        
+        visualControl.getChildren().addAll(play, slider);
 
         // here if error at downloading the map occured, probably I don't want to carry on and need to 
         // prompt the user to connect to internet and retry, rather than display everything. 
@@ -187,19 +226,19 @@ public class VisualisationController {
         imageView = new ImageView(image);
         pane = new Pane();
         pane.getChildren().add(imageView);
-        leftbox.getChildren().addAll(pane, slider);
+        pane.setMaxSize(480, 280);
+        leftbox.getChildren().addAll(pane, visualControl);
 
         // calling function to place the basestations on the map
         pane = placeBasestations();
 
         // calling function to place tags on the map
         placeTags();
-        //pane.setStyle("-fx-background-color: yellow;");
-        
+        // TODO: if tag is out of the map space, could print out some warning
 
         // adding side panels with lists of tags and basestations
         VBox rightbox = new VBox();
-        rightbox.setPadding(new Insets(0, 25, 25, 25));
+        rightbox.setPadding(new Insets(0, 0, 25, 25));
         rightbox.setPrefSize(250.0, 400);
         rightbox.setSpacing(20.0);
 
@@ -223,13 +262,33 @@ public class VisualisationController {
         basestations.getItems().addAll("Basestation 1", "Basestation 2", "Basestation 3", "Basestation 4");
         basestations.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         basestations.setMinHeight(basestations.getItems().size() * 23 + 2);
+        
+        
+        // a number of radio buttons to select the regularity (granularity) of the tag movement
+        HBox regularity = new HBox();        
+        regularity.setSpacing(5);
+        
+        RadioButton r4 = new RadioButton("4 sec");
+        RadioButton r8 = new RadioButton("8 sec");
+        RadioButton r20 = new RadioButton("20 sec");
+        RadioButton r60 = new RadioButton("1 min");
+        
+        ToggleGroup group = new ToggleGroup();
+        r4.setToggleGroup(group);
+        r8.setToggleGroup(group);
+        r20.setToggleGroup(group);
+        r60.setToggleGroup(group);
+        r4.setSelected(true);
+        
+        regularity.getChildren().addAll(r4, r8, r20, r60);
+                
 
         // adding checkbox
         drawTrace = new CheckBox();
         drawTrace.setText("Draw movement patterns");
         drawTrace.setSelected(false);
 
-        rightbox.getChildren().addAll(tags, basestations, drawTrace, buttons);
+        rightbox.getChildren().addAll(tags, basestations, regularity, drawTrace, buttons);
 
         // adding elements to the HBox from FXML file
         imagebox.setPadding(new Insets(20, 10, 10, 20));
@@ -237,7 +296,7 @@ public class VisualisationController {
 
         // THIS IS WHERE A VISUALISATION THREAD WILL BE STARTED
         // remains for loop, should be changed to traverse tagID list for all tags
-        for (int i=0; i<2; i++) {
+        for (int i=0; i<tagCoords.size(); i++) {
             updateTag(i);
         }
     }
@@ -303,6 +362,10 @@ public class VisualisationController {
 
             Rectangle r = new Rectangle(x, y, 5, 5);
             r.setFill(Color.OLIVE);
+            r.hoverProperty().addListener((observable) -> {
+                Tooltip t = new Tooltip("Tag ID"); // should get tag id and put it as a label
+                Tooltip.install(r, t);
+            });
 
             tagMarks.add(r);
 
@@ -345,7 +408,7 @@ public class VisualisationController {
                             public void run() {
                                 Double[] oldCoords = tagCoords.get(index);
                                 double ny = oldCoords[0];
-                                double nx = oldCoords[1]+0.0002;
+                                double nx = oldCoords[1]+0.0001;
                                 Double[] newCoord = {ny, nx};
                                 //Double[] newCoord = {simCoords[time][0], simCoords[time][1]};
                                 System.out.println("newCoord:");

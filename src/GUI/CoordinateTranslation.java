@@ -69,7 +69,7 @@ public class CoordinateTranslation {
         return rad / (Math.PI /180);
     }
 
-    class G_Point {
+    public class G_Point {
         double x;
         double y;
         
@@ -79,7 +79,7 @@ public class CoordinateTranslation {
         }
     }
     
-    static class G_LatLng {        
+    public static class G_LatLng {        
         double lat;
         double lng; 
         
@@ -182,7 +182,6 @@ public class CoordinateTranslation {
         System.out.println("-----------");
         System.out.println(latlon[0]); //latitude
         System.out.println(latlon[1]); //longitude
-
         
     }
 }

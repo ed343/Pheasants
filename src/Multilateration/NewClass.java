@@ -3,6 +3,7 @@ Generating dummy log files.
 */
 package Multilateration;
 
+import GUI.CoordinateTranslation;
 import Jama.Matrix;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -32,20 +33,19 @@ public class NewClass {
     static ArrayList<ArrayList<Double[]>> all_coords= new ArrayList<>();
     
     
-    public Double[][] getPheasantLocs(Double[] start, Double[][] locations) {
-        
+    public Double[][] getPheasantLocs(Double[] start, Double[][] locs) {       
         
         Double x = start[0];
         Double y = start[1];
-        Double z = start[2];
+        // current function just moves tag to the right (or down?) at every step
         for (int i=0; i<18; i++) {
-            locations[i][0]=x+1.0;
-            locations[i][1]=y;
-            locations[i][2]=z;
-            x++;
+            locs[i][0]=x+0.0001;
+            System.out.println(locs[i][0]);
+            locs[i][1]=y;
+            x=x+0.0001;
         }
         
-        return locations;
+        return locs;
     }
     
     public Double getDistance (Double[] base, Double[] tag) {
@@ -162,23 +162,39 @@ public class NewClass {
     
     public static void main(String args[]){
         
-        Double[] start = {4028782.80, -248650.79, 4938371.316};
-        Double[][] locations = new Double[18][3];
+        Double[] start =  {50.73848598629042, -3.531734873115414}; // {4028782.80, -248650.79, 4938371.316};
+
+        Double[][] locations = new Double[18][2];
         bss = new ArrayList<>();
         
-        Double[] bs1 = {4028807.901663863, -248650.79535150624, 4938371.316965836};
-        Double[] bs2 = {4028794.2982123313, -248606.7586559792, 4938384.631943058};
-        Double[] bs3 = {4028779.3045908133, -248644.0189771986, 4938394.987999302};
-        Double[] bs4 = {4028778.767492502, -248642.9270798688, 4938395.481144028};
+        Double[] bs1 = {50.738486, -3.531713}; //{4028807.901663863, -248650.79535150624, 4938371.316965836};
+        Double[] bs2 = {50.738675, -3.531101}; // {4028794.2982123313, -248606.7586559792, 4938384.631943058};
+        Double[] bs3 = {50.738822, -3.531642}; // {4028779.3045908133, -248644.0189771986, 4938394.987999302};
+        Double[] bs4 = {50.738829, -3.531627}; // {4028778.767492502, -248642.9270798688, 4938395.481144028};
         
-        bss.add((Double[])bs1);
-        bss.add((Double[])bs2);
-        bss.add((Double[])bs3);
-        bss.add((Double[])bs4);
+        CoordinateTranslation ct = new CoordinateTranslation();
+        MapProcessing mp = new MapProcessing();
+        
+        // converting to cartesian
+        /**
+        Double[] bsCart1 = ct.lonLatToCartesian(bs1[0], bs1[1]);
+        Double[] bsCart2 = ct.lonLatToCartesian(bs2[0], bs2[1]);
+        Double[] bsCart3 = ct.lonLatToCartesian(bs3[0], bs3[1]);
+        Double[] bsCart4 = ct.lonLatToCartesian(bs4[0], bs4[1]);
+        
+        bss.add(bsCart1);
+        bss.add(bsCart2);
+        bss.add(bsCart3);
+        bss.add(bsCart4);
+        **/
+        
+        ArrayList<Double[]> stations;
+        stations = mp.getBasestations();
+        
         
         NewClass nc= new NewClass();
         // populating location list with pheasant coordinates if it moves in a line
-        nc.getPheasantLocs(start, locations);
+        locations = nc.getPheasantLocs(start, locations);
         
         //Not using this
         //int id = nc.generateID();
@@ -192,19 +208,22 @@ public class NewClass {
         // need to create logs for each of the radios, fixed only adding to
         // log 1 to addding to each log
         for (Double[] loc: locations) {
-            Double dist1 = nc.getDistance(bs1, loc);
+            
+            Double[] locCart = mp.getCartesianLoc(loc);
+            
+            Double dist1 = nc.getDistance(stations.get(0), locCart);
             Double rssi1 = nc.getRSSI(dist1);
             log1.add(rssi1);
             
-            Double dist2 = nc.getDistance(bs2, loc);
+            Double dist2 = nc.getDistance(stations.get(1), locCart);
             Double rssi2 = nc.getRSSI(dist2);
             log2.add(rssi2);
             
-            Double dist3 = nc.getDistance(bs3, loc);
+            Double dist3 = nc.getDistance(stations.get(2), locCart);
             Double rssi3 = nc.getRSSI(dist3);
             log3.add(rssi3);
             
-            Double dist4 = nc.getDistance(bs4, loc);
+            Double dist4 = nc.getDistance(stations.get(3), locCart);
             Double rssi4 = nc.getRSSI(dist4);
             log4.add(rssi4);
         }
@@ -222,8 +241,8 @@ public class NewClass {
         
         primer = new PrimerClass();
         primer.setNumberOfRadios(4);
-        for (Double[] bs : bss) {
-            primer.setRadioCoordinates(bs[0], bs[1],bs[2]);
+        for (Double[] bs : stations) {
+            primer.setRadioCoordinates(bs[0], bs[1], bs[2]);
         }
         for (int i=0; i<=3; i++){
             primer.setRadioMeasuredPower(-44);
