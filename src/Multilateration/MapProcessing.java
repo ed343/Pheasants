@@ -28,7 +28,10 @@ public class MapProcessing {
     Double[] basestation1 = {50.738486, -3.531713};//Nat
     Double[] basestation2 = {50.738675, -3.531101};//James
     Double[] basestation3 = {50.738822, -3.531642};//Cat
-    Double[] basestation4 = {50.738829, -3.531627};//Duplicate placed next to Cat.
+    Double[] basestation4 = {50.738222, -3.5310};//Duplicate placed next to Cat.
+    // initially 50.738829, -3.531627; 
+    // now the fourth radio is created by adding to Cat
+    // the difference between the corodinates of James and Nat
 
 
     

@@ -1,8 +1,3 @@
-/**
- * to convert cartesian plane to geographical coordinates (will be needed when using simulation):
- * https://stackoverflow.com/questions/1185408/converting-from-longitude-latitude-to-cartesian-coordinates?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
- * https://www.linz.govt.nz/data/geodetic-system/coordinate-conversion/geodetic-datum-conversions/equations-used-datum
- */
 package GUI;
 
 import javafx.fxml.FXML;

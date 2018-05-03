@@ -124,4 +124,18 @@ public class BasestationDB {
             System.out.println(e.getMessage());
         }
     }
+    
+    public static void read(Connection c) {
+        String sql = "SELECT name FROM basestations;";
+        try {
+            // insert the appropiate values into the sql statement
+            PreparedStatement pstmt = c.prepareStatement(sql);
+            // execute the sql command
+            pstmt.executeUpdate();
+            System.out.println("");
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 }

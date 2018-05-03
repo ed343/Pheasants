@@ -7,12 +7,12 @@ import GUI.CoordinateTranslation;
 import Jama.Matrix;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.util.Pair;
@@ -262,7 +262,6 @@ public class NewClass {
 
         Double[][] locations = new Double[18][2];
         bss = new ArrayList<>();
-        
         Double[] bs1 = {50.738486, -3.531713}; //{4028807.901663863, -248650.79535150624, 4938371.316965836};
         Double[] bs2 = {50.738675, -3.531101}; // {4028794.2982123313, -248606.7586559792, 4938384.631943058};
         Double[] bs3 = {50.738822, -3.531642}; // {4028779.3045908133, -248644.0189771986, 4938394.987999302};
@@ -340,6 +339,7 @@ public class NewClass {
         for (Double[] bs : stations) {
             primer.setRadioCoordinates(bs[0], bs[1], bs[2]);
         }
+        
         for (int i=0; i<=3; i++){
             primer.setRadioMeasuredPower(-44);
         }
@@ -354,9 +354,12 @@ public class NewClass {
         
         RssiEquation req = new RssiEquation();
         primer.idDistances = req.getTagDistance(primer.idRSSIs, primer.measuredPower);
+        MLAT();
         
+    }
+    
+    public static void MLAT(){
         //MLAT magic below
-        
         
         // tag_registry holds all tags across all radios and their coordinates
         // at each time they were detected
@@ -505,7 +508,7 @@ public class NewClass {
                 Double[] aux_arr;
                 // add the 3 coordinates we got from the method
                 Double[] aux_coord = new Double[]{inner.get(time)[0],
-                    inner.get(time)[1]};
+                    inner.get(time)[1], inner.get(time)[2]};
                 aux_arr=aux_coord;
                 // put it back
                 init_inner_tag_reg.put(time, aux_arr);
@@ -514,7 +517,7 @@ public class NewClass {
         }
         order_times_coords();
     }
-    /* This function can loops through all tags which we have in
+    /* This function can loop through all tags which we have in
     /   tag_detect_times.
     /  Gets all the times from tag_detect_times and loops through all radios,
     /   looking for detections around that time.
@@ -575,18 +578,18 @@ public class NewClass {
                     // and entries 1,2,3
                     // give us the x, y, z coord
                     GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
-                    Double[] coords = new Double[]{sol.get(1, 0), -1*sol.get(2, 0),-1*sol.get(3, 0)};
+                    Double[] coords = new Double[]{sol.get(1, 0), sol.get(2, 0), sol.get(3, 0)};
                     System.out.println("small coord system coords");
                     System.out.println(coords[0]);
                     System.out.println(coords[1]);
                     System.out.println(coords[2]);
-                    Double[] geoCoords = ct.cartesianToLatLon(coords);
+                    //Double[] geoCoords = ct.cartesianToLatLon(coords);
                     
-                    time_coords_map.put(time, geoCoords);
+                    time_coords_map.put(time, coords);
                     hm.put(key, time_coords_map);
-                    System.out.println(" ");
-                    System.out.println("The geographical location of this tag is: "+ Arrays.deepToString(geoCoords));
-                    System.out.println(" ");
+                    //System.out.println(" ");
+                    //System.out.println("The geographical location of this tag is: "+ Arrays.deepToString(coords));
+                    //System.out.println(" ");
                     sol.print(10, 5);
                 } else {
                     // we don't have enough valid distances, i.e.
@@ -637,6 +640,10 @@ public class NewClass {
                 times.add(key2);
                 Double[] value2= entry2.getValue();
                 coords.add(value2);
+                System.out.println("fml");
+                System.out.println(value2[0]);
+                System.out.println(value2[1]);
+                System.out.println(value2[2]);
             }
             // do sorting here on times and coords
             ArrayList<BigInteger> times_orig=times;
@@ -664,6 +671,7 @@ public class NewClass {
             System.out.println("Coords:");
             System.out.println(all_coords.get(0).get(i)[0]);
             System.out.println(all_coords.get(0).get(i)[1]);
+            System.out.println(all_coords.get(0).get(i)[2]);
             
         }
     }
