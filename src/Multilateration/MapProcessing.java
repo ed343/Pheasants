@@ -5,6 +5,7 @@ package Multilateration;
 
 import GUI.CoordinateTranslation;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class MapProcessing {
     
@@ -25,26 +26,8 @@ public class MapProcessing {
     ArrayList<Double[]> basestations = new ArrayList<>();
     ArrayList<Double[]> cartBasestations = new ArrayList<>();
     
-    Double[] basestation1 = {50.738486, -3.531713};//Nat
-    Double[] basestation2 = {50.738675, -3.531101};//James
-    Double[] basestation3 = {50.738822, -3.531642};//Cat
-    Double[] basestation4 = {50.738222, -3.5310};//Duplicate placed next to Cat.
-    // initially 50.738829, -3.531627; 
-    // now the fourth radio is created by adding to Cat
-    // the difference between the corodinates of James and Nat
-
-
-    
-    public static void main(String[] args) {
-        MapProcessing mp = new MapProcessing();
-        mp.setup();
-    }
-    
-    public MapProcessing() {
-        basestations.add(basestation1);
-        basestations.add(basestation2);
-        basestations.add(basestation3);
-        basestations.add(basestation4);
+    public MapProcessing(ArrayList<Double[]> bss) {
+        basestations = bss;
         setup();
     }
     
@@ -54,9 +37,8 @@ public class MapProcessing {
 
     centerX = frame[3] + (frame[1] - frame[3]) / 2;
     centerY = frame[2] + (frame[0] - frame[2]) / 2;
-    System.out.println("centerY (lat):" + centerY);
-    System.out.println("centerX (lon):" + centerX);
 
+    // {N, E, S, W}
    corners = getMapCorners(centerY, centerX, zoom);
 
     realWidth = corners[1] - corners[3];
@@ -65,11 +47,16 @@ public class MapProcessing {
     xratio = mapWidth / realWidth;     // longitude
     yratio = mapHeight / realHeight;   // latitude
     
-    System.out.println("N: "+ corners[0]);
-    System.out.println("E: " + corners[1]);
-    System.out.println("S: " + corners[2]);
-    System.out.println("W: " + corners[3]);
+    }
     
+    public double[] getCenter() {
+        double[] centerYX = {centerY, centerX};
+        
+        return centerYX;
+    }
+    
+    public int getZoom() {
+        return zoom;
     }
     
     public Double[] getCartesianLoc(Double[] loc) {
@@ -77,41 +64,44 @@ public class MapProcessing {
         // equation different from x coords, since geographical coordinates go from bottom to top
         // while image coordinates go top to bottom
         double y = (corners[0] - getY(loc)) * yratio;
+        
+        Random rand = new Random();                    
 
-        // value 0.00001395 was taken from this article: goo.gl/tq787k
-
-        double z = (getX(loc) * 0.00001395 * mapWidth);
+        double z = rand.nextFloat(); 
 
         Double[] coords = {x,y,z};
+        
+        // System.out.println("getCartesianLoc: " + coords[0] + ", " + coords[1] + ", " + coords[2]);
 
       return coords;
     }
     
     /**
-     * Converting arraylist of double values to cartesian plane coordinate.
-     * Could be used on basestations, as well as tags.
+     * Method will take in ArrayList of geographical basestation coordinates,
+     * see whether we already have converted them to Cartesian coordinates,
+     * and return new ArrayList of Cartesian coordinates that are generated
+     * using the same method as in the visualisation.
+     * @return 
      */
-    public void convert(ArrayList<Double[]> things) {
-        for (Double[] thing: things) {
-            
-            double x = (getX(thing) - corners[3]) * xratio;
-            // equation different from x coords, since geographical coordinates go from bottom to top
-            // while image coordinates go top to bottom
-            double y = (corners[0] - getY(thing)) * yratio;
-            
-            // value 0.00001395 was taken from this article: goo.gl/tq787k
+    public ArrayList<Double[]> getBasestations(ArrayList<Double[]> bss) {
 
-            double z = (getX(thing) * 0.00001395 * mapWidth);
-            
-            Double[] coords = {x,y,z};
-            
-            cartBasestations.add(coords);
-        }
-    }
-    
-    public ArrayList<Double[]> getBasestations() {
         if (cartBasestations.isEmpty()) {
-            convert(basestations);
+
+            for (Double[] bs : bss) {
+
+                double x = (getX(bs) - corners[3]) * xratio;
+                // equation different from x coords, since geographical coordinates go from bottom to top
+                // while image coordinates go top to bottom
+                double y = (corners[0] - getY(bs)) * yratio;
+                
+                Random rand = new Random();                    
+                
+                double z = rand.nextFloat(); // DON'T REALLY KNOW WHAT TO DO WITH Z COORDINATE
+
+                Double[] c = {x,y,z};
+
+                cartBasestations.add(c);
+            }            
         }
         
         return cartBasestations;
