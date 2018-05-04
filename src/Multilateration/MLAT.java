@@ -1,9 +1,21 @@
 package Multilateration;
 
 import Jama.Matrix;
+import static Multilateration.NewClass.all_coords;
+import static Multilateration.NewClass.all_tags;
+import static Multilateration.NewClass.all_times;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Scanner;
 import javafx.util.Pair;
@@ -348,5 +360,50 @@ public class MLAT {
             }
         }
         return hm;
+    }
+    
+    public static void exportData() throws FileNotFoundException, 
+                                           UnsupportedEncodingException, 
+                                           IOException{
+        // get date for the name of the file
+        DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+        Date today = Calendar.getInstance().getTime();        
+        String reportDate = df.format(today);
+        
+        // get OS for filepath
+        String OS = System.getProperty("os.name").toLowerCase();
+        String path="";
+        if (OS.contains("win")) {
+            path = ".\\" + "export"+ reportDate + ".txt";
+        }
+        if (OS.contains("nix") || OS.contains("nux") ||  
+                OS.contains("aix") || OS.contains("mac")){
+            path = "./" + "export"+ reportDate + ".txt";
+        }
+        
+        // create new file
+        File f = new File(path);
+        f.createNewFile();
+        
+        // write to file
+        PrintWriter writer = new PrintWriter("export" + reportDate + ".txt", "UTF-8");
+        writer.println("Time,Tag,X-Coordinate,Y-Coordinate,Z-Coordinate");
+        for (int a=0; a<all_tags.size(); a++) {
+            for(int i=0; i<all_times.get(a).size(); i++){
+                // export tag ID
+                writer.print(all_tags.get(a));
+                writer.print(',');
+                // export time
+                writer.print(all_times.get(a).get(i));
+                writer.print(',');
+                // export coords
+                writer.print(all_coords.get(a).get(i)[0]);
+                writer.print(',');
+                writer.print(all_coords.get(a).get(i)[1]);
+                writer.print(',');
+                writer.println(all_coords.get(a).get(i)[2]);
+            }
+        }
+        writer.close();
     }
 }
