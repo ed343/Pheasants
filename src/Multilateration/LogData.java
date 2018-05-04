@@ -48,8 +48,8 @@ public class LogData {
         this.FilePath = fp;
         //Automatically extract data from log file when object is created.
         this.extractData(fp);
+        introduceNoise();
         filterRSSIs();
-        normaliseRSSIs(-30, -70,"filter");
     }
     
     LogData(String fp, int test) {
@@ -240,13 +240,27 @@ public class LogData {
                
     }
     
+    void introduceNoise() {
+        for(int i=0;i<this.RSSIs.size();i++) {
+            double rssi = this.RSSIs.get(i);
+
+            // Add random noise, gaussian distributed with m = 2 and var = 2
+            java.util.Random r2 = new java.util.Random();
+            double measurementNoise = r2.nextGaussian() * Math.sqrt(4) + 4;
+            rssi -= measurementNoise;
+            this.RSSIs.set(i, rssi);
+            }
+    }
+    
+    
     //Function that applies 
     void filterRSSIs() {
-        double voltage = 0;
+        double filtRSSI = 0;
         RandomGenerator rand = new JDKRandomGenerator(10);
         for(int j=0; j<this.RSSIs.size(); j++) {
             double rssiMeasurement = this.RSSIs.get(j);
-            double measurementNoise = this.SNRs.get(j);
+            java.util.Random r2 = new java.util.Random();
+            double measurementNoise = 10;//r2.nextGaussian() * Math.sqrt(4) + 4;
             double processNoise = 1e-5d;
             RealMatrix A = new Array2DRowRealMatrix(new double[] { 1d });
             RealMatrix B = null;
@@ -261,7 +275,7 @@ public class LogData {
             KalmanFilter filter = new KalmanFilter(pm, mm);  
             RealVector pNoise = new ArrayRealVector(1);
             RealVector mNoise = new ArrayRealVector(1);
-            for (int i = 0; i < 60; i++) {
+            for (int i = 0; i < 10; i++) {
                 filter.predict();
                 
                 pNoise.setEntry(0, processNoise * rand.nextGaussian());
@@ -273,9 +287,10 @@ public class LogData {
                 RealVector z = H.operate(x).add(mNoise);
                 
                 filter.correct(z);
-                voltage = filter.getStateEstimation()[0];
+                filtRSSI = filter.getStateEstimation()[0];
             }
-            this.filtRSSIs.add(voltage);
+            
+            this.filtRSSIs.add(filtRSSI);
         }
     
 }
