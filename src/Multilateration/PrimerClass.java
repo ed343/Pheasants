@@ -8,12 +8,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PrimerClass {
-    static int no_of_radios;
+    public static int no_of_radios;
     // for the following two entries, the index refers to the radio instance
     // i.e. radiosCoordinates[0] gives the coordinates of the first radio
     //
     // THIS INFO WILL BE TAKEN FROM BASESTATION REGISTRATION
-    private ArrayList<Double[]> radiosCoordinates= new ArrayList<>();
+    public static ArrayList<Double[]> radiosCoordinates= new ArrayList<>();
     ArrayList<Double> measuredPower= new ArrayList<>();
 
     //following from James' new code, we should probably only need the following
