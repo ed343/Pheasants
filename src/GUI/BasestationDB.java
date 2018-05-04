@@ -125,7 +125,7 @@ public class BasestationDB {
         }
     }
     
-    public static void read(Connection c) {
+    public static void readName(Connection c) {
         String sql = "SELECT name FROM basestations;";
         try {
             // insert the appropiate values into the sql statement

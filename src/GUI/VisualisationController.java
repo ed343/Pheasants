@@ -1,7 +1,7 @@
 package GUI;
 
 import Multilateration.MapProcessing;
-import Multilateration.NewClass;
+import Multilateration.Simulation;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -28,6 +28,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 public class VisualisationController {
@@ -53,7 +54,7 @@ public class VisualisationController {
     double centerX;
     double centerY;
     
-    NewClass nc = new NewClass();
+    Simulation nc = new Simulation();
 
     // ArrayList to hold the geographical coordinates of basestations that will be displayed
     ArrayList<Double[]> basestations = new ArrayList<>();
@@ -61,7 +62,7 @@ public class VisualisationController {
     // ArrayList holding cartesian plane basestation coords
     ArrayList<Double[]> cartBasestationCoords = new ArrayList<>(); 
     
-    // hashmap returned after all procedures in NewClass, containing all info:
+    // hashmap returned after all procedures in Simulation, containing all info:
     // < tagID < timestamp, cartCoord(x,y,z)> >
     HashMap<Long, HashMap<BigInteger, Double[]>> tag_registry;
 
@@ -89,6 +90,10 @@ public class VisualisationController {
     ArrayList<ArrayList<BigInteger>> all_times= new ArrayList<>(); // timestamps
     ArrayList<ArrayList<Double[]>> all_coords= new ArrayList<>(); // coordinates
     
+    // ideally should take the smallest value between all tags and time should
+    // be progressed from that value
+    int simTime = 0;
+    
 
     public void initialize() throws IOException {
 
@@ -102,7 +107,12 @@ public class VisualisationController {
         int zoom = mp.getZoom();
         double[] centerPoints = mp.getCenter(); // {centerY, centerX}
         
+        
+       
+        
         getTagInfo(); // prepares all_tags, all_times and all_coords for later use
+        
+        Thread[] threads = new Thread[all_tags.size()]; // creating array to hold threads for every tag?
         
         System.out.println("number of tags: " + all_tags.size());
         System.out.println("number of times: " + all_times.get(0).size());
@@ -158,10 +168,23 @@ public class VisualisationController {
                 if (play.getText().equals(">")) {
                     play.setText("||");
                     // PAUSE VISUALISATION
+                    
+                    for (Thread t: threads) {
+                        t.stop();
+                        System.out.println("simTime:" + simTime);
+                        // delete all threads
+                    }
+
+                    
                 }
                 else {
                     play.setText(">");
                     // PLAY VISUALISATION
+                    
+                    for (int i=0; i<all_tags.size(); i++) {
+                        Thread t = updateTag(i, simTime);
+                        threads[i]=t;
+                    }
                 }
             }
         });
@@ -184,16 +207,28 @@ public class VisualisationController {
         //      but doesn't do that yet (if we have a list of locations,
         //      then it would use that location as a starting point and proceed
         //      with subsequent locations)
-        slider.valueProperty().addListener(new ChangeListener<Number>() {
-            public void changed(ObservableValue<? extends Number> ov,
-                Number old_val, Number new_val) {
-                    currentTime = new_val.intValue();
-                    System.out.println(currentTime);
-                    // start visualisation for both tags
-                    //for (int i=0; i<2; i++) {
-                    //    updateTag(i);
-        //}
+       
+        
+        slider.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        @Override
+        public void handle(MouseEvent event) {
+            slider.setValueChanging(true);
+            double value = (event.getX()/slider.getWidth())*slider.getMax();
+            int v = (int) Math.rint(value);
+            slider.setValue(v);
+            simTime = v;
+            // it is bad to use stop(), but it works
+            // alternative would be using http://www.java67.com/2015/07/how-to-stop-thread-in-java-example.html
+            for (Thread t: threads) {
+                t.stop();
             }
+            // should be used for all tags
+            for (int i=0; i<all_tags.size(); i++) {
+                Thread t = updateTag(i, v);
+                threads[i]=t;
+            }
+            slider.setValueChanging(false);
+        }
         });
         
         visualControl.getChildren().addAll(play, slider);
@@ -284,8 +319,10 @@ public class VisualisationController {
 
         // THIS IS WHERE A VISUALISATION THREAD WILL BE STARTED
         // remains for loop, should be changed to traverse tagID list for all tags
+        
         for (int i=0; i<all_tags.size(); i++) {
-            updateTag(i);
+            Thread th = updateTag(i, simTime);
+            threads[i]=th;
         }
     }
     
@@ -307,7 +344,7 @@ public class VisualisationController {
             }
             
             ArrayList<BigInteger> times_orig=times;
-            times_orig=NewClass.makeDeepCopyBigInteger(times);
+            times_orig=Simulation.makeDeepCopyBigInteger(times);
             
             ArrayList<Double[]> sorted_coords= new ArrayList<>();
             Collections.sort(times);
@@ -400,17 +437,19 @@ public class VisualisationController {
         slider.setValue(time);
     }
      
-     public void updateTag(int index) {
-         new Thread() {
+     public Thread updateTag(int index, int t) {         
+         
+         Thread th = new Thread() {
 
                 // runnable for that thread
                 public void run() {
                     // this will be for loop for all locations that we have
-                    for (int i = 0; i < all_times.get(index).size(); i++) {
+                    for (int i = t; i < all_times.get(index).size(); i++) {
                         //currentTime = i;
                         // TODO: timing will actually need to be synchronised across the tags
                         System.out.println("current time: "+all_times.get(index).get(i));
                         BigInteger time = all_times.get(index).get(i);
+                        simTime = i;
                         int sec = i;
                         int no = i; // index of coordinate to which we want to set location now
                        
@@ -445,7 +484,11 @@ public class VisualisationController {
                         });
                     }
                 }
-            }.start();
+            };
+                 
+        th.start();
+        
+        return th;
          
      }
 

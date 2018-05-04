@@ -1,9 +1,9 @@
 package Multilateration;
 
 import Jama.Matrix;
-import static Multilateration.NewClass.all_coords;
-import static Multilateration.NewClass.all_tags;
-import static Multilateration.NewClass.all_times;
+import static Multilateration.Simulation.all_coords;
+import static Multilateration.Simulation.all_tags;
+import static Multilateration.Simulation.all_times;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

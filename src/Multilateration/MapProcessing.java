@@ -77,6 +77,26 @@ public class MapProcessing {
     }
     
     /**
+     * Function to convert Cartesian coordinate back to geographical, so that
+     * the values can be recorded for the export log file.
+     */
+    public Double[] getGeoLoc(Double[] loc) {
+        
+        // x/xratio + minX = getX
+        // FOR US IT'S X, BUT REALLY IT IS LONGITUDE
+        double x = loc[0]/xratio + corners[3];
+        
+        // maxY - y/yratio = getY
+        // FOR US IT'S Y, BUT REALLY IT IS LATITUDE
+        double y = corners[0] - loc[1]/yratio;
+        
+        // {latitude, longitude} is conventional format for coordinate
+        Double[] coords = {y,x};
+        
+        return coords;
+    }
+    
+    /**
      * Method will take in ArrayList of geographical basestation coordinates,
      * see whether we already have converted them to Cartesian coordinates,
      * and return new ArrayList of Cartesian coordinates that are generated
@@ -121,6 +141,12 @@ public class MapProcessing {
 
         CoordinateTranslation.G_LatLng center = new CoordinateTranslation.G_LatLng(centerX, centerY);
         Double[] coords = ct.getCorners(center, zoom, mapWidth, mapHeight);
+        
+        System.out.println("getMapCorners: ");
+        System.out.println(coords[0]);
+        System.out.println(coords[1]);
+        System.out.println(coords[2]);
+        System.out.println(coords[3]);
 
         return coords;
     }
@@ -158,15 +184,15 @@ public class MapProcessing {
         return frame;
     }
     
-        /**
-     * get x (longitude) coordinate of the beacon
+     /**
+     * get y (latitude) coordinate of the beacon
      */
     public double getY(Double[] coord) {
         return coord[0];
     }
 
     /**
-     * get y (latitude) coordinate of the beacon
+     * get x (longitude) coordinate of the beacon
      */
     public double getX(Double[] coord) {
         return coord[1];

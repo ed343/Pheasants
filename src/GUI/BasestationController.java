@@ -158,7 +158,7 @@ public class BasestationController {
         HBox hb2 = new HBox();
         hb2.setSpacing(5);
 
-        Label la = new Label("Longitude/latitude coordinates:");
+        Label la = new Label("Latitude/longitude coordinates:");
         TextField te = new TextField();
         te.setPrefSize(60, 25);
         Label slash = new Label("/");
