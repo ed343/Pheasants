@@ -1,5 +1,7 @@
 package Jama;
 
+import Multilateration.PrimerClass;
+
    /** LU Decomposition.
    <P>
    For an m-by-n matrix A with m >= n, the LU decomposition is an m-by-n
@@ -279,7 +281,25 @@ public class LUDecomposition implements java.io.Serializable {
          throw new IllegalArgumentException("Matrix row dimensions must agree.");
       }
       if (!this.isNonsingular()) {
-         throw new RuntimeException("Matrix is singular.");
+          System.out.println("Matrix was singular.");
+          System.out.println("The radio coordinates  have been changed slightly to fix the problem.");
+          System.out.println(" Because of this, the coordinate accuracy has dropped.");
+         //throw new RuntimeException("Matrix is singular.");
+         for (int i=0; i<PrimerClass.no_of_radios; i++){
+             Double [] coords=PrimerClass.radiosCoordinates.get(i);
+             
+             if (PrimerClass.radiosCoordinates.size()==2){
+                 coords[0]=coords[0]+0.0002;
+                 coords[1]=coords[1]-0.0005;
+             }
+             else {
+                 coords[0]=coords[0]+0.02;
+                 coords[1]=coords[1]-0.05;
+                 coords[2]=coords[2]+0.01;
+             }
+             PrimerClass.radiosCoordinates.set(i, coords);    
+         }
+         
       }
 
       // Copy right hand side with pivoting

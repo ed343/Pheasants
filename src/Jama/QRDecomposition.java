@@ -181,7 +181,23 @@ public class QRDecomposition implements java.io.Serializable {
          throw new IllegalArgumentException("Matrix row dimensions must agree.");
       }
       if (!this.isFullRank()) {
-         throw new RuntimeException("Matrix is rank deficient.");
+          System.out.println("Matrix was rank defficient.");
+          System.out.println("The radio coordinates  have been changed slightly to fix the problem.");
+          System.out.println(" Because of this, the coordinate accuracy has dropped.");
+         //throw new RuntimeException("Matrix is rank deficient.");
+         for (int i=0; i<Multilateration.PrimerClass.no_of_radios; i++){
+             Double [] coords=Multilateration.PrimerClass.radiosCoordinates.get(i);
+             
+             if (Multilateration.PrimerClass.radiosCoordinates.size()==2){
+                 coords[0]=coords[0]-0.0002;
+                 coords[1]=coords[1]-0.0005;
+             }
+             else {
+                 coords[i%3]=coords[i%3]-1*((i%2==0) ? -1: 1);
+                 //coords[2]=coords[2]-0.1*((i%2==0) ? -1: 1);
+             }
+             Multilateration.PrimerClass.radiosCoordinates.set(i, coords);    
+         }
       }
       
       // Copy right hand side
