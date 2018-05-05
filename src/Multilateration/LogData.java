@@ -7,6 +7,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
+import javafx.util.Pair;
 import org.apache.commons.math3.filter.DefaultMeasurementModel;
 import org.apache.commons.math3.filter.DefaultProcessModel;
 import org.apache.commons.math3.filter.KalmanFilter;
@@ -59,13 +62,20 @@ public class LogData {
     }
     
     
-    LogData(ArrayList<BigInteger> times, ArrayList<Long> ids, ArrayList<Double> rssis, ArrayList<Double> snrs)  {
+    LogData(ArrayList<BigInteger> times, ArrayList<Long> ids, ArrayList<Double> rssis, String noise, String filter, String gran, int gC )  {
         this.Times = times;
         this.IDs = ids;
         this.RSSIs = rssis;
-        this.SNRs = snrs;
-        filterRSSIs();
-        normaliseRSSIs(-30, -70,"filter");
+        if(noise=="yes")
+            introduceNoise();
+        if(gran=="yes") {
+            if(filter=="yes") {
+                filterRSSIs();
+                granularise(this.Times,this.filtRSSIs,this.IDs,gC);
+            } else
+                granularise(this.Times,this.RSSIs,this.IDs,gC);
+        } else if(filter=="yes")
+            filterRSSIs(); 
     }
     
     
@@ -95,7 +105,96 @@ public class LogData {
         return flatDT;
     }
     
+    void granularise(ArrayList<BigInteger> times, ArrayList<Double> rssis, ArrayList<Long> IDs, int gran) {
+        PrimerClass primer = new PrimerClass();
+        primer.setTRVals(times, IDs, rssis);
+        ArrayList<HashMap<Long, ArrayList<Pair<BigInteger,Double>>>> hmArr = primer.idRSSIs;
+        // Get hash map using PrimerClass object.
+        HashMap<Long, ArrayList<Pair<BigInteger,Double>>> hm = hmArr.get(0);
+        Set<Long> inpIDs = hm.keySet();
+        // Get array of all tag IDs
+        Long[] idArray = inpIDs.toArray(new Long[inpIDs.size()]);
+        // Iterate over tags
+        for(Long id : idArray) {
+            ArrayList<Pair<BigInteger,Double>> tRs = hm.get(id);
+            ArrayList<BigInteger> ts = new ArrayList<>();
+            ArrayList<Double> rs = new ArrayList<>();
+            // Get times and rssis for this tag.
+            for(int i=0;i<tRs.size();i++) {
+                ts.add(tRs.get(i).getKey());
+                rs.add(tRs.get(i).getValue());
+            }
+            // Set current time to first detection time.
+            BigInteger currentTime = ts.get(0);
+            // Set next time to be gran seconds in the future.
+            BigInteger nextTime = currentTime.add(BigInteger.valueOf(gran));
+            // Ensure times match with seconds, minutes etc.
+            nextTime = correctT(nextTime);
+            // Array to hold blocks of rssi values.
+            ArrayList<ArrayList<Double>> blocks = new ArrayList<>();
+            int blocknum = 1;
+            ArrayList<Double> rsvals = new ArrayList<>();
+            // Add first rssi val to array.
+            rsvals.add(rs.get(0));
+            if(rs.size()==1) {
+                blocks.add(rsvals);
+            }
+            // Separate rssis into blocks, each corresponding to gran seconds of detections.
+            for(int i=1;i<rs.size();i++) {
+                if(ts.get(i).compareTo(nextTime)==1) {
+                    blocks.add(rsvals);
+                    rsvals = new ArrayList<>();
+                    currentTime = ts.get(i);
+                    nextTime = currentTime.add(BigInteger.valueOf(gran));
+                    nextTime = correctT(nextTime);
+                }
+                if(ts.get(i).compareTo(nextTime)==-1||ts.get(i).compareTo(nextTime)==0) {
+                    rsvals.add(rs.get(i));
+                    if(i==rs.size()-1)
+                        blocks.add(rsvals);
+                } else {
+                    blocks.add(rsvals);
+                    rsvals = new ArrayList<>();
+                    blocknum += 1;
+                    currentTime = nextTime;
+                    nextTime = currentTime.add(BigInteger.valueOf(gran));
+                    nextTime = correctT(nextTime);
+                }
+            }
+            ArrayList<Double> avArr = new ArrayList<>();
+            // Calculate average values over blocks and add to array for each detection.
+            for(ArrayList<Double> block : blocks) {
+                double sum =0;
+                ArrayList<Double> avBlock = new ArrayList<>();
+                for(int i=0;i<block.size();i++) {
+                    sum+=block.get(i);
+                }
+                double avRssi = sum/block.size();
+                for(int i=0;i<block.size();i++) {
+                    avArr.add(avRssi);
+                }
+            }
+            // Create new pairs of time, averageRSSI, and add to hash map.
+            ArrayList<Pair<BigInteger,Double>> pairs = new ArrayList<>();
+            for(int i=0; i<avArr.size(); i++) {
+                this.RSSIs.set(i, avArr.get(i));
+            }
+            }
+    }
     
+    // Ensures times are consistent.
+    BigInteger correctT(BigInteger currentTime) {
+        int check1 = currentTime.mod(BigInteger.valueOf(100)).compareTo(BigInteger.valueOf(60));
+        if(check1==1 ||check1 ==0)  {
+            currentTime = currentTime.add(BigInteger.valueOf(40));
+        }
+        // Ensure times are correct in relation to hours.
+        int check2 = currentTime.mod(BigInteger.valueOf(10000)).mod(BigInteger.valueOf(100)).compareTo(BigInteger.valueOf(6000));
+        if(check2==1 || check2==0) {
+            currentTime = currentTime.add(BigInteger.valueOf(4000));
+        }
+        return currentTime;
+    }
     
     /*
     *  Function to extract the data held in a log file.
