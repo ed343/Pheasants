@@ -295,10 +295,11 @@ public class NewClass {
         //int id = nc.generateID();
         //System.out.println("Pheasant ID: " + id);
         
-        ArrayList<Double> log1= new ArrayList<>();
-        ArrayList<Double> log2= new ArrayList<>();
-        ArrayList<Double> log3= new ArrayList<>();
-        ArrayList<Double> log4= new ArrayList<>();
+        
+        ArrayList<Double> rs1= new ArrayList<>();
+        ArrayList<Double> rs2= new ArrayList<>();
+        ArrayList<Double> rs3= new ArrayList<>();
+        ArrayList<Double> rs4= new ArrayList<>();
         
         // need to create logs for each of the radios, fixed only adding to
         // log 1 to addding to each log
@@ -308,29 +309,37 @@ public class NewClass {
             
             Double dist1 = getDistance(stations.get(0), locCart);
             Double rssi1 = getRSSI(dist1);
-            log1.add(rssi1);
+            rs1.add(rssi1);
             
             Double dist2 = getDistance(stations.get(1), locCart);
             Double rssi2 = getRSSI(dist2);
-            log2.add(rssi2);
+            rs2.add(rssi2);
             
             Double dist3 = getDistance(stations.get(2), locCart);
             Double rssi3 = getRSSI(dist3);
-            log3.add(rssi3);
+            rs3.add(rssi3);
             
             Double dist4 = getDistance(stations.get(3), locCart);
             Double rssi4 = getRSSI(dist4);
-            log4.add(rssi4);
+            rs4.add(rssi4);
         }
         
+        
         //get times
-        ArrayList<BigInteger> timez = generateTimes();
+        //start time
+        BigInteger sTime = new BigInteger("20171116090000");
+        ArrayList<BigInteger> timez = gTPoisson(18,sTime);
         // get tags
         // simply replicate this radio
         tags=new ArrayList<>();
         for(int i=0; i<18; i++){
             tags.add(44001004238L);
         }
+        
+        LogData log1 = new LogData(timez,tags,rs1,"yes","yes","yes",4);
+        LogData log2 = new LogData(timez,tags,rs2,"yes","yes","yes",4);
+        LogData log3 = new LogData(timez,tags,rs3,"yes","yes","yes",4);
+        LogData log4 = new LogData(timez,tags,rs4,"yes","yes","yes",4);
         
         //run the thingamabob
         
@@ -346,11 +355,11 @@ public class NewClass {
         }
         
         // set lists in primer for each radio
-        
-        primer.setTRVals(timez, tags, log1);
-        primer.setTRVals(timez, tags, log2);
-        primer.setTRVals(timez, tags, log3);
-        primer.setTRVals(timez, tags, log4);
+        //Change log1.filtRSSIs to log1.RSSIs if no filtering.
+        primer.setTRVals(log1.Times, log1.IDs, log1.filtRSSIs);
+        primer.setTRVals(log2.Times, log2.IDs, log2.filtRSSIs);
+        primer.setTRVals(log3.Times, log3.IDs, log3.filtRSSIs);
+        primer.setTRVals(log4.Times, log4.IDs, log4.filtRSSIs);
         
         
         RssiEquation req = new RssiEquation();
