@@ -415,7 +415,7 @@ public class LogData {
         for(int j=0; j<this.RSSIs.size(); j++) {
             double rssiMeasurement = this.RSSIs.get(j);
             java.util.Random r2 = new java.util.Random();
-            double measurementNoise = 10;//r2.nextGaussian() * Math.sqrt(4) + 4;
+            double measurementNoise = 2;//r2.nextGaussian() * Math.sqrt(4) + 4;
             double processNoise = 1e-5d;
             RealMatrix A = new Array2DRowRealMatrix(new double[] { 1d });
             RealMatrix B = null;
