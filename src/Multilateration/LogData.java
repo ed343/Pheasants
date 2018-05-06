@@ -46,13 +46,22 @@ public class LogData {
     ArrayList<Double> filtRSSIs= new ArrayList<>();
     
     //Constructor
-    LogData(String fp) {
+    //Set noise, filter and gran on and off, gC is granularity constant.
+    LogData(String fp,String noise, String filter, String gran, int gC) {
         //Set file path.
         this.FilePath = fp;
         //Automatically extract data from log file when object is created.
-        this.extractData(fp);
-        introduceNoise();
-        filterRSSIs();
+        this.extractSimData(fp);
+        if(noise=="yes")
+            introduceNoise();
+        if(gran=="yes") {
+            if(filter=="yes") {
+                filterRSSIs();
+                granularise(this.Times,this.filtRSSIs,this.IDs,gC);
+            } else
+                granularise(this.Times,this.RSSIs,this.IDs,gC);
+        } else if(filter=="yes")
+            filterRSSIs(); 
     }
     
     LogData(String fp, int test) {
@@ -194,6 +203,53 @@ public class LogData {
             currentTime = currentTime.add(BigInteger.valueOf(4000));
         }
         return currentTime;
+    }
+    
+    public void extractSimData(String filepath) {
+        //The path of the log file to be used.
+        String fileName = filepath;
+
+        String line = null;
+
+        try {
+            
+            //Open the file
+            FileReader fileReader = 
+                new FileReader(fileName);
+
+            //Read the file
+            BufferedReader bufferedReader = 
+                new BufferedReader(fileReader);
+            
+            //Iterate over lines in file.
+            while((line = bufferedReader.readLine()) != null) {
+                int sze = line.length();
+                String time = line.substring(5, 19);
+                System.out.println(time);
+                BigInteger tm = new BigInteger(time);
+                this.Times.add(tm);
+                String ID = line.substring(24,34);
+                System.out.println(ID);
+                this.IDs.add(Long.parseLong(ID));
+                String RSSI = line.substring(41,sze-1);
+                System.out.println(RSSI);
+                this.RSSIs.add(Double.parseDouble(RSSI));
+            }
+                        
+            //Close the file
+            bufferedReader.close();         
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println(
+                "Unable to open file '" + 
+                fileName + "'");                
+        }
+        catch(IOException ex) {
+            System.out.println(
+                "Error reading file '" 
+                + fileName + "'");                  
+        }
+                //Check for valid lines.
     }
     
     /*
@@ -345,7 +401,7 @@ public class LogData {
 
             // Add random noise, gaussian distributed with m = 2 and var = 2
             java.util.Random r2 = new java.util.Random();
-            double measurementNoise = r2.nextGaussian() * Math.sqrt(4) + 4;
+            double measurementNoise = r2.nextGaussian() * Math.sqrt(1) + 1;
             rssi -= measurementNoise;
             this.RSSIs.set(i, rssi);
             }
