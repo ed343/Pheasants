@@ -143,100 +143,100 @@ public class NewClass {
         return times;
     }
     
-    HashMap<Long, ArrayList<Pair<BigInteger,Double>>> granularise(ArrayList<BigInteger> times, ArrayList<Double> rssis, ArrayList<Long> IDs, int gran) {
-        PrimerClass primer = new PrimerClass();
-        primer.setTRVals(times, IDs, rssis);
-        ArrayList<HashMap<Long, ArrayList<Pair<BigInteger,Double>>>> hmArr = primer.idRSSIs;
-        // Hash map to return
-        HashMap<Long, ArrayList<Pair<BigInteger,Double>>> hmRet = new HashMap<>();
-        // Get hash map using PrimerClass object.
-        HashMap<Long, ArrayList<Pair<BigInteger,Double>>> hm = hmArr.get(0);
-        Set<Long> inpIDs = hm.keySet();
-        // Get array of all tag IDs
-        Long[] idArray = inpIDs.toArray(new Long[inpIDs.size()]);
-        // Iterate over tags
-        for(Long id : idArray) {
-            ArrayList<Pair<BigInteger,Double>> tRs = hm.get(id);
-            ArrayList<BigInteger> ts = new ArrayList<>();
-            ArrayList<Double> rs = new ArrayList<>();
-            // Get times and rssis for this tag.
-            for(int i=0;i<tRs.size();i++) {
-                ts.add(tRs.get(i).getKey());
-                rs.add(tRs.get(i).getValue());
+    // Function takes times, IDs and RSSIs and writes them to a 'fake' log file
+    // in csv format.
+    public void writeLog( ArrayList<BigInteger> times,ArrayList<Long> IDs, ArrayList<Double> rssis, String fp) throws IOException {
+        File file = new File(fp);
+        file.createNewFile();
+        FileWriter writer = new FileWriter(fp);
+        for (int i=0;i<18;i++) {  
+                writer.write("Time="+String.valueOf(times.get(i))+";ID="+
+                        String.valueOf(IDs.get(i))+";RSSI="+String.valueOf(rssis.get(i))+";\n");
             }
-            // Set current time to first detection time.
-            BigInteger currentTime = ts.get(0);
-            // Set next time to be gran seconds in the future.
-            BigInteger nextTime = currentTime.add(BigInteger.valueOf(gran));
-            // Ensure times match with seconds, minutes etc.
-            nextTime = correctT(nextTime);
-            // Array to hold blocks of rssi values.
-            ArrayList<ArrayList<Double>> blocks = new ArrayList<>();
-            int blocknum = 1;
-            ArrayList<Double> rsvals = new ArrayList<>();
-            // Add first rssi val to array.
-            rsvals.add(rs.get(0));
-            if(rs.size()==1) {
-                blocks.add(rsvals);
-            }
-            // Separate rssis into blocks, each corresponding to gran seconds of detections.
-            for(int i=1;i<rs.size();i++) {
-                if(ts.get(i).compareTo(nextTime)==1) {
-                    blocks.add(rsvals);
-                    rsvals = new ArrayList<>();
-                    currentTime = ts.get(i);
-                    nextTime = currentTime.add(BigInteger.valueOf(gran));
-                    nextTime = correctT(nextTime);
-                }
-                if(ts.get(i).compareTo(nextTime)==-1||ts.get(i).compareTo(nextTime)==0) {
-                    rsvals.add(rs.get(i));
-                    if(i==rs.size()-1)
-                        blocks.add(rsvals);
-                } else {
-                    blocks.add(rsvals);
-                    rsvals = new ArrayList<>();
-                    blocknum += 1;
-                    currentTime = nextTime;
-                    nextTime = currentTime.add(BigInteger.valueOf(gran));
-                    nextTime = correctT(nextTime);
-                }
-            }
-            ArrayList<Double> avArr = new ArrayList<>();
-            // Calculate average values over blocks and add to array for each detection.
-            for(ArrayList<Double> block : blocks) {
-                double sum =0;
-                ArrayList<Double> avBlock = new ArrayList<>();
-                for(int i=0;i<block.size();i++) {
-                    sum+=block.get(i);
-                }
-                double avRssi = sum/block.size();
-                for(int i=0;i<block.size();i++) {
-                    avArr.add(avRssi);
-                }
-            }
-            // Create new pairs of time, averageRSSI, and add to hash map.
-            ArrayList<Pair<BigInteger,Double>> pairs = new ArrayList<>();
-            for(int i=0; i<avArr.size(); i++) {
-                Pair<BigInteger,Double> pair = new Pair(ts.get(i),avArr.get(i));
-                pairs.add(pair);
-            }
-            hmRet.put(id,pairs);
-            }
-        return hmRet;
+        writer.close();
     }
     
-    // Ensures times are consistent.
-    BigInteger correctT(BigInteger currentTime) {
-        int check1 = currentTime.mod(BigInteger.valueOf(100)).compareTo(BigInteger.valueOf(60));
-        if(check1==1 ||check1 ==0)  {
-            currentTime = currentTime.add(BigInteger.valueOf(40));
+    /* Function to generate log files
+       
+    size: Number of detections to generate
+    
+    fp: File path to the folder where log files will be stored.
+    
+    */
+    
+    public void genLog(int size, String fp) {
+        
+        
+        NewClass nc= new NewClass();    
+        
+        
+        Double[] start =  {50.73848598629042, -3.531734873115414}; // {4028782.80, -248650.79, 4938371.316};
+
+        Double[][] locations = new Double[size][2];
+        
+        basestations = nc.getGeoBasestations();
+        
+        MapProcessing mp = new MapProcessing(basestations);        
+        
+        // getting ArrayList of cartesian coordinates of basestations
+        ArrayList<Double[]> stations =  mp.getBasestations(basestations);        
+        
+        // populating location list with pheasant coordinates if it moves in a line
+        locations = nc.getPheasantLocs(start, locations);
+                
+        ArrayList<Double> rs1= new ArrayList<>();
+        ArrayList<Double> rs2= new ArrayList<>();
+        ArrayList<Double> rs3= new ArrayList<>();
+        ArrayList<Double> rs4= new ArrayList<>();
+        
+        // need to create logs for each of the radios, fixed only adding to
+        // log 1 to addding to each log
+        for (Double[] loc: locations) {
+            
+            Double[] locCart = mp.getCartesianLoc(loc);
+            
+            Double dist1 = getDistance(stations.get(0), locCart);
+            Double rssi1 = getRSSI(dist1);
+            rs1.add(rssi1);
+            
+            Double dist2 = getDistance(stations.get(1), locCart);
+            Double rssi2 = getRSSI(dist2);
+            rs2.add(rssi2);
+            
+            Double dist3 = getDistance(stations.get(2), locCart);
+            Double rssi3 = getRSSI(dist3);
+            rs3.add(rssi3);
+            
+            Double dist4 = getDistance(stations.get(3), locCart);
+            Double rssi4 = getRSSI(dist4);
+            rs4.add(rssi4);
         }
-        // Ensure times are correct in relation to hours.
-        int check2 = currentTime.mod(BigInteger.valueOf(10000)).mod(BigInteger.valueOf(100)).compareTo(BigInteger.valueOf(6000));
-        if(check2==1 || check2==0) {
-            currentTime = currentTime.add(BigInteger.valueOf(4000));
+        
+        
+        //get times
+        //start time
+        BigInteger sTime = new BigInteger("20171116090000");
+        ArrayList<BigInteger> timez = gTPoisson(size,sTime);
+        // get tags
+        // simply replicate this radio
+        tags=new ArrayList<>();
+        for(int i=0; i<size; i++){
+            tags.add(44001004238L);
         }
-        return currentTime;
+        String fp1 = fp+"/1.csv";
+        String fp2 = fp+"/2.csv";
+        String fp3 = fp+"/3.csv";
+        String fp4 = fp+"/4.csv";
+        try {
+            writeLog(timez,tags, rs1,fp1);
+            writeLog(timez,tags, rs2,fp2);
+            writeLog(timez,tags, rs3,fp3);
+            writeLog(timez,tags, rs4,fp4);
+        } catch (IOException ex) {
+            System.out.println("didn't work");
+        }
+        
+        
     }
     
     static BigInteger updateTimes(BigInteger currentTime) {
