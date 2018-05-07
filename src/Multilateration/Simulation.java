@@ -5,6 +5,9 @@ package Multilateration;
 
 import GUI.CoordinateTranslation;
 import Jama.Matrix;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,7 +21,7 @@ import java.util.stream.IntStream;
 import javafx.util.Pair;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 
-public class NewClass {
+public class Simulation {
     
     static PrimerClass primer;
 
@@ -144,9 +147,9 @@ public class NewClass {
     }
     
     // Function takes times, IDs and RSSIs and writes them to a 'fake' log file
-    // in csv format.
+    // in csv format. 
     public void writeLog( ArrayList<BigInteger> times,ArrayList<Long> IDs, ArrayList<Double> rssis, String fp) throws IOException {
-        File file = new File(fp);
+        File file = new File(fp);        
         file.createNewFile();
         FileWriter writer = new FileWriter(fp);
         for (int i=0;i<18;i++) {  
@@ -167,7 +170,7 @@ public class NewClass {
     public void genLog(int size, String fp) {
         
         
-        NewClass nc= new NewClass();    
+        Simulation nc= new Simulation();    
         
         
         Double[] start =  {50.73848598629042, -3.531734873115414}; // {4028782.80, -248650.79, 4938371.316};
@@ -275,11 +278,15 @@ public class NewClass {
         return temp;
     }
     
-    public HashMap<Long, HashMap<BigInteger, Double[]>> doMagic() {            
+    public HashMap<Long, HashMap<BigInteger, Double[]>> doMagic() {  
         
-        Double[] start =  {50.73848598629042, -3.531734873115414}; // {4028782.80, -248650.79, 4938371.316};
+        int numberOfTags = 2; // how many tags will be
+        
+        Double[] start =  {50.73848598629042, -3.531734873115414}; 
+        Double[] start1 =  {50.73858598629042, -3.531734873115414}; 
 
         Double[][] locations = new Double[18][2];
+        Double[][] locations1 = new Double[18][2];
         
         basestations = getGeoBasestations();
         
@@ -290,6 +297,11 @@ public class NewClass {
         
         // populating location list with pheasant coordinates if it moves in a line
         locations = getPheasantLocs(start, locations);
+        locations1 = getPheasantLocs(start1, locations1);
+        
+        ArrayList<Double[][]> allLocs = new ArrayList<>();
+        allLocs.add(locations);
+        allLocs.add(locations1);
         
         //Not using this
         //int id = nc.generateID();
@@ -303,37 +315,48 @@ public class NewClass {
         
         // need to create logs for each of the radios, fixed only adding to
         // log 1 to addding to each log
-        for (Double[] loc: locations) {
+        for (Double[][] tagLocs: allLocs){
             
-            Double[] locCart = mp.getCartesianLoc(loc);
-            
-            Double dist1 = getDistance(stations.get(0), locCart);
-            Double rssi1 = getRSSI(dist1);
-            rs1.add(rssi1);
-            
-            Double dist2 = getDistance(stations.get(1), locCart);
-            Double rssi2 = getRSSI(dist2);
-            rs2.add(rssi2);
-            
-            Double dist3 = getDistance(stations.get(2), locCart);
-            Double rssi3 = getRSSI(dist3);
-            rs3.add(rssi3);
-            
-            Double dist4 = getDistance(stations.get(3), locCart);
-            Double rssi4 = getRSSI(dist4);
-            rs4.add(rssi4);
+            for (Double[] loc: locations) {
+
+                Double[] locCart = mp.getCartesianLoc(loc);
+
+                Double dist1 = getDistance(stations.get(0), locCart);
+                Double rssi1 = getRSSI(dist1);
+                rs1.add(rssi1);
+
+                Double dist2 = getDistance(stations.get(1), locCart);
+                Double rssi2 = getRSSI(dist2);
+                rs2.add(rssi2);
+
+                Double dist3 = getDistance(stations.get(2), locCart);
+                Double rssi3 = getRSSI(dist3);
+                rs3.add(rssi3);
+
+                Double dist4 = getDistance(stations.get(3), locCart);
+                Double rssi4 = getRSSI(dist4);
+                rs4.add(rssi4);
+            }
         }
         
         
         //get times
         //start time
         BigInteger sTime = new BigInteger("20171116090000");
-        ArrayList<BigInteger> timez = gTPoisson(18,sTime);
+        ArrayList<BigInteger> times1 = gTPoisson(18,sTime);
+        ArrayList<BigInteger> times2 = gTPoisson(18,sTime);
+        ArrayList<BigInteger> timez = new ArrayList<BigInteger>(times1);
+        timez.addAll(times2);
+ 
         // get tags
         // simply replicate this radio
         tags=new ArrayList<>();
         for(int i=0; i<18; i++){
             tags.add(44001004238L);
+        }
+        
+        for(int i=0; i<18; i++){
+            tags.add(44444444444L);
         }
         
         LogData log1 = new LogData(timez,tags,rs1,"yes","yes","yes",4);
@@ -372,7 +395,7 @@ public class NewClass {
     
     public static void main(String args[]){
         
-        NewClass nc= new NewClass();                
+        Simulation nc= new Simulation();                
         
         Double[] start =  {50.73848598629042, -3.531734873115414}; // {4028782.80, -248650.79, 4938371.316};
 

@@ -11,7 +11,7 @@ public class MapProcessing {
     
     int mapWidth = 480;
     int mapHeight = 280;
-    int zoom = 16;
+    int zoom = 17;  // zoom operator to define zooming for Google Maps
     double centerX;
     double centerY;
     
