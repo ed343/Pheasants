@@ -1,9 +1,8 @@
 /*
 Generating dummy log files.
-*/
+ */
 package Multilateration;
 
-import GUI.CoordinateTranslation;
 import Jama.Matrix;
 import java.io.File;
 import java.io.FileWriter;
@@ -15,82 +14,88 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.util.Pair;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 
 public class Simulation {
-    
+
     static PrimerClass primer;
 
     static ArrayList<Long> tags;
     static HashMap<Long, HashMap<BigInteger, Double[]>> tag_registry;
-    
+
     static ArrayList<Double[]> basestations;
-    
+
+    static int no_of_tags = 2;
+
     // these are the final ordered data
     // use them as shown in the end of method order_times_coords()
-    static ArrayList<Long> all_tags= new ArrayList<>();
-    static ArrayList<ArrayList<BigInteger>> all_times= new ArrayList<>();
-    static ArrayList<ArrayList<Double[]>> all_coords= new ArrayList<>();
-    
-    
-    public Double[][] getPheasantLocs(Double[] start, Double[][] locs) {       
-        
+    static ArrayList<Long> all_tags = new ArrayList<>();
+    static ArrayList<ArrayList<BigInteger>> all_times = new ArrayList<>();
+    static ArrayList<ArrayList<Double[]>> all_coords = new ArrayList<>();
+
+    public Double[][] getPheasantLocs(Double[] start) {
+
+        Double[][] locs = new Double[18][2];
+
         Double x = start[1]; // x is longitude
         Double y = start[0]; // y is latitude
 
         // current function just moves tag to the right (or down?) at every step
-        for (int i=0; i<18; i++) {
-            locs[i][1]=x+0.0001;
-            locs[i][0]=y;
-            x=x+0.0001;
-            
-            //System.out.println("getPheasantLocs:" + locs[i][0] + ", " + locs[i][1]);
+        for (int i = 0; i < 18; i++) {
+            locs[i][1] = x + 0.0001;
+            locs[i][0] = y;
+            x = x + 0.0001;
+
+            System.out.println("getPheasantLocs:" + locs[i][0] + ", " + locs[i][1]);
         }
-        
+
         return locs;
     }
-    
-    public Double getDistance (Double[] base, Double[] tag) {
-        Double d =0.0;
-        Double tempx = Math.abs (base[0] - tag[0]);
-        Double tempy = Math.abs (base[1] - tag[1]);
-        Double tempz = Math.abs (base[2] - tag[2]);
-        
+
+    public Double getDistance(Double[] base, Double[] tag) {
+        Double d = 0.0;
+        Double tempx = Math.abs(base[0] - tag[0]);
+        Double tempy = Math.abs(base[1] - tag[1]);
+        Double tempz = Math.abs(base[2] - tag[2]);
+
         d = Math.sqrt(Math.pow(tempx, 2) + Math.pow(tempy, 2) + Math.pow(tempz, 2));
-        
+
         return d;
     }
-    
+
     public Double getRSSI(Double d) {
         Double mp = -44.0;
         Double rssi = mp - 10 * 2 * Math.log10(d);
-        
+
         return rssi;
     }
-    
+
     // not using this
     public int generateID() {
         Random rand = new Random();
         int value = rand.nextInt(50);
-        
+
         return value;
     }
-    
+
     public ArrayList<BigInteger> generateTimes() {
         ArrayList<BigInteger> al = new ArrayList<>();
-        BigInteger start = new BigInteger("10");
-        BigInteger four = new BigInteger("4");
-        for (int i=0;i<18; i++) {
-            al.add(start.add(four));
-            start = start.add(four);
+
+        for (int j = 0; j < no_of_tags; j++) {
+            BigInteger start = new BigInteger("10");
+            BigInteger four = new BigInteger("4");
+            for (int i = 0; i < 18; i++) {
+                al.add(start.add(four));
+                start = start.add(four);
+            }
         }
+
         return al;
     }
-    
+
     static ArrayList<BigInteger> gTPoisson(int iters, BigInteger startTime) {
         // Create times array
         ArrayList<BigInteger> times = new ArrayList<>();
@@ -103,7 +108,7 @@ public class Simulation {
         ArrayList<Double> rProbs = new ArrayList<>();
         // Create a poisson distribution with mean of mean(INPUT 3)
         PoissonDistribution pdist = new PoissonDistribution(1);
-        double cp =0;
+        double cp = 0;
         for (Integer range1 : range) {
             // Calculate probabilities for all integers in range and add to array.
             double prob = pdist.cumulativeProbability(range1);
@@ -111,213 +116,201 @@ public class Simulation {
             // Calculate the cumulative probabilty for members of range.
             cp += prob;
         }
-        
-        for(int i=0;i<iters;i++) {
+
+        for (int i = 0; i < iters; i++) {
             // Generate a random double between 0 and cp.
             double p = Math.random() * cp;
             double cumulativeProbability = 0.0;
             BigInteger t2add = new BigInteger("0");
             // Psuedorandomly determine the next inter-detection time.
-            for (int j=0;j<rProbs.size();j++) {
+            for (int j = 0; j < rProbs.size(); j++) {
                 cumulativeProbability += rProbs.get(j);
                 if (p <= cumulativeProbability) {
                     t2add = new BigInteger(String.valueOf(range.get(j)));
                     break;
                 }
             }
-            if(t2add.compareTo(BigInteger.valueOf(2))==0) {
+            if (t2add.compareTo(BigInteger.valueOf(2)) == 0) {
                 currentTime = updateTimes(currentTime);
                 times.add(currentTime);
                 currentTime = updateTimes(currentTime);
                 times.add(currentTime);
+            } else if (t2add.compareTo(BigInteger.valueOf(1)) == 0) {
+                currentTime = updateTimes(currentTime);
+                currentTime = updateTimes(currentTime);
+                times.add(currentTime);
+            } else {
+                currentTime = updateTimes(currentTime);
+                currentTime = updateTimes(currentTime);
             }
-            else if(t2add.compareTo(BigInteger.valueOf(1))==0) {
-                currentTime = updateTimes(currentTime);
-                currentTime = updateTimes(currentTime);
-                times.add(currentTime);
-            }
-            else {
-                currentTime = updateTimes(currentTime);
-                currentTime = updateTimes(currentTime);
-            }           
-            
-        }      
-        
+
+        }
+
         return times;
     }
-    
+
     // Function takes times, IDs and RSSIs and writes them to a 'fake' log file
     // in csv format. 
-    public void writeLog( ArrayList<BigInteger> times,ArrayList<Long> IDs, ArrayList<Double> rssis, String fp) throws IOException {
-        File file = new File(fp);        
+    public void writeLog(ArrayList<BigInteger> times, ArrayList<Long> IDs, ArrayList<Double> rssis, String fp) throws IOException {
+        File file = new File(fp);
         file.createNewFile();
         FileWriter writer = new FileWriter(fp);
-        for (int i=0;i<18;i++) {  
-                writer.write("Time="+String.valueOf(times.get(i))+";ID="+
-                        String.valueOf(IDs.get(i))+";RSSI="+String.valueOf(rssis.get(i))+";\n");
-            }
+        for (int i = 0; i < 18; i++) {
+            writer.write("Time=" + String.valueOf(times.get(i)) + ";ID="
+                    + String.valueOf(IDs.get(i)) + ";RSSI=" + String.valueOf(rssis.get(i)) + ";\n");
+        }
         writer.close();
     }
-    
+
     /* Function to generate log files
        
     size: Number of detections to generate
     
     fp: File path to the folder where log files will be stored.
     
-    */
-    
+     */
     public void genLog(int size, String fp) {
-        
-        
-        Simulation nc= new Simulation();    
-        
-        
-        Double[] start =  {50.73848598629042, -3.531734873115414}; // {4028782.80, -248650.79, 4938371.316};
+
+        Simulation nc = new Simulation();
+
+        Double[] start = {50.73848598629042, -3.531734873115414}; // {4028782.80, -248650.79, 4938371.316};
 
         Double[][] locations = new Double[size][2];
-        
+
         basestations = nc.getGeoBasestations();
-        
-        MapProcessing mp = new MapProcessing(basestations);        
-        
+
+        MapProcessing mp = new MapProcessing(basestations);
+
         // getting ArrayList of cartesian coordinates of basestations
-        ArrayList<Double[]> stations =  mp.getBasestations(basestations);        
-        
+        ArrayList<Double[]> stations = mp.getBasestations(basestations);
+
         // populating location list with pheasant coordinates if it moves in a line
-        locations = nc.getPheasantLocs(start, locations);
-                
-        ArrayList<Double> rs1= new ArrayList<>();
-        ArrayList<Double> rs2= new ArrayList<>();
-        ArrayList<Double> rs3= new ArrayList<>();
-        ArrayList<Double> rs4= new ArrayList<>();
-        
+        locations = nc.getPheasantLocs(start);
+
+        ArrayList<Double> rs1 = new ArrayList<>();
+        ArrayList<Double> rs2 = new ArrayList<>();
+        ArrayList<Double> rs3 = new ArrayList<>();
+        ArrayList<Double> rs4 = new ArrayList<>();
+
         // need to create logs for each of the radios, fixed only adding to
         // log 1 to addding to each log
-        for (Double[] loc: locations) {
-            
+        for (Double[] loc : locations) {
+
             Double[] locCart = mp.getCartesianLoc(loc);
-            
+
             Double dist1 = getDistance(stations.get(0), locCart);
             Double rssi1 = getRSSI(dist1);
             rs1.add(rssi1);
-            
+
             Double dist2 = getDistance(stations.get(1), locCart);
             Double rssi2 = getRSSI(dist2);
             rs2.add(rssi2);
-            
+
             Double dist3 = getDistance(stations.get(2), locCart);
             Double rssi3 = getRSSI(dist3);
             rs3.add(rssi3);
-            
+
             Double dist4 = getDistance(stations.get(3), locCart);
             Double rssi4 = getRSSI(dist4);
             rs4.add(rssi4);
         }
-        
-        
+
         //get times
         //start time
         BigInteger sTime = new BigInteger("20171116090000");
-        ArrayList<BigInteger> timez = gTPoisson(size,sTime);
+        ArrayList<BigInteger> timez = gTPoisson(size, sTime);
         // get tags
         // simply replicate this radio
-        tags=new ArrayList<>();
-        for(int i=0; i<size; i++){
+        tags = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
             tags.add(44001004238L);
         }
-        String fp1 = fp+"/1.csv";
-        String fp2 = fp+"/2.csv";
-        String fp3 = fp+"/3.csv";
-        String fp4 = fp+"/4.csv";
+        String fp1 = fp + "/1.csv";
+        String fp2 = fp + "/2.csv";
+        String fp3 = fp + "/3.csv";
+        String fp4 = fp + "/4.csv";
         try {
-            writeLog(timez,tags, rs1,fp1);
-            writeLog(timez,tags, rs2,fp2);
-            writeLog(timez,tags, rs3,fp3);
-            writeLog(timez,tags, rs4,fp4);
+            writeLog(timez, tags, rs1, fp1);
+            writeLog(timez, tags, rs2, fp2);
+            writeLog(timez, tags, rs3, fp3);
+            writeLog(timez, tags, rs4, fp4);
         } catch (IOException ex) {
             System.out.println("didn't work");
         }
-        
-        
+
     }
-    
+
     static BigInteger updateTimes(BigInteger currentTime) {
         currentTime = currentTime.add(BigInteger.valueOf(4));
         // Ensure times are correct in relation to minutes.
         int check1 = currentTime.mod(BigInteger.valueOf(100)).compareTo(BigInteger.valueOf(60));
-        if(check1==1 || check1 ==0)  {
+        if (check1 == 1 || check1 == 0) {
             currentTime = currentTime.add(BigInteger.valueOf(40));
         }
         // Ensure times are correct in relation to hours.
         int check2 = currentTime.mod(BigInteger.valueOf(10000)).mod(BigInteger.valueOf(100)).compareTo(BigInteger.valueOf(6000));
-        if(check2==1 || check2==0) {
+        if (check2 == 1 || check2 == 0) {
             currentTime = currentTime.add(BigInteger.valueOf(4000));
         }
         return currentTime;
-        
+
     }
-    
+
     public ArrayList<Double[]> getGeoBasestations() {
-        
+
         ArrayList<Double[]> temp = new ArrayList<>();
-        
+
         // read basestation coordinates from log upload selected basestations
         // and get their coordinates from the database
-
-        Double[] bs1 = {50.738486, -3.531713}; 
-        Double[] bs2 = {50.738675, -3.531101}; 
-        Double[] bs3 = {50.738822, -3.531642}; 
-        Double[] bs4 = {50.738829, -3.531627}; 
+        Double[] bs1 = {50.738486, -3.531713};
+        Double[] bs2 = {50.738675, -3.531101};
+        Double[] bs3 = {50.738822, -3.531642};
+        Double[] bs4 = {50.738829, -3.531627};
 
         temp.add(bs1);
         temp.add(bs2);
         temp.add(bs3);
         temp.add(bs4);
-        
+
         return temp;
     }
-    
-    public HashMap<Long, HashMap<BigInteger, Double[]>> doMagic() {  
-        
-        int numberOfTags = 2; // how many tags will be
-        
-        Double[] start =  {50.73848598629042, -3.531734873115414}; 
-        Double[] start1 =  {50.73858598629042, -3.531734873115414}; 
 
-        Double[][] locations = new Double[18][2];
-        Double[][] locations1 = new Double[18][2];
-        
+    public HashMap<Long, HashMap<BigInteger, Double[]>> doMagic() {
+
+        no_of_tags = 2;
+
+        // start position should be somewhere between basestations, probably 
+        // generated randomly
+        Double[] start = {50.73848598629042, -3.531734873115414};
+
+        ArrayList<Double[][]> locations = new ArrayList<>();
+
         basestations = getGeoBasestations();
-        
-        MapProcessing mp = new MapProcessing(basestations);        
-        
+
+        MapProcessing mp = new MapProcessing(basestations);
+
         // getting ArrayList of cartesian coordinates of basestations
-        ArrayList<Double[]> stations =  mp.getBasestations(basestations);        
-        
-        // populating location list with pheasant coordinates if it moves in a line
-        locations = getPheasantLocs(start, locations);
-        locations1 = getPheasantLocs(start1, locations1);
-        
-        ArrayList<Double[][]> allLocs = new ArrayList<>();
-        allLocs.add(locations);
-        allLocs.add(locations1);
-        
+        ArrayList<Double[]> stations = mp.getBasestations(basestations);
+
+        for (int i = 0; i < no_of_tags; i++) {
+            // populating location list with pheasant coordinates if it moves in a line
+            locations.add(getPheasantLocs(start));
+            start[0] = start[0] + 0.0001;
+            start[1] = start[1] + 0.0001;
+        }
+
         //Not using this
         //int id = nc.generateID();
         //System.out.println("Pheasant ID: " + id);
-        
-        
-        ArrayList<Double> rs1= new ArrayList<>();
-        ArrayList<Double> rs2= new ArrayList<>();
-        ArrayList<Double> rs3= new ArrayList<>();
-        ArrayList<Double> rs4= new ArrayList<>();
-        
+        ArrayList<Double> rs1 = new ArrayList<>();
+        ArrayList<Double> rs2 = new ArrayList<>();
+        ArrayList<Double> rs3 = new ArrayList<>();
+        ArrayList<Double> rs4 = new ArrayList<>();
+
         // need to create logs for each of the radios, fixed only adding to
         // log 1 to addding to each log
-        for (Double[][] tagLocs: allLocs){
-            
-            for (Double[] loc: locations) {
+        for (int i = 0; i < no_of_tags; i++) {
+            for (Double[] loc : locations.get(i)) {
 
                 Double[] locCart = mp.getCartesianLoc(loc);
 
@@ -338,150 +331,144 @@ public class Simulation {
                 rs4.add(rssi4);
             }
         }
-        
-        
+
         //get times
         //start time
-        BigInteger sTime = new BigInteger("20171116090000");
-        ArrayList<BigInteger> times1 = gTPoisson(18,sTime);
-        ArrayList<BigInteger> times2 = gTPoisson(18,sTime);
-        ArrayList<BigInteger> timez = new ArrayList<BigInteger>(times1);
-        timez.addAll(times2);
- 
+        //BigInteger sTime = new BigInteger("20171116090000");
+        //ArrayList<BigInteger> times1 = gTPoisson(18, sTime);
+        //ArrayList<BigInteger> timez = new ArrayList<BigInteger>(times1);
+        ArrayList<BigInteger> timez = generateTimes();
+
         // get tags
         // simply replicate this radio
-        tags=new ArrayList<>();
-        for(int i=0; i<18; i++){
-            tags.add(44001004238L);
+        tags = new ArrayList<>();
+        Long first_tag = 44001004238L;
+        for (int j = 0; j < no_of_tags; j++) {
+            for (int i = 0; i < 18; i++) {
+                tags.add(first_tag);
+            }
+            first_tag += 1;
         }
-        
-        for(int i=0; i<18; i++){
-            tags.add(44444444444L);
-        }
-        
-        LogData log1 = new LogData(timez,tags,rs1,"yes","yes","yes",4);
-        LogData log2 = new LogData(timez,tags,rs2,"yes","yes","yes",4);
-        LogData log3 = new LogData(timez,tags,rs3,"yes","yes","yes",4);
-        LogData log4 = new LogData(timez,tags,rs4,"yes","yes","yes",4);
-        
+
+//        LogData log1 = new LogData(timez, tags, rs1, "no", "no", "no", 4);
+//        LogData log2 = new LogData(timez, tags, rs2, "no", "no", "no", 4);
+//        LogData log3 = new LogData(timez, tags, rs3, "no", "no", "no", 4);
+//        LogData log4 = new LogData(timez, tags, rs4, "no", "no", "no", 4);
         //run the thingamabob
-        
         primer = new PrimerClass();
         primer.setNumberOfRadios(4);
         for (Double[] bs : stations) {
             //System.out.println("radio coords: " + bs[0] + ", " + bs[1] + ", " + bs[2]);
             primer.setRadioCoordinates(bs[0], bs[1], bs[2]);
         }
-        
-        for (int i=0; i<=3; i++){
+
+        for (int i = 0; i < 4; i++) {
             primer.setRadioMeasuredPower(-44);
         }
-        
+
+        primer.setTRVals(timez, tags, rs1);
+        primer.setTRVals(timez, tags, rs2);
+        primer.setTRVals(timez, tags, rs3);
+        primer.setTRVals(timez, tags, rs4);
+
         // set lists in primer for each radio
         //Change log1.filtRSSIs to log1.RSSIs if no filtering.
-        primer.setTRVals(log1.Times, log1.IDs, log1.filtRSSIs);
-        primer.setTRVals(log2.Times, log2.IDs, log2.filtRSSIs);
-        primer.setTRVals(log3.Times, log3.IDs, log3.filtRSSIs);
-        primer.setTRVals(log4.Times, log4.IDs, log4.filtRSSIs);
-        
-        
+//        primer.setTRVals(log1.Times, log1.IDs, log1.filtRSSIs);
+//        primer.setTRVals(log2.Times, log2.IDs, log2.filtRSSIs);
+//        primer.setTRVals(log3.Times, log3.IDs, log3.filtRSSIs);
+//        primer.setTRVals(log4.Times, log4.IDs, log4.filtRSSIs);
         RssiEquation req = new RssiEquation();
         primer.idDistances = req.getTagDistance(primer.idRSSIs, primer.measuredPower);
         HashMap<Long, HashMap<BigInteger, Double[]>> registry = MLAT();
-        
+
         return registry;
     }
-    
-    
-    public static void main(String args[]){
-        
-        Simulation nc= new Simulation();                
-        
-        Double[] start =  {50.73848598629042, -3.531734873115414}; // {4028782.80, -248650.79, 4938371.316};
+
+    public static void main(String args[]) {
+
+        Simulation nc = new Simulation();
+
+        Double[] start = {50.73848598629042, -3.531734873115414}; // {4028782.80, -248650.79, 4938371.316};
 
         Double[][] locations = new Double[18][2];
-        
+
         basestations = nc.getGeoBasestations();
-        
-        MapProcessing mp = new MapProcessing(basestations);        
-        
+
+        MapProcessing mp = new MapProcessing(basestations);
+
         // getting ArrayList of cartesian coordinates of basestations
-        ArrayList<Double[]> stations =  mp.getBasestations(basestations);        
-        
+        ArrayList<Double[]> stations = mp.getBasestations(basestations);
+
         // populating location list with pheasant coordinates if it moves in a line
-        locations = nc.getPheasantLocs(start, locations);
-        
+        locations = nc.getPheasantLocs(start);
+
         //Not using this
         //int id = nc.generateID();
         //System.out.println("Pheasant ID: " + id);
-        
-        ArrayList<Double> log1= new ArrayList<>();
-        ArrayList<Double> log2= new ArrayList<>();
-        ArrayList<Double> log3= new ArrayList<>();
-        ArrayList<Double> log4= new ArrayList<>();
-        
+        ArrayList<Double> log1 = new ArrayList<>();
+        ArrayList<Double> log2 = new ArrayList<>();
+        ArrayList<Double> log3 = new ArrayList<>();
+        ArrayList<Double> log4 = new ArrayList<>();
+
         // need to create logs for each of the radios, fixed only adding to
         // log 1 to addding to each log
-        for (Double[] loc: locations) {
-            
+        for (Double[] loc : locations) {
+
             Double[] locCart = mp.getCartesianLoc(loc);
-            
+
             Double dist1 = nc.getDistance(stations.get(0), locCart);
             Double rssi1 = nc.getRSSI(dist1);
             log1.add(rssi1);
-            
+
             Double dist2 = nc.getDistance(stations.get(1), locCart);
             Double rssi2 = nc.getRSSI(dist2);
             log2.add(rssi2);
-            
+
             Double dist3 = nc.getDistance(stations.get(2), locCart);
             Double rssi3 = nc.getRSSI(dist3);
             log3.add(rssi3);
-            
+
             Double dist4 = nc.getDistance(stations.get(3), locCart);
             Double rssi4 = nc.getRSSI(dist4);
             log4.add(rssi4);
         }
-        
+
         //get times
         ArrayList<BigInteger> timez = nc.generateTimes();
         // get tags
         // simply replicate this radio
-        tags=new ArrayList<>();
-        for(int i=0; i<18; i++){
+        tags = new ArrayList<>();
+        for (int i = 0; i < 18; i++) {
             tags.add(44001004238L);
         }
-        
+
         //run the thingamabob
-        
         primer = new PrimerClass();
         primer.setNumberOfRadios(4);
         for (Double[] bs : stations) {
             //System.out.println("radio coords: " + bs[0] + ", " + bs[1] + ", " + bs[2]);
             primer.setRadioCoordinates(bs[0], bs[1], bs[2]);
         }
-        
-        for (int i=0; i<=3; i++){
+
+        for (int i = 0; i <= 3; i++) {
             primer.setRadioMeasuredPower(-44);
         }
-        
+
         // set lists in primer for each radio
-        
         primer.setTRVals(timez, tags, log1);
         primer.setTRVals(timez, tags, log2);
         primer.setTRVals(timez, tags, log3);
         primer.setTRVals(timez, tags, log4);
-        
-        
+
         RssiEquation req = new RssiEquation();
         primer.idDistances = req.getTagDistance(primer.idRSSIs, primer.measuredPower);
         MLAT();
-        
+
     }
-    
-    public static HashMap<Long, HashMap<BigInteger, Double[]>> MLAT(){
+
+    public static HashMap<Long, HashMap<BigInteger, Double[]>> MLAT() {
         //MLAT magic below
-        
+
         // tag_registry holds all tags across all radios and their coordinates
         // at each time they were detected
         tag_registry = new HashMap<>();
@@ -490,13 +477,13 @@ public class Simulation {
         HashMap<BigInteger, Double[]> init_inner_tag_reg;
         // the times each tag was picked up
         HashMap<Long, ArrayList<BigInteger>> tag_detect_times = new HashMap<>();
-        
+
         // for each radio
         for (int i = 0; i < primer.no_of_radios; i++) {
             //get the tagIDs this radio picked up
             Object[] idKeys = primer.idRSSIs.get(i).keySet().toArray();
             Long[] keys_long = new Long[primer.idRSSIs.get(i).size()];
-            
+
             // go through each tag
             for (int j = 0; j < keys_long.length; j++) {
                 // initialise the hahsmap that will hold all detection times as
@@ -505,35 +492,35 @@ public class Simulation {
                 String stringToConvert = String.valueOf(idKeys[j]);
                 Long convertedLong = Long.parseLong(stringToConvert);
                 keys_long[j] = convertedLong;
-                
+
                 // if the tag hasn't been added to the registry before
                 if (!tag_registry.containsKey(convertedLong)) {
-                    
+
                     // iterate over the times when the current radio detected
                     // the current tag
                     for (int k = 0; k < primer.idRSSIs.get(i).
                             get(convertedLong).size(); k++) {
-                        
+
                         // get these times and their corresponding rssis
                         ArrayList<Pair<BigInteger, Double>> times
                                 = primer.idRSSIs.get(i).get(convertedLong);
-                        
+
                         // list will hold only the times
                         ArrayList<BigInteger> tms = new ArrayList<>();
-                        
+
                         // for all detection pairs
                         for (Pair p : times) {
-                            
+
                             // get the time
                             String aux_str = String.valueOf(p.getKey());
                             BigInteger detection_time = new BigInteger(aux_str);
-                            
+
                             // if multiple detections at the same time,
                             // keep just one
                             if (!tms.contains(detection_time)) {
                                 tms.add(detection_time);
                             }
-                            
+
                             // use empty array of coordinates for initiliasation
                             Double[] init_coords = new Double[3];
                             init_inner_tag_reg.put(detection_time, init_coords);
@@ -543,15 +530,14 @@ public class Simulation {
                         tag_detect_times.put(convertedLong, tms);
                     }
                     tag_registry.put(convertedLong, init_inner_tag_reg);
-                }
-                // if the tag is already stored in tag_registry
+                } // if the tag is already stored in tag_registry
                 // see if we get new times from this radio
                 else {
                     // get all the times we already have for this radio
                     Object[] times = tag_registry.get(convertedLong).
                             keySet().toArray();
                     ArrayList<BigInteger> time_long = new ArrayList<>();
-                    
+
                     // iterate over all the times we have already recorded it
                     // has been picked up
                     for (int k = 0; k < times.length; k++) {
@@ -559,20 +545,20 @@ public class Simulation {
                         BigInteger convertedtime = new BigInteger(stringToConv);
                         time_long.add(convertedtime);
                     }
-                    
+
                     // get the detections from the current radio
                     ArrayList<Pair<BigInteger, Double>> tim
                             = primer.idRSSIs.get(i).get(convertedLong);
-                    
+
                     // list will hold only the times
                     ArrayList<BigInteger> tms = new ArrayList<>();
-                    
+
                     // for all detections
                     for (Pair p : tim) {
                         // get&convert the time
                         String aux_str = String.valueOf(p.getKey());
                         BigInteger aux_long = new BigInteger(aux_str);
-                        
+
                         // if multiple detections at the same time,
                         // keep just one
                         if (!tms.contains(aux_long)) {
@@ -593,7 +579,7 @@ public class Simulation {
                             tag_registry.get(convertedLong).put(l, a);
                             time_long.add(l);
                         }
-                        
+
                     }
                     // replace the entry we had for this tag with the updated
                     // arraylist of times it was picked up
@@ -601,7 +587,7 @@ public class Simulation {
                 }
             }
         }
-        
+
         // PART 2 - ACTUAL MULTILATERATION
         // will call applyMLAT()
         System.out.println("No of tags is " + tag_registry.size());
@@ -609,7 +595,7 @@ public class Simulation {
         // there is one hashmap per tag, consisiting of a time key and
         // their corresponding values are initialised to null, i.e.
         // we don't currently have coordinates for the tags
-        
+
         // create hashmap to hold the hashmap we'll get from
         // getTagCoordinatesbyLeadRadio
         HashMap<Long, HashMap<BigInteger, Double[]>> hm_returned;
@@ -622,7 +608,7 @@ public class Simulation {
             HashMap<BigInteger, Double[]> inner = hm_returned.get(key);
             // for all times as keys in inner
             for (BigInteger time : inner.keySet()) {
-                
+
                 // get the inner hashmap we already have for this tag
                 init_inner_tag_reg = tag_registry.get(key);
                 // get the array of coordinates from this hashmap
@@ -630,7 +616,7 @@ public class Simulation {
                 // add the 3 coordinates we got from the method
                 Double[] aux_coord = new Double[]{inner.get(time)[0],
                     inner.get(time)[1], inner.get(time)[2]};
-                aux_arr=aux_coord;
+                aux_arr = aux_coord;
                 // put it back
                 init_inner_tag_reg.put(time, aux_arr);
                 tag_registry.put(key, init_inner_tag_reg);
@@ -639,6 +625,7 @@ public class Simulation {
         //order_times_coords();
         return tag_registry;
     }
+
     /* This function can loop through all tags which we have in
     /   tag_detect_times.
     /  Gets all the times from tag_detect_times and loops through all radios,
@@ -646,33 +633,30 @@ public class Simulation {
     /  If detection exists, ok, put forward for mlat
     /   If not, ok, make sure mlat doesn't consider the current radio by adding
     /  a distance of -999,999
-    */
-    
+     */
     public static HashMap<Long, HashMap<BigInteger, Double[]>> applyMLAT(
-            HashMap<Long, ArrayList<BigInteger>> tag_detect_times){
+            HashMap<Long, ArrayList<BigInteger>> tag_detect_times) {
         // initialise the hashmap we're going to return
         HashMap time_coords_map = new HashMap();
         HashMap<Long, HashMap<BigInteger, Double[]>> hm = new HashMap<>();
         for (Long key : tag_detect_times.keySet()) {
             ArrayList<BigInteger> times = tag_detect_times.get(key);
-            for (BigInteger time: times){
-                ArrayList<Double> distances= new ArrayList<>();
+            for (BigInteger time : times) {
+                ArrayList<Double> distances = new ArrayList<>();
                 BigInteger three = new BigInteger("3");
                 BigInteger four = new BigInteger("4");
                 BigInteger one = new BigInteger("1");
-                for(int i = 0; i < primer.no_of_radios; i++) {
+                for (int i = 0; i < primer.no_of_radios; i++) {
                     // get the distance between the ith radio and the key tag at
                     // the time time
-                    for(BigInteger time_margin=time.subtract(three); time_margin.compareTo(time.add(four))==-1;
-                            time_margin.add(one)){
+                    for (BigInteger time_margin = time.subtract(three); time_margin.compareTo(time.add(four)) == -1;
+                            time_margin.add(one)) {
                         try {
                             distances.add(primer.idDistances.get(i).get(key).
                                     get(time));
                             break;
-                        }
-                        catch(NullPointerException e){
-                            if (time_margin.compareTo(time.add(three))==0)
-                            {
+                        } catch (NullPointerException e) {
+                            if (time_margin.compareTo(time.add(three)) == 0) {
                                 //eliminate this radio
                                 distances.add(-999.999);
                             }
@@ -682,7 +666,7 @@ public class Simulation {
                 MLATEquation eq = new MLATEquation(distances.size(),
                         primer.getRadiosCoordinates(),
                         distances);
-                
+
                 //System.out.println("Tag: " + key + " at time " + time + ":");
                 // check that we have enough valid distances
                 boolean x = eq.fix();
@@ -699,13 +683,13 @@ public class Simulation {
                     // and entries 1,2,3
                     // give us the x, y, z coord
                     // GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
-                    Double[] coords = new Double[]{sol.get(1, 0), sol.get(2, 0)*(-1), sol.get(3, 0)*(-1)};
+                    Double[] coords = new Double[]{sol.get(1, 0), sol.get(2, 0) * (-1), sol.get(3, 0) * (-1)};
                     //System.out.println("small coord system coords");
                     //System.out.println(coords[0]);
                     //System.out.println(coords[1]);
                     //System.out.println(coords[2]);
                     //Double[] geoCoords = ct.cartesianToLatLon(coords);
-                    
+
                     time_coords_map.put(time, coords);
                     hm.put(key, time_coords_map);
                     //System.out.println(" ");
@@ -721,23 +705,23 @@ public class Simulation {
         }
         return hm;
     }
-    
-    public static HashMap<Long, HashMap<BigInteger, Double[]>> getLocations(){
+
+    public static HashMap<Long, HashMap<BigInteger, Double[]>> getLocations() {
         return tag_registry;
     }
-    
-    public static ArrayList<ArrayList<Double[]>> order_times_coords(){
-        HashMap<Long, HashMap<BigInteger, Double[]>> tgr=getLocations();
+
+    public static ArrayList<ArrayList<Double[]>> order_times_coords() {
+        HashMap<Long, HashMap<BigInteger, Double[]>> tgr = getLocations();
         for (Map.Entry<Long, HashMap<BigInteger, Double[]>> entry : tgr.entrySet()) {
             Long key = entry.getKey();
             HashMap<BigInteger, Double[]> value = entry.getValue();
             all_tags.add(key);
-            ArrayList<BigInteger> times= new ArrayList<>();
-            ArrayList<Double[]> coords=new ArrayList<>();
+            ArrayList<BigInteger> times = new ArrayList<>();
+            ArrayList<Double[]> coords = new ArrayList<>();
             for (Map.Entry<BigInteger, Double[]> entry2 : value.entrySet()) {
                 BigInteger key2 = entry2.getKey();
                 times.add(key2);
-                Double[] value2= entry2.getValue();
+                Double[] value2 = entry2.getValue();
                 coords.add(value2);
                 //System.out.println("fml");
                 //System.out.println(value2[0]);
@@ -745,15 +729,15 @@ public class Simulation {
                 //System.out.println(value2[2]);
             }
             // do sorting here on times and coords
-            ArrayList<BigInteger> times_orig=times;
-            times_orig=makeDeepCopyBigInteger(times);
-            
-            ArrayList<Double[]> sorted_coords= new ArrayList<>();
+            ArrayList<BigInteger> times_orig = times;
+            times_orig = makeDeepCopyBigInteger(times);
+
+            ArrayList<Double[]> sorted_coords = new ArrayList<>();
             Collections.sort(times);
-            for(int i=0; i<times.size(); i++){
-                for(int j=0; j<times.size(); j++){
-                    if (times.get(i)==times_orig.get(j)){
-                        sorted_coords.add(i,coords.get(j));
+            for (int i = 0; i < times.size(); i++) {
+                for (int j = 0; j < times.size(); j++) {
+                    if (times.get(i) == times_orig.get(j)) {
+                        sorted_coords.add(i, coords.get(j));
                         break;
                     }
                 }
@@ -766,22 +750,21 @@ public class Simulation {
         // be accessed using index instead of 0
         System.out.println("Tag:");
         System.out.println(all_tags.get(0));
-        for(int i=0; i<all_times.get(0).size(); i++){
+        for (int i = 0; i < all_times.get(0).size(); i++) {
             System.out.println("Time:");
             System.out.println(all_times.get(0).get(i));
             System.out.println("Coords:");
             System.out.println(all_coords.get(0).get(i)[0]);
             System.out.println(all_coords.get(0).get(i)[1]);
-            System.out.println(all_coords.get(0).get(i)[2]);            
+            System.out.println(all_coords.get(0).get(i)[2]);
         }
-        
         return all_coords;
-        
+
     }
-    
-    public static ArrayList<BigInteger> makeDeepCopyBigInteger(ArrayList<BigInteger> times){
+
+    public static ArrayList<BigInteger> makeDeepCopyBigInteger(ArrayList<BigInteger> times) {
         ArrayList<BigInteger> copy = new ArrayList<>(times.size());
-        for(BigInteger i : times){
+        for (BigInteger i : times) {
             BigInteger a = i.add(BigInteger.ZERO);
             copy.add(a);
         }

@@ -72,10 +72,6 @@ public class VisualisationController {
     //ArrayList<String> tagIDs = HelperMethods.convertList(intTags);
     ArrayList<Double[]> tagCoords = new ArrayList<>();
 
-    // NOT REALLY TRUE AS INITIAL TAG LOCATION WILL BE FIRST LOCATION
-    // FROM TAG_REGISTRY STUFF
-    Double[] tag1 = {50.73848598629042, -3.531734873115414};
-
     // parameters used for map scaling and tag placement
     Double[] corners;
     double realWidth;
@@ -102,13 +98,11 @@ public class VisualisationController {
 
         Thread[] threads = new Thread[all_tags.size()]; // creating array to hold threads for every tag?
 
-        System.out.println("number of tags: " + all_tags.size());
-        System.out.println("number of times: " + all_times.get(0).size());
-        System.out.println("number of coords: " + all_coords.get(0).size());
-        
-        System.out.println("number of tags: " + all_tags.size());
-        System.out.println("number of times: " + all_times.get(1).size());
-        System.out.println("number of coords: " + all_coords.get(1).size());
+        for (int i = 0; i < all_tags.size(); i++) {
+            System.out.println("number of tags: " + all_tags.size());
+            System.out.println("number of times: " + all_times.get(i).size());
+            System.out.println("number of coords: " + all_coords.get(i).size());
+        }
 
         VBox leftbox = new VBox();
 
@@ -185,7 +179,6 @@ public class VisualisationController {
 
         visualControl.getChildren().addAll(play, slider);
 
-        
         leftbox.getChildren().addAll(pane, visualControl);
 
         // adding side panels with lists of tags and basestations
@@ -249,14 +242,12 @@ public class VisualisationController {
         imagebox.getChildren().addAll(leftbox, rightbox);
 
         // might want to place this in map setup
-        
         // placing tags to their initial locations
-        for (int i=0; i<all_tags.size(); i++) {
+        for (int i = 0; i < all_tags.size(); i++) {
             placeTag(i, 0);
         }
-        
-        // TODO: if tag is out of the map space, could print out some warning
 
+        // TODO: if tag is out of the map space, could print out some warning
         // THIS IS WHERE A VISUALISATION THREAD WILL BE STARTED
         // remains for loop, should be changed to traverse tagID list for all tags
         for (int i = 0; i < all_tags.size(); i++) {
@@ -264,12 +255,13 @@ public class VisualisationController {
             threads[i] = th;
         }
     }
-    
+
     /**
-     * Function for setting up map - downloading from Google Maps, placing first things
+     * Function for setting up map - downloading from Google Maps, placing first
+     * things
      */
     public Pane setupMap() {
-        
+
         // downloading static map of the location
         ImageView imageView;
 
@@ -279,10 +271,10 @@ public class VisualisationController {
         cartBasestationCoords = mp.getBasestations(basestations);
         int zoom = mp.getZoom();
         double[] centerPoints = mp.getCenter(); // {centerY, centerX}
-        
+
         // main pain - top layer of map where visualisation will happen
         pane = new Pane();
-        
+
         String imagePath = "https://maps.googleapis.com/maps/api/staticmap?"
                 + "center=" + centerPoints[0] + "," + centerPoints[1] + "&"
                 + "zoom=" + zoom + "&size=480x280&maptype=terrain&"
@@ -315,7 +307,7 @@ public class VisualisationController {
             pane.getChildren().add(l);
             return pane;
         }
-        
+
         // here if error at downloading the map occured, probably I don't want to carry on and need to 
         // prompt the user to connect to internet and retry, rather than display everything. 
         // For example, could use return for that.
@@ -323,11 +315,11 @@ public class VisualisationController {
 
         pane.getChildren().add(imageView);
         pane.setMaxSize(480, 280);
-        
+
         placeBasestations(cartBasestationCoords);
-        
+
         return pane;
-        
+
     }
 
     public void getTagInfo() {
@@ -363,6 +355,19 @@ public class VisualisationController {
             all_times.add(times);
             all_coords.add(sorted_coords);
         }
+        System.out.println("all_coords");
+        System.out.println("From visualisation controller");
+        for (ArrayList<Double[]> ar: all_coords){
+            for (Double[] a: ar) {
+                System.out.println("x: " + a[0]);
+                System.out.println("y: " + a[1]);
+                System.out.println("--------------");
+                
+            }
+            
+        }
+        System.out.println("");
+        
     }
 
     /**
@@ -377,17 +382,25 @@ public class VisualisationController {
 
         ArrayList<Rectangle> newCoords = new ArrayList<>();
 
+        // will have to be passed information about basestations, 
+        // which will also include the unique name, which I can then assign
+        // on a tooltip
         for (Double[] bs : coords) {
 
             Rectangle r = new Rectangle(bs[0], bs[1], 5, 5);
-
             newCoords.add(r);
 
         }
+
         Group g = new Group();
 
         for (Rectangle r : newCoords) {
             g.getChildren().add(r);
+
+//            r.hoverProperty().addListener((observable) -> {
+//                Tooltip t = new Tooltip(name); // should get tag id and put it as a label
+//                Tooltip.install(r, t);
+//            });
         }
 
         pane.getChildren().addAll(g);
@@ -412,27 +425,28 @@ public class VisualisationController {
         // getting index position of the tag
         double x = all_coords.get(tagIndex).get(timeIndex)[0];
         double y = all_coords.get(tagIndex).get(timeIndex)[1];
+        
+        System.out.println("start coord: " + x + "; " + y);
 
         // draw only if it fits on the pane
-        if (x <= 480 && y <= 280) {
+        // if (x <= 480 && y <= 280) {
+        Rectangle r = new Rectangle(x, y, 4, 4);
+        r.setFill(Color.OLIVE);
+        r.hoverProperty().addListener((observable) -> {
+            Tooltip t = new Tooltip(name); // should get tag id and put it as a label
+            Tooltip.install(r, t);
+        });
 
-            Rectangle r = new Rectangle(x, y, 4, 4);
-            r.setFill(Color.OLIVE);
-            r.hoverProperty().addListener((observable) -> {
-                Tooltip t = new Tooltip(name); // should get tag id and put it as a label
-                Tooltip.install(r, t);
-            });
+        tagMarks.add(r);
 
-            tagMarks.add(r);
+        Group g = new Group();
 
-            Group g = new Group();
-
-            for (Rectangle rec : tagMarks) {
-                g.getChildren().add(rec);
-            }
-
-            pane.getChildren().add(g);
+        for (Rectangle rec : tagMarks) {
+            g.getChildren().add(rec);
         }
+
+        pane.getChildren().add(g);
+        //}
 
     }
 
@@ -483,13 +497,13 @@ public class VisualisationController {
                                 Double oldY = all_coords.get(index).get(no - 1)[1];
                                 Double newX = all_coords.get(index).get(no)[0];
                                 Double newY = all_coords.get(index).get(no)[1];
-                                
+
                                 // if it fits in the pane
-                                if (newX<=480 && newY<=280) {
-                                    Line line = new Line(oldX+2, oldY+2, newX+2, newY+2);
+                                if (newX <= 480 && newY <= 280) {
+                                    Line line = new Line(oldX + 2, oldY + 2, newX + 2, newY + 2);
                                     line.setStroke(Color.OLIVE);
                                     pane.getChildren().add(line);
-                                    
+
                                 }
 
                             }

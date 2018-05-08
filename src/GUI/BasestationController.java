@@ -36,6 +36,7 @@ public class BasestationController {
     HBox basestationButtons;
 
     int noBasestations = 0;
+    
     // create new db
     BasestationDB db = new BasestationDB();
 
@@ -90,6 +91,7 @@ public class BasestationController {
         // connect to db
         Connection c = DriverManager.getConnection(db.url);
         Statement stmt = c.createStatement();
+        try {
         for (int i = 0; i < noBasestations; i++) {
             // get all data from GUI fields
             VBox vb = (VBox) basestationList.getChildren().get(i);
@@ -129,6 +131,11 @@ public class BasestationController {
                         Double.parseDouble(te1_text),
                         Double.parseDouble(text_text), c);
             }
+        }
+        }
+        catch(NumberFormatException e) {
+            System.out.println("fucking input all th 4 jfgfh");
+            
         }
         c.close();
     }
