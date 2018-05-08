@@ -22,6 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 
 public class BasestationController {
@@ -86,8 +88,10 @@ public class BasestationController {
      * - the text inputted to the TextField te, i.e. latitude te1_text - the
      * text inputted to the TextField te1, i.e. longitude text_text - the text
      * inputted to the TextField text, i.e. measuredPow
+     * 
+     * TODO: need to check that none of the inputs are wrong format or corrupted
      */
-    public void saveBasestation(ActionEvent event) throws SQLException {
+    public void saveBasestation(ActionEvent event) throws SQLException, IOException {
         // connect to db
         Connection c = DriverManager.getConnection(db.url);
         Statement stmt = c.createStatement();
@@ -131,10 +135,23 @@ public class BasestationController {
                         Double.parseDouble(te1_text),
                         Double.parseDouble(text_text), c);
             }
+            
+            System.out.println("noBasestations: " + noBasestations);
+            goBack(new ActionEvent());
         }
         }
         catch(NumberFormatException e) {
-            System.out.println("fucking input all th 4 jfgfh");
+            if (noBasestations<4) {
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Information Dialog");
+                alert.setHeaderText(null);
+                alert.setContentText("Minimum 4 basestations are required to process data.");
+
+                alert.showAndWait();
+            }
+            else {
+                goBack(new ActionEvent());
+            }
             
         }
         c.close();
@@ -285,6 +302,8 @@ public class BasestationController {
         delete.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
+                
+                noBasestations--;
 
                 // here we do delete on db
                 try {
@@ -298,6 +317,8 @@ public class BasestationController {
                     Logger.getLogger(BasestationController.class.getName()).
                            log(Level.SEVERE, null, ex);
                 }
+                
+                // not sure all of this is needed
                 text.setDisable(false);
                 text.setText("");
                 te1.setDisable(false);

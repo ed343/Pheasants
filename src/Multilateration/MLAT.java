@@ -381,6 +381,8 @@ public class MLAT {
             path = "./" + "export"+ reportDate + ".txt";
         }
         
+        
+        
         // create new file
         File f = new File(path);
         f.createNewFile();

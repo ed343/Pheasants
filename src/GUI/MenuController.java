@@ -8,7 +8,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import javafx.event.ActionEvent;
 
 public class MenuController {
 
@@ -19,7 +18,7 @@ public class MenuController {
 
         FXMLLoader sceneLoader=new FXMLLoader(getClass().getResource("basestations.fxml"));
         Parent sceneParent = sceneLoader.load();
-        Scene scene = new Scene(sceneParent, 700, 500);
+        Scene scene = new Scene(sceneParent, 700, 600);
 
         Stage stage = (Stage) rootpane.getScene().getWindow();
         stage.setScene(scene);
