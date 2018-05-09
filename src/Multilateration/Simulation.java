@@ -32,6 +32,8 @@ public class Simulation {
     static ArrayList<Long> all_tags = new ArrayList<>();
     static ArrayList<ArrayList<BigInteger>> all_times = new ArrayList<>();
     static ArrayList<ArrayList<Double[]>> all_coords = new ArrayList<>();
+    
+    static MapProcessing mp;
 
     /* 
      */
@@ -341,7 +343,7 @@ public class Simulation {
         // for each tag, arraylist.get(tag_index) holds all its locations
         ArrayList<Double[][]> locations = new ArrayList<>();
         
-        MapProcessing mp = new MapProcessing(basestations);
+        mp = new MapProcessing(basestations);
         // get ArrayList of cartesian coordinates of basestations
         ArrayList<Double[]> stations = mp.getBasestations(basestations);
         
@@ -579,7 +581,7 @@ public class Simulation {
                 Double[] aux_arr;
                 // add the 3 coordinates we got from the method
                 Double[] aux_coord = new Double[]{inner.get(time)[0],
-                    inner.get(time)[1]};
+                    inner.get(time)[1], inner.get(time)[2]};
                 aux_arr = aux_coord;
                 // put it back
                 init_inner_tag_reg.put(time, aux_arr);
@@ -642,7 +644,8 @@ public class Simulation {
                     Matrix B = eq.getB();
                     Matrix sol = A.solve(B);
                     Double[] coords = new Double[]{sol.get(1, 0), 
-                                                   sol.get(2, 0) * (-1)};
+                                                   sol.get(2, 0) * (-1),
+                                                   sol.get(3, 0) * (-1)};
                     time_coords_map.put(time, coords);
                     hm.put(key, time_coords_map);
                     //sol.print(10, 5);
