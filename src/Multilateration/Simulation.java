@@ -128,18 +128,15 @@ public class Simulation {
         // Add the start time to the array
         times.add(startTime);
         BigInteger currentTime = startTime;
-        // Create a list of integers, ranging from start(INPUT 4) to 
-        //end(INPUT 5) inclusive.
-        List<Integer> range = IntStream.rangeClosed(0, 2).boxed().
-                                        collect(Collectors.toList());
+        // Create a list of integers, ranging from start(INPUT 4) to end(INPUT 5) inclusive.
+        List<Integer> range = IntStream.rangeClosed(0, 2).boxed().collect(Collectors.toList());
         // Array to hold probabilities for all integers in range.
         ArrayList<Double> rProbs = new ArrayList<>();
         // Create a poisson distribution with mean of mean(INPUT 3)
         PoissonDistribution pdist = new PoissonDistribution(1);
         double cp = 0;
         for (Integer range1 : range) {
-            // Calculate probabilities for all integers in range and add to 
-            //array.
+            // Calculate probabilities for all integers in range and add to array.
             double prob = pdist.cumulativeProbability(range1);
             rProbs.add(prob);
             // Calculate the cumulative probabilty for members of range.
@@ -174,7 +171,14 @@ public class Simulation {
             }
 
         }
-
+        if(times.size()<iters) {
+            int num = iters-times.size();
+            for(int x=0;x<num;x++) {
+                currentTime = updateTimes(currentTime);
+                times.add(currentTime);
+            }
+        }
+            
         return times;
     }
     /**
