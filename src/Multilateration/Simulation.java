@@ -3,6 +3,7 @@ Generating dummy log files.
  */
 package Multilateration;
 
+import GUI.MapProcessing;
 import Jama.Matrix;
 import java.io.File;
 import java.io.FileWriter;

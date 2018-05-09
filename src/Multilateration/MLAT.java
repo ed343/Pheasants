@@ -1,5 +1,6 @@
 package Multilateration;
 
+import GUI.MapProcessing;
 import GUI.UploadController;
 import Jama.Matrix;
 import static Multilateration.Simulation.all_coords;
@@ -23,6 +24,7 @@ import java.util.Scanner;
 import javafx.util.Pair;
 
 public class MLAT {
+       
     
     static int radioIndex = 0;
     static PrimerClass primer;
@@ -66,11 +68,13 @@ public class MLAT {
         // 4. Extract data from all relevant log files.
         
         ArrayList<String> paths = UploadController.getPaths();
+        boolean applyKalman = UploadController.applyKalman();
+        System.out.println("applyKalman: " + applyKalman);
         
         for (int i = 0; i < primer.no_of_radios; i++) {
             
             //Create a new instance of LogData with path.
-            LogData log = new LogData(paths.get(i), 1, 1, 4, 0);
+            LogData log = new LogData(paths.get(i), true, true, 4);
             //Add LogData object to ArrayList.
             dataArr.add(log);
         }
@@ -85,7 +89,10 @@ public class MLAT {
             //Get IDs for this basestation.
             ArrayList<Long> idData = log.getIDs();
             //Get normalised RSSI values for this basestation.
-            ArrayList<Double> rssiData = log.getNormRSSIs();
+            ArrayList<Double> rssiData = log.RSSIs;
+            System.out.println("No of tags: "+idData.size());
+            System.out.println("No of times: "+tData.size());
+            System.out.println("No of rssis: "+rssiData.size());
             primer.setTRVals(tData, idData, rssiData);
         }
         

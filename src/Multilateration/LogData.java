@@ -1,4 +1,3 @@
-
 package Multilateration;
 
 import java.io.BufferedReader;
@@ -7,9 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -52,55 +49,24 @@ public class LogData {
     //Constructor can be used for both simulation + real data.
     //RSSIs must be in -dBM
     //Set noise, filter and gran on and off, gC is granularity constant.
-<<<<<<< HEAD
-    public LogData(String fp,int filter, int gran, int gC, int sim) {
-=======
-    LogData(String fp,int filter, int gran, int gC, int sim) {
->>>>>>> 02ecd80aca487d24a69ad3e78d84458ff1af1765
+    public LogData(String fp,boolean filter, boolean gran, int gC) {
         //sim input determines simulated data/real data
         //Set file path.
         this.FilePath = fp;
         //Automatically extract data from log file when object is created.
-        if(sim==1){
-            this.extractSimData(fp);
-            if(gran==1) {
-                if(filter==1) {
-                    introduceNoise();
-                    filterRSSIs();
-                    granularise(this.Times,this.filtRSSIs,this.IDs,gC);
-                } else
-                    granularise(this.Times,this.RSSIs,this.IDs,gC);
-            } else if(filter==1) {
-                introduceNoise();
-                filterRSSIs(); 
-            }
-        }
-        else {
-            this.extractData(fp);
-            if(gran==1) {
-                if(filter==1) {
-                    filterRSSIs();
-                    granularise(this.Times,this.filtRSSIs,this.IDs,gC);
-                } else
-                    granularise(this.Times,this.RSSIs,this.IDs,gC);
-            } else if(filter==1) {
+ 
+        this.extractData(fp);
+        if(gran) {
+            if(filter) {
+                filterRSSIs();
+                granularise(this.Times,this.filtRSSIs,this.IDs,gC);
+            } else
+                granularise(this.Times,this.RSSIs,this.IDs,gC);
+        } else if(filter) {
 
-                filterRSSIs(); 
-            }
+            filterRSSIs(); 
         }
-<<<<<<< HEAD
-=======
-    }
-    
-    
-    
-    LogData(String fp) {
-        //Set file path.
-        this.FilePath = fp;
-        //Automatically extract data from log file when object is created.
-        this.extractData(fp); 
-        //normaliseRSSIs(-30,-70,"no");
->>>>>>> 02ecd80aca487d24a69ad3e78d84458ff1af1765
+        
     }
     
     
@@ -120,22 +86,18 @@ public class LogData {
     }
     
     
-<<<<<<< HEAD
-    public LogData(ArrayList<BigInteger> times, ArrayList<Long> ids, ArrayList<Double> rssis, int filter, int gran, int gC )  {
-=======
-    LogData(ArrayList<BigInteger> times, ArrayList<Long> ids, ArrayList<Double> rssis, int filter, int gran, int gC )  {
->>>>>>> 02ecd80aca487d24a69ad3e78d84458ff1af1765
+    public LogData(ArrayList<BigInteger> times, ArrayList<Long> ids, ArrayList<Double> rssis, boolean filter, boolean gran, int gC )  {
         this.Times = times;
         this.IDs = ids;
         this.RSSIs = rssis;
-        if(gran==1) {
-            if(filter==1) {
+        if(gran) {
+            if(filter) {
                 introduceNoise();
                 filterRSSIs();
                 granularise(this.Times,this.filtRSSIs,this.IDs,gC);
             } else
                 granularise(this.Times,this.RSSIs,this.IDs,gC);
-        } else if(filter==1)
+        } else if(filter)
             introduceNoise();
             filterRSSIs(); 
     }
@@ -540,51 +502,51 @@ public class LogData {
         return this.FilePath;
     }
     
-     public ArrayList<BigInteger> getTimes() {
+    public ArrayList<BigInteger> getTimes() {
         return this.Times;
     }
     
-     public ArrayList<Long> getIDs() {
+    public ArrayList<Long> getIDs() {
         return this.IDs;
     }
     
-     public ArrayList<Double> getFrequencies() {
+    public ArrayList<Double> getFrequencies() {
         return this.Frequencies;
     }
     
-     public ArrayList<Double> getTBuffers() {
+    public ArrayList<Double> getTBuffers() {
         return this.TBuffers;
     }
 
-     public ArrayList<Double> getTDets() {
+    public ArrayList<Double> getTDets() {
         return this.TDets;
     }
 
-     public ArrayList<Double> getSDets() {
+    public ArrayList<Double> getSDets() {
         return this.SDets;
     }
     
-     public ArrayList<Double> getRSSIs() {
+    public ArrayList<Double> getRSSIs() {
         return this.RSSIs;
     }
     
-     public ArrayList<Double> getSNRs() {
+    public ArrayList<Double> getSNRs() {
         return this.SNRs;
     }
     
-     public ArrayList<Double> getESNRS() {
+    public ArrayList<Double> getESNRS() {
         return this.Euclid_SNRs;
     }
     
-     public ArrayList<Double> getHeadrooms() {
+    public ArrayList<Double> getHeadrooms() {
         return this.Headrooms;
     }
 
-     public ArrayList<Double> getGains() {
+    public ArrayList<Double> getGains() {
         return this.Gains;
     }
     
-     public ArrayList<Double> getNormRSSIs() {
+    public ArrayList<Double> getNormRSSIs() {
         return this.normRSSIs;
     }
     

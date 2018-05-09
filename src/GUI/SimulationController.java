@@ -1,6 +1,5 @@
 package GUI;
 
-import Multilateration.MapProcessing;
 import Multilateration.Simulation;
 import java.io.File;
 import java.io.FileNotFoundException;

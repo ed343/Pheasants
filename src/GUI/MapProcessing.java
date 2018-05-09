@@ -1,7 +1,7 @@
 /*
  *Another try at making small Cartesian work for the MLAT
  */
-package Multilateration;
+package GUI;
 
 import GUI.CoordinateTranslation;
 import java.util.ArrayList;

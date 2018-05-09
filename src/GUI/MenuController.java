@@ -28,7 +28,7 @@ public class MenuController {
 
         FXMLLoader sceneLoader=new FXMLLoader(getClass().getResource("data_upload.fxml"));
         Parent sceneParent = sceneLoader.load();
-        Scene scene = new Scene(sceneParent, 620, 550);
+        Scene scene = new Scene(sceneParent, 620, 560);
 
         Stage stage = (Stage) rootpane.getScene().getWindow();
         stage.setScene(scene);

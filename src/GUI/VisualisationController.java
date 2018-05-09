@@ -1,7 +1,6 @@
 package GUI;
 
 import Multilateration.MLAT;
-import Multilateration.MapProcessing;
 import Multilateration.Simulation;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,14 +33,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 public class VisualisationController {
@@ -369,18 +365,6 @@ public class VisualisationController {
             all_times.add(times);
             all_coords.add(sorted_coords);
         }
-        System.out.println("all_coords");
-        System.out.println("From visualisation controller");
-        for (ArrayList<Double[]> ar : all_coords) {
-            for (Double[] a : ar) {
-                System.out.println("x: " + a[0]);
-                System.out.println("y: " + a[1]);
-                System.out.println("--------------");
-
-            }
-
-        }
-        System.out.println("");
 
     }
 
@@ -440,8 +424,6 @@ public class VisualisationController {
         double x = all_coords.get(tagIndex).get(timeIndex)[0];
         double y = all_coords.get(tagIndex).get(timeIndex)[1];
 
-        System.out.println("start coord: " + x + "; " + y);
-
         // draw only if it fits on the pane
         // if (x <= 480 && y <= 280) {
         Rectangle r = new Rectangle(x, y, 4, 4);
@@ -478,7 +460,6 @@ public class VisualisationController {
                 for (int i = t; i < all_times.get(index).size(); i++) {
                     //currentTime = i;
                     // TODO: timing will actually need to be synchronised across the tags
-                    System.out.println("current time: " + all_times.get(index).get(i));
                     BigInteger time = all_times.get(index).get(i);
                     simTime = i;
                     int no = i; // index of coordinate to which we want to set location now

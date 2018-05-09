@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.*?>
 <?import javafx.scene.layout.*?>
 
 <?import javafx.scene.text.Font?>
@@ -16,7 +17,10 @@
             <Label text="Please upload a file for every basestation, containing its observations.">
                 <font><Font size="14.0"/></font>
             </Label>
-            <Label text="Note: files should be in .txt or .csv format.">
+            <Label text="Files should be in .log, .txt or .csv format.">
+                <font><Font size="14.0"/></font>
+            </Label>
+             <Label text="Note: if there are no basestations to select in the dropdown list, please go back to the database registration and input more basestation." wrapText = "true">
                 <font><Font size="14.0"/></font>
             </Label>
         </VBox>
@@ -29,6 +33,10 @@
         </VBox>
         
         <HBox alignment="BOTTOM_RIGHT" spacing="5">
+            
+            <Label text="Apply Kalman filter"> <font><Font size="14.0"/></font></Label>
+            <CheckBox fx:id="kalman" />
+            
             <Button fx:id="run" onAction="#handleRun" minHeight="50.0" minWidth="100.0" mnemonicParsing="false" text="Run">
                 <font>
                     <Font size="15.0"/>
