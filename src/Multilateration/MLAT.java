@@ -54,9 +54,9 @@ public class MLAT {
         }
         
         MapProcessing mp = new MapProcessing(basestationCoords);
-        // get ArrayList of cartesian coordinates of basestations
-        ArrayList<Double[]> stations = mp.getBasestations(basestationCoords);
         
+        // get ArrayList of cartesian coordinates of basestations
+        ArrayList<Double[]> stations = mp.getBasestations(basestationCoords);        
         
         
         // 3. insert all radio coordinates and measured powers (RSSI in 1-meter)
@@ -67,6 +67,7 @@ public class MLAT {
         
         // 4. Extract data from all relevant log files.
         
+        // getting log file paths from uploadController
         ArrayList<String> paths = UploadController.getPaths();
         
         for (int i = 0; i < primer.no_of_radios; i++) {

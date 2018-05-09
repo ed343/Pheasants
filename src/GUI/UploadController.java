@@ -222,7 +222,8 @@ public class UploadController {
         }
 
         // TODO check whether there are no nulls or duplicate basestations selected
-        if (logfilePaths.size() >= 4) {
+        
+        if (selectedBs.size() >= 4 && logfilePaths.size() >= 4) {
 
             FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("data_visualisation.fxml"));
             Parent sceneParent = sceneLoader.load();

@@ -32,11 +32,17 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 
@@ -57,9 +63,8 @@ public class VisualisationController {
     CheckBox drawTrace;
     @FXML
     Slider slider;
-    
+
     ToggleGroup group; // group for radiobuttons for granularity selection
-    
 
     int mapWidth = 480;
     int mapHeight = 280;
@@ -67,7 +72,6 @@ public class VisualisationController {
     double centerY;
 
     //Simulation nc = new Simulation();
-
     // ArrayList to hold the geographical coordinates of basestations that will be displayed
     ArrayList<Double[]> basestations = new ArrayList<>();
 
@@ -97,25 +101,36 @@ public class VisualisationController {
     ArrayList<ArrayList<BigInteger>> all_times = new ArrayList<>(); // timestamps
     ArrayList<ArrayList<Double[]>> all_coords = new ArrayList<>(); // coordinates
 
+    Thread[] threads;
+
     // ideally should take the smallest value between all tags and time should
     // be progressed from that value
     int simTime = 0;
 
     public void initialize() throws IOException, SQLException {
-                
-        getTagInfo();
+
+        // creating RadioButton group as first thing so we can use it for
+        // granularity parameter
+        RadioButton r4 = new RadioButton("4 sec");
+        RadioButton r8 = new RadioButton("8 sec");
+        RadioButton r20 = new RadioButton("20 sec");
+        RadioButton r60 = new RadioButton("1 min");
+
+        group = new ToggleGroup();
+        r4.setToggleGroup(group);
+        r4.setId("4");
+        r8.setToggleGroup(group);
+        r8.setId("8");
+        r20.setToggleGroup(group);
+        r20.setId("20");
+        r60.setToggleGroup(group);
+        r60.setId("60");
+        r4.setSelected(true);
+
+        // prepares all_tags, all_times and all_coords for later use
+        getTagInfo(true);
 
         pane = setupMap(basestations);
-
-         // prepares all_tags, all_times and all_coords for later use
-
-        Thread[] threads = new Thread[all_tags.size()]; // creating array to hold threads for every tag?
-
-        for (int i = 0; i < all_tags.size(); i++) {
-            System.out.println("number of tags: " + all_tags.size());
-            System.out.println("number of times: " + all_times.get(i).size());
-            System.out.println("number of coords: " + all_coords.get(i).size());
-        }
 
         VBox leftbox = new VBox();
 
@@ -201,25 +216,64 @@ public class VisualisationController {
         rightbox.setSpacing(20.0);
 
         // Learn JavaFX 8 page 488 has info about accessing selected items from ListView
-        ListView<String> tags = new ListView<>();
-        tags.setPrefWidth(200.0);
+        ListView<String> tagsPanel = new ListView<>();
+        tagsPanel.setPrefWidth(200.0);
         // getting tag IDs from log file
 
         // currently can't use that as log files are not a thing
         // ArrayList al = new ArrayList<> (MainApplication.logfiles.get(0).getIDs());
         // ArrayList tagIDs = HelperMethods.deduplicate(HelperMethods.convertList(al));
         for (Long tag : all_tags) {
-            tags.getItems().add(tag + "");
+            tagsPanel.getItems().add(tag + "");
         }
 
-        tags.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        tagsPanel.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        tagsPanel.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+
+                ObservableList selectedIndices = tagsPanel.getSelectionModel().getSelectedIndices();
+
+                if (selectedIndices.size() > 0) {
+
+                    for (Thread t : threads) {
+                        t.stop();
+                    }
+                    // should be used for all tags
+                    for (Object o : selectedIndices) {
+                        int tagIndex = (Integer) o;
+                        System.out.println(tagIndex);
+                        Thread t = updateTag(tagIndex, simTime);
+                        threads[tagIndex] = t;
+                    }
+                } // tags were unselected
+                else if (selectedIndices.isEmpty()) {
+
+                    for (Thread t : threads) {
+                        t.stop();
+                    }
+                    // reinstantiate all tags and their threads
+                    for (int i = 0; i < all_tags.size(); i++) {
+                        Thread t = updateTag(i, simTime);
+                        threads[i] = t;
+                    }
+                }
+            }
+        });
 
         // alternative way to show ListView of height for all tags
         //tags.setPrefHeight(stringTags.size() * 23 + 2);
         ListView<String> basestationPanel = new ListView<>();
 
+        ArrayList<String> basestationNames = UploadController.getSelectedBasestations();
+
+        for (String name : basestationNames) {
+            basestationPanel.getItems().add(name);
+        }
+
         // TODO: collect actual basestation names from logUpload
-        basestationPanel.getItems().addAll("Basestation 1", "Basestation 2", "Basestation 3", "Basestation 4");
+        // basestationPanel.getItems().addAll("Basestation 1", "Basestation 2", "Basestation 3", "Basestation 4");
         basestationPanel.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         basestationPanel.setMinHeight(basestationPanel.getItems().size() * 23 + 2);
 
@@ -227,19 +281,25 @@ public class VisualisationController {
         HBox regularity = new HBox();
         regularity.setSpacing(5);
 
-        RadioButton r4 = new RadioButton("4 sec");
-        RadioButton r8 = new RadioButton("8 sec");
-        RadioButton r20 = new RadioButton("20 sec");
-        RadioButton r60 = new RadioButton("1 min");
-
-        group = new ToggleGroup();
-        r4.setToggleGroup(group);
-        r8.setToggleGroup(group);
-        r20.setToggleGroup(group);
-        r60.setToggleGroup(group);
-        r4.setSelected(true);
-
+        // radiobuttons get added at the top of this method
         regularity.getChildren().addAll(r4, r8, r20, r60);
+
+        // what happens when regularity is changed
+        group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+            public void changed(ObservableValue<? extends Toggle> ov, Toggle toggle, Toggle new_toggle) {
+                RadioButton selected = (RadioButton) group.getSelectedToggle();
+                int newGran = Integer.parseInt(selected.getId());
+                // when new regularity is selected, we want to rerun the application:
+                // - run getTagInfo() so all tag information is updated with new parameters
+                // - restart the visualisation
+                try {
+                    getTagInfo(false);
+                    runVisual();
+                } catch (SQLException ex) {
+                    Logger.getLogger(VisualisationController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
 
         // TODO: regularity on action should cause regeneration of locations for
         // tags (intermediate step before visualisation and start visualisation from beginning
@@ -247,27 +307,33 @@ public class VisualisationController {
         drawTrace.setText("Draw movement patterns");
         drawTrace.setSelected(false);
 
-        rightbox.getChildren().addAll(tags, basestationPanel, regularity, drawTrace, buttons);
+        rightbox.getChildren().addAll(tagsPanel, basestationPanel, regularity, drawTrace, buttons);
 
         // adding elements to the HBox from FXML file
         imagebox.setPadding(new Insets(20, 10, 10, 20));
         imagebox.getChildren().addAll(leftbox, rightbox);
 
-        // might want to place this in map setup
+        runVisual();
+    }
+
+    public void runVisual() {
+
+        // restart playback
+        slider.setValue(0);
+
+        threads = new Thread[all_tags.size()];
+
         // placing tags to their initial locations
         for (int i = 0; i < all_tags.size(); i++) {
             placeTag(i, 0);
         }
 
         // TODO: if tag is out of the map space, could print out some warning
-        // THIS IS WHERE A VISUALISATION THREAD WILL BE STARTED
-        // remains for loop, should be changed to traverse tagID list for all tags
         for (int i = 0; i < all_tags.size(); i++) {
             Thread th = updateTag(i, 1);
             threads[i] = th;
         }
     }
-    
 
     /**
      * Function for setting up map - downloading from Google Maps, placing first
@@ -335,18 +401,26 @@ public class VisualisationController {
 
     }
 
-    public void getTagInfo() throws SQLException {
-        
+    public void getTagInfo(boolean firstTime) throws SQLException {
+
         // this is were I read parameters set in uploadController for use of Kalman filter
         boolean applyKalman = UploadController.doApplyKalman();
         System.out.println("applyKalman: " + applyKalman);
-        
-        //System.out.println(group.getSelectedToggle());
-        
-        // FOR GRANULARITY PARAMETER, GET RADIOBUTTON SELECTION FROM VISUALISATION GUI
-        
-        
-        tag_registry = MLAT.getStuff(applyKalman, true, 4);
+
+        RadioButton chk = (RadioButton) group.getSelectedToggle(); // Cast object to radio button        
+        int granularity = Integer.parseInt(chk.getId());
+
+        System.out.println("granularity: " + granularity);
+
+        tag_registry = MLAT.getStuff(applyKalman, true, granularity);
+
+        // if not the first time we're getting tag information -
+        // empty previous arraylists
+        if (!firstTime) {
+            all_tags.clear();
+            all_times.clear();
+            all_coords.clear();
+        }
 
         // collecting tags
         for (Map.Entry<Long, HashMap<BigInteger, Double[]>> entry : tag_registry.entrySet()) {
@@ -391,21 +465,21 @@ public class VisualisationController {
      */
     public void placeBasestations(ArrayList<Double[]> coords) {
 
-        ArrayList<Rectangle> newCoords = new ArrayList<>();
+        ArrayList<Circle> newCoords = new ArrayList<>();
 
         // will have to be passed information about basestations, 
         // which will also include the unique name, which I can then assign
         // on a tooltip
         for (Double[] bs : coords) {
 
-            Rectangle r = new Rectangle(bs[0], bs[1], 5, 5);
+            Circle r = new Circle(bs[0], bs[1], 2.5);
             newCoords.add(r);
 
         }
 
         Group g = new Group();
 
-        for (Rectangle r : newCoords) {
+        for (Circle r : newCoords) {
             g.getChildren().add(r);
 
 //            r.hoverProperty().addListener((observable) -> {
@@ -538,7 +612,7 @@ public class VisualisationController {
     }
 
     public void handleExport() throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        
+
         // get date for the name of the file
         DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
         Date today = Calendar.getInstance().getTime();
@@ -602,6 +676,6 @@ public class VisualisationController {
             }
         }
         writer.close();
-       
+
     }
 }
