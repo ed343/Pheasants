@@ -248,7 +248,7 @@ public class Simulation {
             currentTime = currentTime.add(BigInteger.valueOf(40));
         }
         // Ensure times are correct in relation to hours.
-        int check2 = currentTime.mod(BigInteger.valueOf(10000)).mod(BigInteger.valueOf(100)).compareTo(BigInteger.valueOf(6000));
+        int check2 = currentTime.mod(BigInteger.valueOf(10000)).compareTo(BigInteger.valueOf(6000));
         if (check2 == 1 || check2 == 0) {
             currentTime = currentTime.add(BigInteger.valueOf(4000));
         }
