@@ -46,21 +46,22 @@ public class LogData {
     ArrayList<Double> filtRSSIs= new ArrayList<>();
     
     //Constructor
-    //Set noise, filter and gran on and off, gC is granularity constant.
-    LogData(String fp,String noise, String filter, String gran, int gC) {
+    //Set noise/filtering and gran on and off, gC is granularity constant.
+    LogData(String fp,int filter, int gran, int gC) {
         //Set file path.
         this.FilePath = fp;
         //Automatically extract data from log file when object is created.
         this.extractSimData(fp);
-        if(noise=="yes")
-            introduceNoise();
-        if(gran=="yes") {
-            if(filter=="yes") {
+
+        if(gran==1) {
+            if(filter==1) {
+                introduceNoise();
                 filterRSSIs();
                 granularise(this.Times,this.filtRSSIs,this.IDs,gC);
             } else
                 granularise(this.Times,this.RSSIs,this.IDs,gC);
-        } else if(filter=="yes")
+        } else if(filter==1)
+            introduceNoise();
             filterRSSIs(); 
     }
     
