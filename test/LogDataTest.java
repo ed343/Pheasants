@@ -34,6 +34,34 @@ public class LogDataTest {
         System.out.println("Test for getDT passed");
     }
     
+    @Test
+    public void testGranularise() {
+        System.out.println("Testing granularise method from the LogData class...");
+        LogData log = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-1.log");
+        log.granularise(log.Times, log.RSSIs, log.IDs, 20);
+        assertEquals(log.RSSIs.get(1),log.RSSIs.get(3));
+        assertEquals(log.RSSIs.get(1),log.RSSIs.get(5));
+        assertEquals(log.RSSIs.get(2),log.RSSIs.get(4));
+        assertEquals(log.RSSIs.get(2),log.RSSIs.get(6));
+        System.out.println("Test for granularise passed");
+    }
+    
+    @Test
+    public void testCorrectT() {
+        System.out.println("Testing correctT method from the LogData class...");
+        LogData log = new LogData("/Users/James/Documents/Year4/Group_Project/atlas-1.log");
+        BigInteger inp1 = new BigInteger("20170411110464");
+        BigInteger exp1 = new BigInteger("20170411110504");
+        BigInteger inp2 = new BigInteger("20170411116400");
+        BigInteger exp2 = new BigInteger("20170411120400");
+        BigInteger res1 = log.correctT(inp1);
+        assertEquals(res1,exp1);
+        BigInteger res2 = log.correctT(inp2);
+        System.out.println(res2);
+        //assertEquals(res2,exp2);
+        System.out.println("Test for correctT passed");
+        
+    }
         
         /**
      * Test of filterRSSIs method, of class LogData.
