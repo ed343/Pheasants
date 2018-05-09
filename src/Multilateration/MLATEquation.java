@@ -25,7 +25,7 @@ public class MLATEquation {
         // when doing multilateration
         int count=0;
         for (int i=0; i<tagDistances.size(); i++){
-            System.out.println("distance: " + tagDistances.get(i));
+           // System.out.println("distance: " + tagDistances.get(i));
             if (tagDistances.get(i)==-999.999){
                 this.radiosCoordinates.remove(i-count);
                 int aux=matrixSize-1;
@@ -34,13 +34,13 @@ public class MLATEquation {
                 count++; 
             }
         }
-        System.out.println("No of radios which have picked it up is "
-                        + radiosCoordinates.size());
+       // System.out.println("No of radios which have picked it up is "
+       //                 + radiosCoordinates.size());
         if (radiosCoordinates.size()<=3){
-            System.out.println("Not enough radios for multilateration");
+       //     System.out.println("Not enough radios for multilateration");
             return false;
         }
-        System.out.println("Matrix size is " + matrixSize);
+       // System.out.println("Matrix size is " + matrixSize);
         return true;
     }
     /* Method returns the computed A matrix for the equation AX=B
