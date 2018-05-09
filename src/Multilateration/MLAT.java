@@ -298,6 +298,7 @@ public class MLAT {
         HashMap<Long, HashMap<BigInteger, Double[]>> hm = new HashMap<>();
         for (Long key : tag_detect_times.keySet()) {
             ArrayList<BigInteger> times = tag_detect_times.get(key);
+            HashMap time_coords_map = new HashMap();
             for (BigInteger time: times){
                 ArrayList<Double> distances= new ArrayList<>();
                 BigInteger three = new BigInteger("3");
@@ -345,7 +346,7 @@ public class MLAT {
                     GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
                     Double[] coords = new Double[]{sol.get(1,0), sol.get(2, 0),
                         sol.get(3, 0)};
-                    HashMap time_coords_map = new HashMap();
+                    
                     time_coords_map.put(time, coords);
                     hm.put(key, time_coords_map);
                     System.out.println(" ");
@@ -380,8 +381,6 @@ public class MLAT {
                 OS.contains("aix") || OS.contains("mac")){
             path = "./" + "export"+ reportDate + ".txt";
         }
-        
-        
         
         // create new file
         File f = new File(path);
