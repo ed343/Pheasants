@@ -14,7 +14,8 @@ import org.junit.runners.Suite;
    LogDataTest.class,
    PrimerClassTest.class,
    RssiEquationTest.class,
-   MLATEquationTest.class
+   MLATEquationTest.class,
+   SimulationTest.class
         
 })
 
