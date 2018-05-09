@@ -60,7 +60,7 @@ public class UploadController {
         }
     }
     
-    public static boolean applyKalman() {
+    public static boolean doApplyKalman() {
         return applyKalman;
     }
 
@@ -211,6 +211,8 @@ public class UploadController {
     }
 
     public void handleRun() throws IOException {
+        
+        applyKalman = kalman.isSelected();
 
         for (Node vb : uploadList.getChildren()) {
             VBox box = (VBox) vb;
@@ -237,7 +239,6 @@ public class UploadController {
             alert.showAndWait();
         }
         
-        applyKalman = kalman.isSelected();
     }
 
     public void handleCancel() throws IOException {

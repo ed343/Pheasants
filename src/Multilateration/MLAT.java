@@ -31,7 +31,7 @@ public class MLAT {
     static ArrayList<Double[]> basestationCoords = new ArrayList<>();
     static ArrayList<Double> basestationPowers = new ArrayList<>();
     
-    public static HashMap<Long, HashMap<BigInteger, Double[]>> getStuff() throws SQLException {
+    public static HashMap<Long, HashMap<BigInteger, Double[]>> getStuff(boolean kfilter, boolean gran, int granSec) throws SQLException {
         // ArrayList to store the Data extracted from all Log files.
         // each entry in the ArrayList keeps the data associated with one radio
         ArrayList<LogData> dataArr = new ArrayList<>();
@@ -68,13 +68,11 @@ public class MLAT {
         // 4. Extract data from all relevant log files.
         
         ArrayList<String> paths = UploadController.getPaths();
-        boolean applyKalman = UploadController.applyKalman();
-        System.out.println("applyKalman: " + applyKalman);
         
         for (int i = 0; i < primer.no_of_radios; i++) {
             
             //Create a new instance of LogData with path.
-            LogData log = new LogData(paths.get(i), true, true, 4);
+            LogData log = new LogData(paths.get(i), kfilter, gran, granSec);
             //Add LogData object to ArrayList.
             dataArr.add(log);
         }

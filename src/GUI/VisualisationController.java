@@ -57,6 +57,9 @@ public class VisualisationController {
     CheckBox drawTrace;
     @FXML
     Slider slider;
+    
+    ToggleGroup group; // group for radiobuttons for granularity selection
+    
 
     int mapWidth = 480;
     int mapHeight = 280;
@@ -99,7 +102,7 @@ public class VisualisationController {
     int simTime = 0;
 
     public void initialize() throws IOException, SQLException {
-        
+                
         getTagInfo();
 
         pane = setupMap(basestations);
@@ -229,7 +232,7 @@ public class VisualisationController {
         RadioButton r20 = new RadioButton("20 sec");
         RadioButton r60 = new RadioButton("1 min");
 
-        ToggleGroup group = new ToggleGroup();
+        group = new ToggleGroup();
         r4.setToggleGroup(group);
         r8.setToggleGroup(group);
         r20.setToggleGroup(group);
@@ -333,7 +336,17 @@ public class VisualisationController {
     }
 
     public void getTagInfo() throws SQLException {
-        tag_registry = MLAT.getStuff();
+        
+        // this is were I read parameters set in uploadController for use of Kalman filter
+        boolean applyKalman = UploadController.doApplyKalman();
+        System.out.println("applyKalman: " + applyKalman);
+        
+        //System.out.println(group.getSelectedToggle());
+        
+        // FOR GRANULARITY PARAMETER, GET RADIOBUTTON SELECTION FROM VISUALISATION GUI
+        
+        
+        tag_registry = MLAT.getStuff(applyKalman, true, 4);
 
         // collecting tags
         for (Map.Entry<Long, HashMap<BigInteger, Double[]>> entry : tag_registry.entrySet()) {

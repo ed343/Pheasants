@@ -49,7 +49,7 @@ public class LogData {
     //Constructor can be used for both simulation + real data.
     //RSSIs must be in -dBM
     //Set noise, filter and gran on and off, gC is granularity constant.
-    public LogData(String fp,boolean filter, boolean gran, int gC) {
+    public LogData(String fp, boolean filter, boolean gran, int gC) {
         //sim input determines simulated data/real data
         //Set file path.
         this.FilePath = fp;
