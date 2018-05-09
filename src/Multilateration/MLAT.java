@@ -30,6 +30,7 @@ public class MLAT {
     static PrimerClass primer;
     static ArrayList<Double[]> basestationCoords = new ArrayList<>();
     static ArrayList<Double> basestationPowers = new ArrayList<>();
+    static MapProcessing mp;
     
     public static HashMap<Long, HashMap<BigInteger, Double[]>> getStuff(boolean kfilter, boolean gran, int granSec) throws SQLException {
         // ArrayList to store the Data extracted from all Log files.
@@ -53,7 +54,7 @@ public class MLAT {
             basestationPowers.add(a[2]);
         }
         
-        MapProcessing mp = new MapProcessing(basestationCoords);
+        mp = new MapProcessing(basestationCoords);
         
         // get ArrayList of cartesian coordinates of basestations
         ArrayList<Double[]> stations = mp.getBasestations(basestationCoords);        
@@ -271,7 +272,7 @@ public class MLAT {
                 Double[] aux_arr;
                 // add the 3 coordinates we got from the method
                 Double[] aux_coord = new Double[]{inner.get(time)[0],
-                    inner.get(time)[1]};
+                    inner.get(time)[1], inner.get(time)[2]};
                 aux_arr=aux_coord;
                 // put it back
                 init_inner_tag_reg.put(time, aux_arr);
@@ -338,7 +339,7 @@ public class MLAT {
                     Matrix sol = A.solve(B);
                     System.out.println(sol.get(1,0));//these are our coordinates
                     System.out.println(sol.get(2,0));
-// the matrix is 4x1, and entries 1,2,3
+                    // the matrix is 4x1, and entries 1,2,3
                     // give us the x, y, z coord
                     GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
                     Double[] coords = new Double[]{sol.get(1,0), sol.get(2, 0),
@@ -360,34 +361,39 @@ public class MLAT {
         return hm;
     }
     
-    public static void exportData() throws FileNotFoundException, 
-                                           UnsupportedEncodingException, 
-                                           IOException{
+    public static void exportData() throws FileNotFoundException,
+            UnsupportedEncodingException,
+            IOException {
         // get date for the name of the file
         DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
-        Date today = Calendar.getInstance().getTime();        
+        Date today = Calendar.getInstance().getTime();
         String reportDate = df.format(today);
-        
+
         // get OS for filepath
         String OS = System.getProperty("os.name").toLowerCase();
-        String path="";
+        String path = "";
         if (OS.contains("win")) {
-            path = ".\\" + "export"+ reportDate + ".txt";
+            path = ".\\" + "export" + reportDate + ".txt";
         }
-        if (OS.contains("nix") || OS.contains("nux") ||  
-                OS.contains("aix") || OS.contains("mac")){
-            path = "./" + "export"+ reportDate + ".txt";
+        if (OS.contains("nix") || OS.contains("nux")
+                || OS.contains("aix") || OS.contains("mac")) {
+            path = "./" + "export" + reportDate + ".txt";
         }
-        
+
         // create new file
         File f = new File(path);
         f.createNewFile();
-        
+
         // write to file
         PrintWriter writer = new PrintWriter("export" + reportDate + ".txt", "UTF-8");
-        writer.println("Time,Tag,X-Coordinate,Y-Coordinate,Z-Coordinate");
-        for (int a=0; a<all_tags.size(); a++) {
-            for(int i=0; i<all_times.get(a).size(); i++){
+        writer.println("Time,Tag,Latitude,Longitude");
+        for (int a = 0; a < all_tags.size(); a++) {
+            for (int i = 0; i < all_times.get(a).size(); i++) {
+                Double[] temp = new Double[]{all_coords.get(a).get(i)[0],
+                    all_coords.get(a).get(i)[1],
+                    all_coords.get(a).get(i)[2]};
+                Double[] geoCoords = mp.getGeoLoc(temp);
+
                 // export tag ID
                 writer.print(all_tags.get(a));
                 writer.print(',');
@@ -395,11 +401,9 @@ public class MLAT {
                 writer.print(all_times.get(a).get(i));
                 writer.print(',');
                 // export coords
-                writer.print(all_coords.get(a).get(i)[0]);
+                writer.print(geoCoords[0]);
                 writer.print(',');
-                writer.print(all_coords.get(a).get(i)[1]);
-                writer.print(',');
-                writer.println(all_coords.get(a).get(i)[2]);
+                writer.println(geoCoords[1]);
             }
         }
         writer.close();
