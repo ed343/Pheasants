@@ -32,10 +32,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 
 public class SimulationController {
@@ -91,17 +95,19 @@ public class SimulationController {
     ArrayList<ArrayList<BigInteger>> all_times = new ArrayList<>(); // timestamps
     ArrayList<ArrayList<Double[]>> all_coords = new ArrayList<>(); // coordinates
 
+    ArrayList<Thread> threads;
+    
     // ideally should take the smallest value between all tags and time should
     // be progressed from that value
     int simTime = 0;
+    
+    ListView<String> basestationPanel;
 
     public void initialize() throws IOException {
 
         pane = setupMap(basestations);
 
         getTagInfo(); // prepares all_tags, all_times and all_coords for later use
-
-        Thread[] threads = new Thread[all_tags.size()]; // creating array to hold threads for every tag?
 
         for (int i = 0; i < all_tags.size(); i++) {
             System.out.println("number of tags: " + all_tags.size());
@@ -126,10 +132,12 @@ public class SimulationController {
                     // PAUSE VISUALISATION
 
                     for (Thread t : threads) {
-                        t.stop();
-                        System.out.println("simTime:" + simTime);
-                        // delete all threads
+                        t.stop();                        
                     }
+                    
+                    // delete all threads
+                    threads.clear();
+                    System.out.println("simTime:" + simTime);
 
                 } else {
                     play.setText("||");
@@ -137,7 +145,7 @@ public class SimulationController {
 
                     for (int i = 0; i < all_tags.size(); i++) {
                         Thread t = updateTag(i, simTime);
-                        threads[i] = t;
+                        threads.add(t);
                     }
                 }
             }
@@ -171,12 +179,14 @@ public class SimulationController {
                 // it is bad to use stop(), but it works
                 // alternative would be using http://www.java67.com/2015/07/how-to-stop-thread-in-java-example.html
                 for (Thread t : threads) {
-                    t.stop();
+                    t.stop();                    
                 }
+                
+                threads.clear();
                 // should be used for all tags
                 for (int i = 0; i < all_tags.size(); i++) {
                     Thread t = updateTag(i, v);
-                    threads[i] = t;
+                    threads.add(t);
                 }
                 slider.setValueChanging(false);
             }
@@ -193,22 +203,68 @@ public class SimulationController {
         rightbox.setSpacing(20.0);
 
         // Learn JavaFX 8 page 488 has info about accessing selected items from ListView
-        ListView<String> tags = new ListView<>();
-        tags.setPrefWidth(200.0);
+        ListView<String> tagsPanel = new ListView<>();
+        tagsPanel.setPrefWidth(200.0);
         // getting tag IDs from log file
-
-        // currently can't use that as log files are not a thing
-        // ArrayList al = new ArrayList<> (MainApplication.logfiles.get(0).getIDs());
-        // ArrayList tagIDs = HelperMethods.deduplicate(HelperMethods.convertList(al));
+;
+        // populate panel with tag IDs
         for (Long tag : all_tags) {
-            tags.getItems().add(tag + "");
+            tagsPanel.getItems().add(tag + "");
         }
 
-        tags.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        tagsPanel.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        
+        tagsPanel.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+
+                ObservableList selectedIndices = tagsPanel.getSelectionModel().getSelectedIndices();
+
+                if (selectedIndices.size() > 0) {
+
+                    for (int i=0; i<threads.size(); i++) {
+                        threads.get(i).stop();                        
+                    }
+                    
+                    
+                    
+                    
+                    // remove from the map
+                    for (int i = 0; i < threads.size(); i++) {
+                        System.out.println("threads lenght: " + threads.size());
+                        removeTag();
+                    }
+                    
+                    threads.clear();
+                    
+                    // should be used for all tags
+                    for (Object o : selectedIndices) {
+                        int tagIndex = (Integer) o;
+                        System.out.println(tagIndex);
+                        placeTag(tagIndex, simTime-1);
+                        Thread t = updateTag(tagIndex, simTime);
+                        threads.add(t);
+                    }
+                } // tags were unselected
+                else if (selectedIndices.isEmpty()) {
+
+                    for (Thread t : threads) {
+                        t.stop();
+                        threads.remove(t);
+                      
+                    }
+                    // reinstantiate all tags and their threads
+                    for (int i = 0; i < all_tags.size(); i++) {
+                        Thread t = updateTag(i, simTime);
+                        threads.add(t);
+                    }
+                }
+            }
+        });
 
         // alternative way to show ListView of height for all tags
         //tags.setPrefHeight(stringTags.size() * 23 + 2);
-        ListView<String> basestationPanel = new ListView<>();
+       basestationPanel = new ListView<>();
 
         // TODO: collect actual basestation names from logUpload
         basestationPanel.getItems().addAll("Basestation 1", "Basestation 2", "Basestation 3", "Basestation 4");
@@ -239,11 +295,13 @@ public class SimulationController {
         drawTrace.setText("Draw movement patterns");
         drawTrace.setSelected(false);
 
-        rightbox.getChildren().addAll(tags, basestationPanel, regularity, drawTrace, buttons);
+        rightbox.getChildren().addAll(tagsPanel, basestationPanel, regularity, drawTrace, buttons);
 
         // adding elements to the HBox from FXML file
         imagebox.setPadding(new Insets(20, 10, 10, 20));
         imagebox.getChildren().addAll(leftbox, rightbox);
+        
+        threads = new ArrayList<>();
 
         // might want to place this in map setup
         // placing tags to their initial locations
@@ -256,7 +314,7 @@ public class SimulationController {
         // remains for loop, should be changed to traverse tagID list for all tags
         for (int i = 0; i < all_tags.size(); i++) {
             Thread th = updateTag(i, 1);
-            threads[i] = th;
+            threads.add(th);
         }
     }
     
@@ -372,19 +430,6 @@ public class SimulationController {
             all_times.add(times);
             all_coords.add(sorted_coords);
         }
-        System.out.println("all_coords");
-        System.out.println("From visualisation controller");
-        for (ArrayList<Double[]> ar : all_coords) {
-            for (Double[] a : ar) {
-                System.out.println("x: " + a[0]);
-                System.out.println("y: " + a[1]);
-                System.out.println("--------------");
-
-            }
-
-        }
-        System.out.println("");
-
     }
 
     /**
@@ -397,26 +442,28 @@ public class SimulationController {
      */
     public void placeBasestations(ArrayList<Double[]> coords) {
 
-        ArrayList<Rectangle> newCoords = new ArrayList<>();
+        ArrayList<Circle> newCoords = new ArrayList<>();
 
         // will have to be passed information about basestations, 
         // which will also include the unique name, which I can then assign
         // on a tooltip
         for (Double[] bs : coords) {
 
-            Rectangle r = new Rectangle(bs[0], bs[1], 5, 5);
+            Circle r = new Circle(bs[0], bs[1], 2.5);
             newCoords.add(r);
 
         }
 
         Group g = new Group();
 
-        for (Rectangle r : newCoords) {
-            g.getChildren().add(r);
+        for (int i=0; i<newCoords.size(); i++) {
+            g.getChildren().add(newCoords.get(i));
+            //String name = (String)basestationPanel.get;
+            //Circle c = newCoords.get(i);
 
-//            r.hoverProperty().addListener((observable) -> {
+//            c.hoverProperty().addListener((observable) -> {                
 //                Tooltip t = new Tooltip(name); // should get tag id and put it as a label
-//                Tooltip.install(r, t);
+//                Tooltip.install(c, t);
 //            });
         }
 
@@ -442,8 +489,6 @@ public class SimulationController {
         // getting index position of the tag
         double x = all_coords.get(tagIndex).get(timeIndex)[0];
         double y = all_coords.get(tagIndex).get(timeIndex)[1];
-
-        System.out.println("start coord: " + x + "; " + y);
 
         // draw only if it fits on the pane
         // if (x <= 480 && y <= 280) {
@@ -481,7 +526,6 @@ public class SimulationController {
                 for (int i = t; i < all_times.get(index).size(); i++) {
                     //currentTime = i;
                     // TODO: timing will actually need to be synchronised across the tags
-                    System.out.println("current time: " + all_times.get(index).get(i));
                     BigInteger time = all_times.get(index).get(i);
                     simTime = i;
                     int no = i; // index of coordinate to which we want to set location now

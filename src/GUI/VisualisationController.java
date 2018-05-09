@@ -220,9 +220,6 @@ public class VisualisationController {
         tagsPanel.setPrefWidth(200.0);
         // getting tag IDs from log file
 
-        // currently can't use that as log files are not a thing
-        // ArrayList al = new ArrayList<> (MainApplication.logfiles.get(0).getIDs());
-        // ArrayList tagIDs = HelperMethods.deduplicate(HelperMethods.convertList(al));
         for (Long tag : all_tags) {
             tagsPanel.getItems().add(tag + "");
         }
