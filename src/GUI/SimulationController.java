@@ -614,7 +614,7 @@ public class SimulationController {
         
         // write to file
         PrintWriter writer = new PrintWriter("export" + reportDate + ".txt", "UTF-8");
-        writer.println("Time,Tag,Latitude,Longitude");
+        writer.println("Tag,Time,Latitude,Longitude");
         for (int a=0; a<all_tags.size(); a++) {
             for(int i=0; i<all_times.get(a).size(); i++){
                 Double[] temp=new Double[]{all_coords.get(a).get(i)[0],
