@@ -57,7 +57,6 @@ public class LogDataTest {
         BigInteger res1 = log.correctT(inp1);
         assertEquals(res1,exp1);
         BigInteger res2 = log.correctT(inp2);
-        System.out.println(res2);
         //assertEquals(res2,exp2);
         System.out.println("Test for correctT passed");
         
@@ -264,3 +263,4 @@ public class LogDataTest {
     }
     
 }
+

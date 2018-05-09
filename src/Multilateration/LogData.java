@@ -52,7 +52,11 @@ public class LogData {
     //Constructor can be used for both simulation + real data.
     //RSSIs must be in -dBM
     //Set noise, filter and gran on and off, gC is granularity constant.
+<<<<<<< HEAD
     public LogData(String fp,int filter, int gran, int gC, int sim) {
+=======
+    LogData(String fp,int filter, int gran, int gC, int sim) {
+>>>>>>> 02ecd80aca487d24a69ad3e78d84458ff1af1765
         //sim input determines simulated data/real data
         //Set file path.
         this.FilePath = fp;
@@ -84,6 +88,19 @@ public class LogData {
                 filterRSSIs(); 
             }
         }
+<<<<<<< HEAD
+=======
+    }
+    
+    
+    
+    LogData(String fp) {
+        //Set file path.
+        this.FilePath = fp;
+        //Automatically extract data from log file when object is created.
+        this.extractData(fp); 
+        //normaliseRSSIs(-30,-70,"no");
+>>>>>>> 02ecd80aca487d24a69ad3e78d84458ff1af1765
     }
     
     
@@ -103,7 +120,11 @@ public class LogData {
     }
     
     
+<<<<<<< HEAD
     public LogData(ArrayList<BigInteger> times, ArrayList<Long> ids, ArrayList<Double> rssis, int filter, int gran, int gC )  {
+=======
+    LogData(ArrayList<BigInteger> times, ArrayList<Long> ids, ArrayList<Double> rssis, int filter, int gran, int gC )  {
+>>>>>>> 02ecd80aca487d24a69ad3e78d84458ff1af1765
         this.Times = times;
         this.IDs = ids;
         this.RSSIs = rssis;
