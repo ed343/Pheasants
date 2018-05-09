@@ -32,15 +32,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 
 public class SimulationController {
 
@@ -80,6 +76,7 @@ public class SimulationController {
     //ArrayList<String> tagIDs = HelperMethods.convertList(intTags);
     ArrayList<Double[]> tagCoords = new ArrayList<>();
 
+    static MapProcessing mp;
     // parameters used for map scaling and tag placement
     Double[] corners;
     double realWidth;
@@ -287,7 +284,7 @@ public class SimulationController {
 
         basestations = nc.getGeoBasestations();
 
-        MapProcessing mp = new MapProcessing(basestations);
+        mp = new MapProcessing(basestations);
         cartBasestationCoords = mp.getBasestations(basestations);
         int zoom = mp.getZoom();
         double[] centerPoints = mp.getCenter(); // {centerY, centerX}
@@ -551,54 +548,36 @@ public class SimulationController {
 
     public void handleExport() throws FileNotFoundException, UnsupportedEncodingException, IOException {
         
-        // get date for the name of the file
+               // get date for the name of the file
         DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
-        Date today = Calendar.getInstance().getTime();
+        Date today = Calendar.getInstance().getTime();        
         String reportDate = df.format(today);
-
+        
         // get OS for filepath
         String OS = System.getProperty("os.name").toLowerCase();
-        String path = "";
+        String path="";
         if (OS.contains("win")) {
-            path = ".\\" + "export" + reportDate + ".txt";
+            path = ".\\" + "export"+ reportDate + ".txt";
         }
-        if (OS.contains("nix") || OS.contains("nux")
-                || OS.contains("aix") || OS.contains("mac")) {
-            path = "./" + "export" + reportDate + ".txt";
+        if (OS.contains("nix") || OS.contains("nux") ||  
+                OS.contains("aix") || OS.contains("mac")){
+            path = "./" + "export"+ reportDate + ".txt";
         }
-
-//        DirectoryChooser directoryChooser = new DirectoryChooser();
-//        
-        Stage stage = (Stage) pane.getScene().getWindow();
-//        File selected = directoryChooser.showDialog(stage);
-//        String newPath = selected.getAbsolutePath();
-//        System.out.println("path: " + newPath);
-//        
-////        if (selected != null) {
-////            selected.getAbsolutePath();
-////        }
-//
-//        File file = new File (newPath + "export" + reportDate + ".txt");
-//        PrintWriter writer = new PrintWriter ("export" + reportDate + ".txt", "UTF-8");
-
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Text files", "*.txt"),
-                new FileChooser.ExtensionFilter("CSV files", "*.csv"),
-                new FileChooser.ExtensionFilter("Log files", "*.log"));
-
-        File file = fileChooser.showOpenDialog(stage);
-        System.out.println("file: " + file);
-
+        
         // create new file
         File f = new File(path);
         f.createNewFile();
-
+        
         // write to file
         PrintWriter writer = new PrintWriter("export" + reportDate + ".txt", "UTF-8");
-        writer.println("Time,Tag,X-Coordinate,Y-Coordinate");
-        for (int a = 0; a < all_tags.size(); a++) {
-            for (int i = 0; i < all_times.get(a).size(); i++) {
+        writer.println("Time,Tag,Latitude,Longitude");
+        for (int a=0; a<all_tags.size(); a++) {
+            for(int i=0; i<all_times.get(a).size(); i++){
+                Double[] temp=new Double[]{all_coords.get(a).get(i)[0],
+                                           all_coords.get(a).get(i)[1], 
+                                           all_coords.get(a).get(i)[2]};
+                Double[] geoCoords=mp.getGeoLoc(temp);
+                
                 // export tag ID
                 writer.print(all_tags.get(a));
                 writer.print(',');
@@ -606,14 +585,11 @@ public class SimulationController {
                 writer.print(all_times.get(a).get(i));
                 writer.print(',');
                 // export coords
-                writer.print(all_coords.get(a).get(i)[0]);
+                writer.print(geoCoords[0]);
                 writer.print(',');
-                writer.print(all_coords.get(a).get(i)[1]);
-                writer.print(',');
-                writer.println(all_coords.get(a).get(i)[2]);
+                writer.println(geoCoords[1]);
             }
         }
         writer.close();
-       
     }
 }
