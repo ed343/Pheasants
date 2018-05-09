@@ -7,7 +7,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import javafx.util.Pair;
 import org.apache.commons.math3.filter.DefaultMeasurementModel;
@@ -45,24 +49,51 @@ public class LogData {
     ArrayList<Double> Gains= new ArrayList<>();
     ArrayList<Double> filtRSSIs= new ArrayList<>();
     
-    //Constructor
-    //Set noise/filtering and gran on and off, gC is granularity constant.
-    LogData(String fp,int filter, int gran, int gC) {
+    //Constructor can be used for both simulation + real data.
+    //RSSIs must be in -dBM
+    //Set noise, filter and gran on and off, gC is granularity constant.
+    LogData(String fp,int filter, int gran, int gC, int sim) {
+        //sim input determines simulated data/real data
         //Set file path.
         this.FilePath = fp;
         //Automatically extract data from log file when object is created.
-        this.extractSimData(fp);
-
-        if(gran==1) {
-            if(filter==1) {
+        if(sim==1){
+            this.extractSimData(fp);
+            if(gran==1) {
+                if(filter==1) {
+                    introduceNoise();
+                    filterRSSIs();
+                    granularise(this.Times,this.filtRSSIs,this.IDs,gC);
+                } else
+                    granularise(this.Times,this.RSSIs,this.IDs,gC);
+            } else if(filter==1) {
                 introduceNoise();
-                filterRSSIs();
-                granularise(this.Times,this.filtRSSIs,this.IDs,gC);
-            } else
-                granularise(this.Times,this.RSSIs,this.IDs,gC);
-        } else if(filter==1)
-            introduceNoise();
-            filterRSSIs(); 
+                filterRSSIs(); 
+            }
+        }
+        else {
+            this.extractData(fp);
+            if(gran==1) {
+                if(filter==1) {
+                    filterRSSIs();
+                    granularise(this.Times,this.filtRSSIs,this.IDs,gC);
+                } else
+                    granularise(this.Times,this.RSSIs,this.IDs,gC);
+            } else if(filter==1) {
+
+                filterRSSIs(); 
+            }
+        }
+    }
+    
+    
+    
+    LogData(String fp) {
+        //Set file path.
+        this.FilePath = fp;
+        //Automatically extract data from log file when object is created.
+        this.extractData(fp); 
+        //normaliseRSSIs(-30,-70,"no");
     }
     
     LogData(String fp, int test) {
@@ -72,19 +103,19 @@ public class LogData {
     }
     
     
-    LogData(ArrayList<BigInteger> times, ArrayList<Long> ids, ArrayList<Double> rssis, String noise, String filter, String gran, int gC )  {
+    LogData(ArrayList<BigInteger> times, ArrayList<Long> ids, ArrayList<Double> rssis, int filter, int gran, int gC )  {
         this.Times = times;
         this.IDs = ids;
         this.RSSIs = rssis;
-        if(noise=="yes")
-            introduceNoise();
-        if(gran=="yes") {
-            if(filter=="yes") {
+        if(gran==1) {
+            if(filter==1) {
+                introduceNoise();
                 filterRSSIs();
                 granularise(this.Times,this.filtRSSIs,this.IDs,gC);
             } else
                 granularise(this.Times,this.RSSIs,this.IDs,gC);
-        } else if(filter=="yes")
+        } else if(filter==1)
+            introduceNoise();
             filterRSSIs(); 
     }
     
@@ -221,6 +252,8 @@ public class LogData {
         }
         this.RSSIs = grs;
     }
+    
+
     
     // Ensures times are consistent.
     BigInteger correctT(BigInteger currentTime) {
@@ -432,7 +465,7 @@ public class LogData {
 
             // Add random noise, gaussian distributed with m = 2 and var = 2
             java.util.Random r2 = new java.util.Random();
-            double measurementNoise = r2.nextGaussian() * Math.sqrt(1) + 1;
+            double measurementNoise = r2.nextGaussian() * Math.sqrt(0.5) + 0.5;
             rssi -= measurementNoise;
             this.RSSIs.set(i, rssi);
             }
@@ -446,7 +479,7 @@ public class LogData {
         for(int j=0; j<this.RSSIs.size(); j++) {
             double rssiMeasurement = this.RSSIs.get(j);
             java.util.Random r2 = new java.util.Random();
-            double measurementNoise = 2;//r2.nextGaussian() * Math.sqrt(4) + 4;
+            double measurementNoise = 1;
             double processNoise = 1e-5d;
             RealMatrix A = new Array2DRowRealMatrix(new double[] { 1d });
             RealMatrix B = null;
