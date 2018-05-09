@@ -1,5 +1,6 @@
 package Multilateration;
 
+import GUI.UploadController;
 import Jama.Matrix;
 import static Multilateration.Simulation.all_coords;
 import static Multilateration.Simulation.all_tags;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,8 +26,10 @@ public class MLAT {
     
     static int radioIndex = 0;
     static PrimerClass primer;
+    static ArrayList<Double[]> basestationCoords = new ArrayList<>();
+    static ArrayList<Double> basestationPowers = new ArrayList<>();
     
-    public static HashMap<Long, HashMap<BigInteger, Double[]>> main(String args[]) {
+    public static HashMap<Long, HashMap<BigInteger, Double[]>> getStuff() throws SQLException {
         // ArrayList to store the Data extracted from all Log files.
         // each entry in the ArrayList keeps the data associated with one radio
         ArrayList<LogData> dataArr = new ArrayList<>();
@@ -34,50 +38,39 @@ public class MLAT {
         primer = new PrimerClass();
         
         // 1. set no. of radios in field
-        // Read from System.in
-        Scanner reader = new Scanner(System.in);
-        System.out.println("Enter number of radios: ");
-        int n = 0;
-        if (reader.hasNext()) {
-            n = reader.nextInt();
-        }
-        primer.setNumberOfRadios(n);
+        primer.setNumberOfRadios(4);
         
         // 2. insert all radio coordinates
-        for (int i = 0; i < primer.no_of_radios; i++) {
-            double x = 0, y = 0, z = 0;
-            System.out.println("Enter x coordinate: ");
-            if (reader.hasNext()) {
-                x = reader.nextDouble(); // Scans the next token of the input as a double.
-            }
-            System.out.println("Enter y coordinate: ");
-            if (reader.hasNext()) {
-                y = reader.nextDouble();
-            }
-            System.out.println("Enter z coordinate: ");
-            if (reader.hasNext()) {
-                z = reader.nextDouble();
-            }
-            primer.setRadioCoordinates(x, y, z);
+        
+        ArrayList<Double[]> data = getBasestationData();
+
+        
+        for (Double[] a: data) {
+            Double[] temp = {a[0], a[1]};
+            basestationCoords.add(temp);
+            basestationPowers.add(a[2]);
         }
         
-        // 3. insert all radio 1-Meter RSSI
+        MapProcessing mp = new MapProcessing(basestationCoords);
+        // get ArrayList of cartesian coordinates of basestations
+        ArrayList<Double[]> stations = mp.getBasestations(basestationCoords);
+        
+        
+        
+        // 3. insert all radio coordinates and measured powers (RSSI in 1-meter)
         for (int i = 0; i < primer.no_of_radios; i++) {
-            System.out.println("Enter measured power: ");
-            double m = reader.nextDouble();
-            primer.setRadioMeasuredPower(m);
+            primer.setRadioCoordinates(stations.get(i)[0], stations.get(i)[1], stations.get(i)[2]);
+            primer.setRadioMeasuredPower(basestationPowers.get(i));
         }
         
         // 4. Extract data from all relevant log files.
+        
+        ArrayList<String> paths = UploadController.getPaths();
+        
         for (int i = 0; i < primer.no_of_radios; i++) {
-            //Ask user to input the full path of a log file.
-            System.out.println("Enter filepath to log: ");
-            String fPath = new String();
-            if (reader.hasNext()) {
-                fPath = reader.next();
-            }
+            
             //Create a new instance of LogData with path.
-            LogData log = new LogData(fPath);
+            LogData log = new LogData(paths.get(i), 1, 1, 4, 0);
             //Add LogData object to ArrayList.
             dataArr.add(log);
         }
@@ -95,8 +88,6 @@ public class MLAT {
             ArrayList<Double> rssiData = log.getNormRSSIs();
             primer.setTRVals(tData, idData, rssiData);
         }
-        
-        reader.close();
         
         // 6. find out all distances using RSSI
         RssiEquation req = new RssiEquation();
@@ -407,4 +398,21 @@ public class MLAT {
         }
         writer.close();
     }
+    
+    // getter method to be used from other classes
+    static public ArrayList<Double[]> getBasestationData() throws SQLException{
+        ArrayList<String> basestationNames = UploadController.getSelectedBasestations();
+        ArrayList<Double[]> basestationData = new ArrayList<>();
+        for (String s: basestationNames) {
+            Double[] d = UploadController.collectBasestationData(s);
+            basestationData.add(d);
+        }
+        
+        return basestationData;
+    }
+    
+    public static ArrayList<Double[]> getGeogrBasestations() {
+        return basestationCoords;
+    }
+    
 }

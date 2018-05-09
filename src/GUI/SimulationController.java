@@ -1,6 +1,5 @@
 package GUI;
 
-import Multilateration.MLAT;
 import Multilateration.MapProcessing;
 import Multilateration.Simulation;
 import java.io.File;
@@ -44,15 +43,13 @@ import javafx.scene.shape.Line;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
-public class VisualisationController {
+public class SimulationController {
 
-    public VisualisationController() {
-    }
 
     @FXML
     HBox imagebox;
     @FXML
-    AnchorPane visualisation;
+    AnchorPane simulation;
     @FXML
     HBox buttons;
     @FXML
@@ -67,7 +64,7 @@ public class VisualisationController {
     double centerX;
     double centerY;
 
-    //Simulation nc = new Simulation();
+    Simulation nc = new Simulation();
 
     // ArrayList to hold the geographical coordinates of basestations that will be displayed
     ArrayList<Double[]> basestations = new ArrayList<>();
@@ -102,13 +99,11 @@ public class VisualisationController {
     // be progressed from that value
     int simTime = 0;
 
-    public void initialize() throws IOException, SQLException {
-        
-        getTagInfo();
+    public void initialize() throws IOException {
 
         pane = setupMap(basestations);
 
-         // prepares all_tags, all_times and all_coords for later use
+        getTagInfo(); // prepares all_tags, all_times and all_coords for later use
 
         Thread[] threads = new Thread[all_tags.size()]; // creating array to hold threads for every tag?
 
@@ -269,6 +264,18 @@ public class VisualisationController {
         }
     }
     
+    
+    // getter method to be used from other classes
+    public ArrayList<Double[]> getBasestationData() throws SQLException{
+        ArrayList<String> basestationNames = UploadController.getSelectedBasestations();
+        ArrayList<Double[]> basestationData = new ArrayList<>();
+        for (String s: basestationNames) {
+            Double[] d = UploadController.collectBasestationData(s);
+            basestationData.add(d);
+        }
+        
+        return basestationData;
+    }
 
     /**
      * Function for setting up map - downloading from Google Maps, placing first
@@ -279,7 +286,7 @@ public class VisualisationController {
         // downloading static map of the location
         ImageView imageView;
 
-        basestations = MLAT.getGeogrBasestations();
+        basestations = nc.getGeoBasestations();
 
         MapProcessing mp = new MapProcessing(basestations);
         cartBasestationCoords = mp.getBasestations(basestations);
@@ -336,8 +343,8 @@ public class VisualisationController {
 
     }
 
-    public void getTagInfo() throws SQLException {
-        tag_registry = MLAT.getStuff();
+    public void getTagInfo() {
+        tag_registry = nc.simulateLocations();
 
         // collecting tags
         for (Map.Entry<Long, HashMap<BigInteger, Double[]>> entry : tag_registry.entrySet()) {
@@ -539,7 +546,7 @@ public class VisualisationController {
         Parent sceneParent = sceneLoader.load();
         Scene scene = new Scene(sceneParent, 400, 400);
 
-        Stage stage = (Stage) visualisation.getScene().getWindow();
+        Stage stage = (Stage) simulation.getScene().getWindow();
         stage.setScene(scene);
     }
 

@@ -28,14 +28,21 @@ public class MenuController {
 
         FXMLLoader sceneLoader=new FXMLLoader(getClass().getResource("data_upload.fxml"));
         Parent sceneParent = sceneLoader.load();
-        Scene scene = new Scene(sceneParent, 600, 450);
+        Scene scene = new Scene(sceneParent, 620, 550);
 
         Stage stage = (Stage) rootpane.getScene().getWindow();
         stage.setScene(scene);
     }
 
-    public void handleExport() {
+    public void handleSimulation() throws IOException {
+        
+        FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("data_simulation.fxml"));
+        Parent sceneParent = sceneLoader.load();
+        Scene scene = new Scene(sceneParent, 800, 500);
 
+        Stage stage = (Stage) rootpane.getScene().getWindow();
+        stage.setScene(scene);
+        
     }
 
     public void handleSettings() {

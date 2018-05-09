@@ -8,10 +8,10 @@
 
 <?import javafx.scene.image.ImageView?>
 
-<AnchorPane fx:id="data_upload" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="GUI.UploadController">
-
-    <VBox prefHeight="550" prefWidth="600" spacing="20">
-        <padding><Insets bottom="25" left="25" right="25" top="55" /></padding>
+<ScrollPane fx:id="data_upload" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="GUI.UploadController">
+    
+    <VBox prefHeight="550" prefWidth="600" spacing="15">
+        <padding><Insets bottom="15" left="25" right="25" top="55" /></padding>
         <VBox>
             <Label text="Please upload a file for every basestation, containing its observations.">
                 <font><Font size="14.0"/></font>
@@ -20,48 +20,14 @@
                 <font><Font size="14.0"/></font>
             </Label>
         </VBox>
+        
+        <VBox fx:id="uploadList">
 
-        <HBox spacing="5">
-            <Label text="   Basestation #1 data:"><font><Font size="14.0"/></font></Label>
+            <children>
 
-            <Button fx:id="data1" onAction="#handleUpload" minHeight="30.0" minWidth="120.0" mnemonicParsing="false" text="Choose file...">
-            <font>
-                <Font size="14.0" />
-            </font>
-            </Button>
-        </HBox>
-
-        <HBox spacing="5">
-            <Label text="   Basestation #2 data:"><font><Font size="14.0"/></font></Label>
-
-            <Button fx:id="data2" onAction="#handleUpload" minHeight="30.0" minWidth="120.0" mnemonicParsing="false" text="Choose file...">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </Button>
-        </HBox>
-
-        <HBox spacing="5">
-            <Label text="   Basestation #3 data:"><font><Font size="14.0"/></font></Label>
-
-            <Button fx:id="data3" onAction="#handleUpload" minHeight="30.0" minWidth="120.0" mnemonicParsing="false" text="Choose file...">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </Button>
-        </HBox>
-
-        <HBox spacing="5">
-            <Label text="   Basestation #4 data:"><font><Font size="14.0"/></font></Label>
-
-            <Button fx:id="data4" onAction="#handleUpload" minHeight="30.0" minWidth="120.0" mnemonicParsing="false" text="Choose file...">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </Button>
-        </HBox>
-
-
+            </children>
+        </VBox>
+        
         <HBox alignment="BOTTOM_RIGHT" spacing="5">
             <Button fx:id="run" onAction="#handleRun" minHeight="50.0" minWidth="100.0" mnemonicParsing="false" text="Run">
                 <font>
@@ -74,7 +40,7 @@
                 </font>
             </Button>
         </HBox>
-
+    
     </VBox>
 
-</AnchorPane>
+</ScrollPane>

@@ -21,12 +21,12 @@
             <Font size="14.0" />
          </font>
       </Button>
-      <Button onAction="#handleExport" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="Export data">
+      <Button onAction="#handleSimulation" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="Run simulation">
          <font>
             <Font size="14.0" />
          </font>
       </Button>
-      <Button onAction="#handleSettings" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="Settings / Manual">
+      <Button onAction="#handleSettings" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="User manual">
          <font>
             <Font size="14.0" />
          </font>

@@ -137,10 +137,11 @@ public class BasestationController {
             }
             
             System.out.println("noBasestations: " + noBasestations);
-            goBack(new ActionEvent());
+            //goBack(new ActionEvent());
         }
         }
-        catch(NumberFormatException e) {
+        catch(Exception e) {
+            e.printStackTrace();
             if (noBasestations<4) {
                 Alert alert = new Alert(AlertType.INFORMATION);
                 alert.setTitle("Information Dialog");

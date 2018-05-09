@@ -9,9 +9,6 @@ import java.util.ArrayList;
 
 public class MainApplication extends javafx.application.Application {
 
-    // this arraylist will be used to store data from uploaded log files (processed)
-    public static ArrayList<LogData> logfiles = new ArrayList<>();
-
     @Override
     public void start(Stage primaryStage) throws Exception{
 

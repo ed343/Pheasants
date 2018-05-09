@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -128,13 +129,16 @@ public class BasestationDB {
     public static void readName(Connection c) {
         String sql = "SELECT name FROM basestations;";
         try {
-            // insert the appropiate values into the sql statement
-            PreparedStatement pstmt = c.prepareStatement(sql);
-            // execute the sql command
-            pstmt.executeUpdate();
-            System.out.println("");
+            Statement stmt = c.createStatement();
+            String s = "select name from basestations";
+            ResultSet rs = stmt.executeQuery(s);
+            
+            while (rs.next()) {
+                System.out.println("read: "+ rs.getString("name"));
+            }
+        }
 
-        } catch (SQLException e) {
+        catch (SQLException e) {
             System.out.println(e.getMessage());
         }
     }
