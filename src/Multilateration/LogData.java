@@ -115,16 +115,22 @@ public class LogData {
     }
     
     void granularise(ArrayList<BigInteger> times, ArrayList<Double> rssis, ArrayList<Long> IDs, int gran) {
+        //New primer
         PrimerClass primer = new PrimerClass();
+        //Set up primer
         primer.setTRVals(times, IDs, rssis);
         ArrayList<HashMap<Long, ArrayList<Pair<BigInteger,Double>>>> hmArr = primer.idRSSIs;
+        HashMap<Long, ArrayList<Pair<BigInteger,Double>>> hmRet = new HashMap<>();
+        ArrayList<Pair<BigInteger,Double>> pairs = new ArrayList<>();
         // Get hash map using PrimerClass object.
         HashMap<Long, ArrayList<Pair<BigInteger,Double>>> hm = hmArr.get(0);
+        List idArray =new ArrayList(hm.keySet());
+        Collections.sort(idArray);
         Set<Long> inpIDs = hm.keySet();
         // Get array of all tag IDs
-        Long[] idArray = inpIDs.toArray(new Long[inpIDs.size()]);
+        
         // Iterate over tags
-        for(Long id : idArray) {
+        for(Object id : idArray) {
             ArrayList<Pair<BigInteger,Double>> tRs = hm.get(id);
             ArrayList<BigInteger> ts = new ArrayList<>();
             ArrayList<Double> rs = new ArrayList<>();
@@ -184,11 +190,35 @@ public class LogData {
                 }
             }
             // Create new pairs of time, averageRSSI, and add to hash map.
-            ArrayList<Pair<BigInteger,Double>> pairs = new ArrayList<>();
-            for(int i=0; i<avArr.size(); i++) {
-                this.RSSIs.set(i, avArr.get(i));
+             
+             for(int i=0;i<avArr.size();i++) {
+                 Pair<BigInteger,Double> pair = new Pair(ts.get(i),avArr.get(i));
+                 pairs.add(pair);
+             }
+            
+             
             }
+        ArrayList<Integer> inds = new ArrayList<>();
+        ArrayList<Double> grs = new ArrayList<>();
+        for(int i=0;i<pairs.size();i++) {
+            BigInteger time = pairs.get(i).getKey();
+            double r = pairs.get(i).getValue();
+            if(!inds.contains(i)) {
+                grs.add(r);
+                inds.add(i);
             }
+            for(int j=0;j<pairs.size();j++) {
+                double r2 = pairs.get(j).getValue();
+                if(!inds.contains(j)) {
+                    if(pairs.get(j).getKey().compareTo(time)==0) {
+                        grs.add(r2);
+                        inds.add(j);
+                    }
+                }
+            }
+            
+        }
+        this.RSSIs = grs;
     }
     
     // Ensures times are consistent.
