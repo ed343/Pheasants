@@ -46,90 +46,78 @@ public class LogData {
     ArrayList<Double> Gains= new ArrayList<>();
     ArrayList<Double> filtRSSIs= new ArrayList<>();
     
-    //Constructor can be used for both simulation + real data.
-    //RSSIs must be in -dBM
-    //Set noise, filter and gran on and off, gC is granularity constant.
+
+    /**
+     * Main constructor: use this constructor for real log files.
+     * @param fp    : The full file path to the log file from which data will 
+     *                be extracted.
+     * 
+     * @param filter: Determines whether or not filtering is applied. 
+     * 
+     * @param gran  : Determines whether or not granularity is applied.
+     *              
+     * @param gC    : Granularity constant - number of seconds to average
+     *                over.
+     */
     public LogData(String fp, boolean filter, boolean gran, int gC) {
-        //sim input determines simulated data/real data
         //Set file path.
         this.FilePath = fp;
         //Automatically extract data from log file when object is created.
- 
         this.extractData(fp);
+        
         if(this.RSSIs.get(0)>=0)
+            //Normalise RSSIs if they are +ve.
             normaliseRSSIs(-30,-70);
         if(gran) {
             if(filter) {
+                //Filter and granularise.
                 filterRSSIs();
                 granularise(this.Times,this.RSSIs,this.IDs,gC);
             } else
+                //Granularise only.
                 granularise(this.Times,this.RSSIs,this.IDs,gC);
         } else if(filter) {
-
+            //Filter only.
             filterRSSIs(); 
         }
         
     }
     
-    
-    
-    public LogData(String fp) {
-        //Set file path.
-        this.FilePath = fp;
-        //Automatically extract data from log file when object is created.
-        this.extractData(fp); 
-        //normaliseRSSIs(-30,-70,"no");
-    }
-    
-    public LogData(String fp, int test) {
-        this.FilePath = fp;
-        this.extractData(fp);
-        normaliseRSSIs(-30, -70);
-    }
-    
-    
-    public LogData(ArrayList<BigInteger> times, ArrayList<Long> ids, ArrayList<Double> rssis, boolean filter, boolean gran, int gC )  {
-        this.Times = times;
-        this.IDs = ids;
-        this.RSSIs = rssis;
-        if(gran) {
-            if(filter) {
-                introduceNoise();
-                filterRSSIs();
-                granularise(this.Times,this.RSSIs,this.IDs,gC);
-            } else
-                granularise(this.Times,this.RSSIs,this.IDs,gC);
-        } else if(filter)
-            introduceNoise();
-            filterRSSIs(); 
-    }
-    
-    /*
-    *  Function to convert a date/time string into a number.
-    *
-    *
-    *  INPUT:
-    *
-    *  dt: The date/time string the be converted.
-    *
-    *  OUTPUT:
-    *
-    *  The number corresponding to the converted date/time string.
-    *
-    */
+    /**
+     * Function to convert date/time string into number.
+     * 
+     * @param dt: The input string.
+     * 
+     * @return  : The date/time number in the form of a BigInteger object.
+     */
     public BigInteger getDT(String dt) {
+        //Get constituent parts
         String year = dt.substring(0,4);
         String month = dt.substring(5,7);
         String day = dt.substring(8,10);
         String hour = dt.substring(11,13);
         String minute = dt.substring(14,16);
         String second = dt.substring(17,19);
+        //Formulate full number string.
         String fullString = year+month+day+hour+minute+second;
+        //Create new BigInteger with number string.
         BigInteger flatDT = new BigInteger(fullString);
         
         return flatDT;
     }
     
+    /**
+     * Function used to apply granularity to RSSI data.
+     * 
+     * @param times: Array of times.
+     * 
+     * @param rssis: Array of RSSIs.
+     * 
+     * @param IDs  : Array of IDs.
+     * 
+     * @param gran : Granularity constant - number of seconds to average
+     *               over.
+     */
     public void granularise(ArrayList<BigInteger> times, ArrayList<Double> rssis, ArrayList<Long> IDs, int gran) {
         //New primer
         PrimerClass primer = new PrimerClass();
@@ -140,11 +128,10 @@ public class LogData {
         ArrayList<Pair<BigInteger,Double>> pairs = new ArrayList<>();
         // Get hash map using PrimerClass object.
         HashMap<Long, ArrayList<Pair<BigInteger,Double>>> hm = hmArr.get(0);
+        // Get array of all tag IDs
         List idArray =new ArrayList(hm.keySet());
         Collections.sort(idArray);
-        Set<Long> inpIDs = hm.keySet();
-        // Get array of all tag IDs
-        
+        Set<Long> inpIDs = hm.keySet();     
         // Iterate over tags
         for(Object id : idArray) {
             ArrayList<Pair<BigInteger,Double>> tRs = hm.get(id);
@@ -214,6 +201,7 @@ public class LogData {
             
              
             }
+        // Flatten values so RSSIs can be updates correctly.
         ArrayList<Integer> inds = new ArrayList<>();
         ArrayList<Double> grs = new ArrayList<>();
         for(int i=0;i<pairs.size();i++) {
@@ -238,9 +226,15 @@ public class LogData {
     }
     
 
-    
-    // Ensures times are consistent.
+    /**
+     * Function to ensure the correctness of times.
+     * 
+     * @param currentTime: The input time.
+     * 
+     * @return           : The corrected time.
+     */
     public BigInteger correctT(BigInteger currentTime) {
+        // Ensure times are correct in relation to minutes.
         int check1 = currentTime.mod(BigInteger.valueOf(100)).compareTo(BigInteger.valueOf(60));
         if(check1==1 ||check1 ==0)  {
             currentTime = currentTime.add(BigInteger.valueOf(40));
@@ -252,63 +246,13 @@ public class LogData {
         }
         return currentTime;
     }
-    
-    public void extractSimData(String filepath) {
-        //The path of the log file to be used.
-        String fileName = filepath;
 
-        String line = null;
-
-        try {
-            
-            //Open the file
-            FileReader fileReader = 
-                new FileReader(fileName);
-
-            //Read the file
-            BufferedReader bufferedReader = 
-                new BufferedReader(fileReader);
-            
-            //Iterate over lines in file.
-            while((line = bufferedReader.readLine()) != null) {
-                int sze = line.length();
-                String time = line.substring(5, 19);
-                System.out.println(time);
-                BigInteger tm = new BigInteger(time);
-                this.Times.add(tm);
-                String ID = line.substring(24,34);
-                System.out.println(ID);
-                this.IDs.add(Long.parseLong(ID));
-                String RSSI = line.substring(41,sze-1);
-                System.out.println(RSSI);
-                this.RSSIs.add(Double.parseDouble(RSSI));
-            }
-                        
-            //Close the file
-            bufferedReader.close();         
-        }
-        catch(FileNotFoundException ex) {
-            System.out.println(
-                "Unable to open file '" + 
-                fileName + "'");                
-        }
-        catch(IOException ex) {
-            System.out.println(
-                "Error reading file '" 
-                + fileName + "'");                  
-        }
-                //Check for valid lines.
-    }
-    
-    /*
-    *  Function to extract the data held in a log file.
-    *
-    *
-    *  INPUT:
-    *
-    *  filePath: String containing the path of the log file to be processed.
-    *
-    */
+    /**
+     * Function to extract the data held in a log file.
+     * 
+     * @param filePath : The full file path to the log file from which data will 
+     *                   be extracted.
+     */
     public final void extractData(String filePath) {
         //The path of the log file to be used.
         String fileName = filePath;
@@ -418,20 +362,36 @@ public class LogData {
         }
     }
     
-    // Function to normalise filtered RSSIs to range (x,y).
+    
+    /**
+     * Function to normalise filtered RSSIs to range (x,y).
+     * 
+     * @param x: The high end of the new range.
+     * 
+     * @param y: The low end of the new range.
+     */
     public void normaliseRSSIs(double x, double y) {
         ArrayList<Double> rssis = new ArrayList<>();
         rssis = this.RSSIs;
+        // Negate inputs, as they will be negative.
         x = -x;
         y = -y;
-        double oldRange = 250-0;
+        // The size of the old range.
+        double oldRange = 120;
+        // The required range.
         double newRange = y-x;
+        // Halfway point of new range.
         double hWay = x+(y-x)/2;
+        //Iterate over all RSSI values.
         for(int i=0;i<rssis.size();i++) {
+            // Extract RSSI value.
             double oldVal = rssis.get(i);
-            double newVal = (((oldVal-0)*newRange)/oldRange)+x;
+            // Compute the new value;
+            double newVal = (((oldVal-130)*newRange)/oldRange)+x;
             double diff = hWay - newVal;
             double normVal = hWay+diff;
+            // Set this RSSI value to be the negation of the new value.
+            // This reverses the negation of the input.
             this.RSSIs.set(i,-normVal);
             
             
@@ -440,28 +400,38 @@ public class LogData {
                
     }
     
+    /**
+     * Function to introduce noise to simulation data.
+     */
     public void introduceNoise() {
         for(int i=0;i<this.RSSIs.size();i++) {
             double rssi = this.RSSIs.get(i);
 
-            // Add random noise, gaussian distributed with m = 2 and var = 2
+            // Add random noise, gaussian distributed with m = 0.5 and var = 0.5
             java.util.Random r2 = new java.util.Random();
             double measurementNoise = r2.nextGaussian() * Math.sqrt(0.5) + 0.5;
             rssi -= measurementNoise;
+            // Replace existing RSSI value with noisy value.
             this.RSSIs.set(i, rssi);
             }
     }
     
     
-    //Function that applies 
+    /**
+     * Function to apply filtering to the RSSI data.
+     */
     public void filterRSSIs() {
         double filtRSSI = 0;
+        //Create new random generator with static seed.
         RandomGenerator rand = new JDKRandomGenerator(10);
         for(int j=0; j<this.RSSIs.size(); j++) {
+            // Extract current RSSI value.
             double rssiMeasurement = this.RSSIs.get(j);
-            java.util.Random r2 = new java.util.Random();
+            // Set measurement noise max value.
             double measurementNoise = 1;
+            // Set process noise max value.
             double processNoise = 1e-5d;
+            // Define Kalman matrices.
             RealMatrix A = new Array2DRowRealMatrix(new double[] { 1d });
             RealMatrix B = null;
             RealMatrix H = new Array2DRowRealMatrix(new double[] { 1d });
@@ -470,11 +440,15 @@ public class LogData {
             RealMatrix P0 = new Array2DRowRealMatrix(new double[] { 1d });
             RealMatrix R = new Array2DRowRealMatrix(new double[] { measurementNoise });
             
+            // New process model and measurement model.
             ProcessModel pm = new DefaultProcessModel(A, B, Q, x, P0);
             MeasurementModel mm = new DefaultMeasurementModel(H, R);
+            // Use process model and measurement model to initialise filter.
             KalmanFilter filter = new KalmanFilter(pm, mm);  
-            RealVector pNoise = new ArrayRealVector(1);
+            // Vectors for process noise and measurement noise.
+            RealVector pNoise = new ArrayRealVector(1);            
             RealVector mNoise = new ArrayRealVector(1);
+            // Run predict/update cycle for 10 iterations.
             for (int i = 0; i < 10; i++) {
                 filter.predict();
                 
@@ -490,62 +464,119 @@ public class LogData {
                 filtRSSI = filter.getStateEstimation()[0];
             }
             
+            // Replace previous RSSI value with filtered one.
             this.RSSIs.set(j,filtRSSI);
         }
     
 }
 
-    
+    /**
+     * Function to retrieve file path.
+     * 
+     * @return file path.
+     */
     public String getFilePath() {
         return this.FilePath;
     }
     
+    /**
+     * Function to retrieve times array.
+     * 
+     * @return Times array.
+     */
     public ArrayList<BigInteger> getTimes() {
         return this.Times;
     }
     
+    /**
+     * Function to retrieve IDs array.
+     * 
+     * @return IDs array.
+     */
     public ArrayList<Long> getIDs() {
         return this.IDs;
     }
     
+    /**
+     * Function to retrieve frequencies array.
+     * 
+     * @return Frequencies array.
+     */
     public ArrayList<Double> getFrequencies() {
         return this.Frequencies;
     }
     
+    /**
+     * Function to retrieve Tbuffers array.
+     * 
+     * @return Tbuffers array.
+     */
     public ArrayList<Double> getTBuffers() {
         return this.TBuffers;
     }
 
+    /**
+     * Function to retrieve TDets array.
+     * 
+     * @return TDets array.
+     */
     public ArrayList<Double> getTDets() {
         return this.TDets;
     }
 
+    /**
+     * Function to retrieve SDets array
+     * 
+     * @return SDets array.
+     */
     public ArrayList<Double> getSDets() {
         return this.SDets;
     }
     
+    /**
+     * Function to retrieve RSSIs array.
+     * 
+     * @return RSSIs array
+     */
     public ArrayList<Double> getRSSIs() {
         return this.RSSIs;
     }
     
+    /**
+     * Function to retrieve SNRs array.
+     * 
+     * @return SNRs array
+     */
     public ArrayList<Double> getSNRs() {
         return this.SNRs;
     }
     
+    /**
+     * Function to retrieve ESNRs array.
+     * @return ESNRs array.
+     */
     public ArrayList<Double> getESNRS() {
         return this.Euclid_SNRs;
     }
     
+    /**
+     * Function to retrieve Headrooms array.
+     * 
+     * @return Headrooms array.
+     */
     public ArrayList<Double> getHeadrooms() {
         return this.Headrooms;
     }
 
+    /**
+     * Function to retrieve Gains array.
+     * 
+     * @return Gains array.
+     */
     public ArrayList<Double> getGains() {
         return this.Gains;
     }
     
-    public ArrayList<Double> getNormRSSIs() {
-        return this.normRSSIs;
-    }
     
 }
+

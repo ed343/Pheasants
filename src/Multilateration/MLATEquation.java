@@ -4,12 +4,21 @@ import Jama.Matrix;
 import static java.lang.Math.pow;
 import java.util.ArrayList;
 
-// this is all dependent on the tag that I am trying to find at a specific time
+/**
+ * Class that applies the maths behind multilateration.
+ */
 public class MLATEquation {
     int matrixSize=0;
     ArrayList<Double[]> radiosCoordinates= new ArrayList<>();
     ArrayList<Double> tagDistances=new ArrayList<>();
     
+    /**
+     * Constructor.
+     * 
+     * @param matSize       : Matrix size.
+     * @param radCoordinates: Coordinates of radios.
+     * @param tagDistances  : Distance estimations. 
+     */
     public MLATEquation(int matSize, ArrayList<Double[]> radCoordinates,
                         ArrayList<Double> tagDistances){
         this.matrixSize=matSize;
@@ -19,6 +28,11 @@ public class MLATEquation {
         this.tagDistances=tagDistances;
     }
     
+    /**
+     * Ensure correctness of maths.
+     * 
+     * @return : Boolean informing us of whether fix was successful.
+     */
     boolean fix(){
         // if by any chance one radio does not pick up one tag at one time
         // we don't take that radio into consideration 
@@ -45,6 +59,11 @@ public class MLATEquation {
     }
     /* Method returns the computed A matrix for the equation AX=B
      */
+    /**
+     * Method returns the computed A matrix for the equation AX=B.
+     * 
+     * @return A matrix.
+     */
     Matrix getA(){
         //the 4 is hardcoded because A will always have 4 columns
         //if we multilaterate for 3D coordinates
@@ -62,7 +81,11 @@ public class MLATEquation {
          
         return mat;
     }
-    /* Method returns the computed B matrix for the equation AX=B
+
+    /**
+     * Method returns the computed B matrix for the equation AX=B.
+     * 
+     * @return B matrix.
      */
     Matrix getB(){
         double[] B=new double[matrixSize];
@@ -76,7 +99,11 @@ public class MLATEquation {
         Matrix b= new Matrix(B,matrixSize); // this is b
         return b;
     }
-    /* Method returns the solution of the equation AX=B
+
+    /**
+     * Method returns the solution of the equation AX=B.
+     * 
+     * @return X matrix.
      */
     Matrix getSolution(){
         
@@ -89,3 +116,4 @@ public class MLATEquation {
         return sol;
     }
 }
+

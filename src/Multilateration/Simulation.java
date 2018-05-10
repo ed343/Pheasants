@@ -20,6 +20,11 @@ import java.util.stream.IntStream;
 import javafx.util.Pair;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 
+/**
+ * Class used to run our simulation.
+ * 
+ * 
+ */
 public class Simulation {
 
     static PrimerClass primer;
@@ -37,15 +42,13 @@ public class Simulation {
     
     static int detections = 16;
 
-    /* 
-     */
     /**
      * Method computes the locations of the pheasant trajectory given the
      * starting position. Currently, this draws the trajectory as a straight
      * line.
      *
      * @param start - start location coordinates
-     * @return locs - array of all points o the trajectory
+     * @return locs - array of all points on the trajectory
      */
     public Double[][] getPheasantLocs(Double[] start) {
         // create an array that will hold the coordinates part of the trajectory
@@ -86,6 +89,13 @@ public class Simulation {
         return locs;
     }
     
+    /**
+     * Method computes locations for a downward zig-zag.
+     * 
+     * @param start - start location coordinates
+     * 
+     * @return locs - array of all points on the trajectory
+     */
     public Double[][]zigZagDown(Double[] start) {
         // create an array that will hold the coordinates part of the trajectory
         Double[][] locs = new Double[18][2];
@@ -106,6 +116,13 @@ public class Simulation {
         
     }
     
+    /**
+     * Method computes locations for an upward zig-zag.
+     * 
+     * @param start - start location coordinates
+     * 
+     * @return locs - array of all points on the trajectory
+     */
     public Double[][]zigZagUp(Double[] start) {
         // create an array that will hold the coordinates part of the trajectory
         Double[][] locs = new Double[18][2];
@@ -126,6 +143,14 @@ public class Simulation {
         
     }
     
+    /**
+     * Method computes locations for a zig-zag across the map, starting from
+     * the left.
+     * 
+     * @param start - start location coordinates
+     * 
+     * @return locs - array of all points on the trajectory
+     */
     public Double[][]zigZagRight(Double[] start) {
         // create an array that will hold the coordinates part of the trajectory
         Double[][] locs = new Double[18][2];
@@ -146,6 +171,14 @@ public class Simulation {
         
     }
     
+    /**
+     * Method computes locations for a zig-zag across the map, starting from
+     * the right.
+     * 
+     * @param start - start location coordinates
+     * 
+     * @return locs - array of all points on the trajectory
+     */
     public Double[][]zigZagLeft(Double[] start) {
         // create an array that will hold the coordinates part of the trajectory
         Double[][] locs = new Double[18][2];
@@ -198,13 +231,6 @@ public class Simulation {
         return rssi;
     }
 
-    // not using this
-    public int generateID() {
-        Random rand = new Random();
-        int value = rand.nextInt(50);
-
-        return value;
-    }
 
     /**
      * Method generates a list of times for detections.
@@ -224,11 +250,13 @@ public class Simulation {
         }
         return al;
     }
+    
     /**
-     * TO-DO
-     * @param iters
-     * @param startTime
-     * @return 
+     * Function to generate times via a Poisson distribution process.
+     * 
+     * @param iters    : The number of detections to produce.
+     * @param startTime: The start time.
+     * @return         : Poisson generated times.
      */
     static ArrayList<BigInteger> gTPoisson(int iters, BigInteger startTime) {
         // Create times array
@@ -388,9 +416,11 @@ public class Simulation {
     }
 
     /**
-     * TO-DO
-     * @param currentTime
-     * @return 
+     * Function that moves clock forward.
+     * 
+     * @param currentTime: The time to update.
+     * 
+     * @return           : Updated time.
      */
     static BigInteger updateTimes(BigInteger currentTime) {
         currentTime = currentTime.add(BigInteger.valueOf(4));

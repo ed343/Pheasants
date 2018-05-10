@@ -7,6 +7,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Class to set up data so that it can be correctly processed by the rest of
+ * the system.
+ * 
+ */
 public class PrimerClass {
     public static int no_of_radios;
     // for the following two entries, the index refers to the radio instance
@@ -32,8 +37,13 @@ public class PrimerClass {
     //////////////////////////////setters///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     
-    
-    /* Method accepts int value to  denote number of radios
+
+    /**
+     * Function to set the number of radios.
+     * 
+     * @param n: The number of radios to set.
+     * 
+     * @return : Boolean informing us whether radios have been set correctly.
      */
     boolean setNumberOfRadios(int n){
         // try catch if not getting a byte, or too big a number or an invalid
@@ -42,8 +52,18 @@ public class PrimerClass {
         return true; // change for error handling
     }
     
-    /* Method accepts double values for x, y and z coordinates 
-     * for each radio
+
+    /**
+     * Set the cartesian coordinates for a radio.
+     * 
+     * @param x: x-value of coordinate.
+     * 
+     * @param y: y-value of coordinate.
+     * 
+     * @param z: z-value of coordinate.
+     * 
+     * @return : Boolean informing us whether coordinates have been set
+     *           correctly.
      */
     boolean setRadioCoordinates(double x, double y, double z){
         // try catch with error handling
@@ -51,10 +71,14 @@ public class PrimerClass {
         radiosCoordinates.add(coordinates);
         return true; // change once implemented
     }
-    
-    /* Method accepts double values for p, the RSSI measured at 1m from 
-     * the radio. For example: -84 dB. 
-     * Also known as the 1 Meter RSSI.
+
+    /**
+     * Function sets the measured power for a radio.
+     * 
+     * @param p: The measured power (must be in -dBm)
+     * 
+     * @return : Boolean informing us whether measured power has been set
+     *           correctly.
      */
     boolean setRadioMeasuredPower(double p){
         // try catch with error handling
@@ -62,12 +86,19 @@ public class PrimerClass {
         return true; // change once implemented
     }
     
-    /* Method sets the idRSSIs in PrimerClass according to the parsed values it
-     * receives, i.e. time, tagIDs and rssi values
-     * For each radio, we create a HashMap that will hold its tags'
-     * detections. That means that the first element of the hm HashMap will
-     * have as key the first tag detected by the first radio and as value it
-     * will have an ArrayList of the Pairs(times, rssi value).
+
+    /**
+     * Method sets the idRSSIs in PrimerClass according to the parsed values it
+     * receives, i.e time, tagIDs and rssi values.
+     * 
+     * @param time : Times array.
+     * 
+     * @param tagID: IDs array.
+     * 
+     * @param rssi : RSSIs array.
+     * 
+     * @return     : Boolean informing us whether idRSSIs has been set
+     *               correctly.
      */
     boolean setTRVals(ArrayList<BigInteger>time, ArrayList<Long> tagID, 
                                     ArrayList<Double> rssi) {
@@ -106,80 +137,45 @@ public class PrimerClass {
     ////////////////////////////////////////////////////////////////////////////
     
     
-    /* Method returns the list of all radio coordinates.
+
+    /**
+     * Method returns the list of all radio coordinates.
+     * @return : List of radio coordinates.
      */
     ArrayList<Double[]> getRadiosCoordinates(){
         return this.radiosCoordinates;
     }
 
-    /* Method returns the list of all measured powers for all radios.
+
+    /**
+     * Method returns the list of all measured powers for all radios.
+     * 
+     * @return Measured power.
      */
     ArrayList<Double> getMeasuredPower(){
         return this.measuredPower;
     }
 
-    /* Method returns the list of all parsed rssi values for the current radios.
-    */
+    /**
+     * Method returns the list of all parsed rssi values for the current radios.
+     * 
+     * @return idRSSI array.
+     */
     ArrayList<HashMap<Long, ArrayList<Pair<BigInteger,Double>>>> getRssiValues(){
         return this.idRSSIs;
     }
-    /* Method returns all the tag distances computed for the current radio and the
-     * tags it picked up.
-     */
 
+
+    /**
+     * Method returns all the tag distances computed for the current radio and the
+     * tags it picked up.
+     * 
+     * @return Tag distances array.
+     */
     ArrayList<HashMap<Long, HashMap<BigInteger,Double>>> getTagDistances(){
         return this.idDistances;
     }
 
 
-    // *** DEPRECATED CODE ***
-
-    //keep initial logic as back-up
-    //rssiValues[0]     gives all the hashmaps (keyed by tagID and valued by
-    //                  a pair <time-rssi>) for all tags the first radio
-    //                  picked up
-    //tagDistances[0]   gives all the tag distances from the first radio
-    //etc
-    //ArrayList<HashMap<Long, HashMap<Long, Double>>> rssiValues= new ArrayList<>();
-    //ArrayList<HashMap<Long, HashMap<Long, Double>>> tagDistances=new ArrayList<>();
-
-    /* Method accepts double values for the RSSI values extracted by the parser.
-     * Deprecated due to new code logic in which each beacon represents an object with its own fields.
-     *
-    boolean setTimeAndRssiValues(ArrayList<Long>time, ArrayList<Long> tagID,
-                                    ArrayList<Double> rssi){
-        // try catch with error handling
-
-        // create the entire HashMap first
-        // no way to do it fast, do it manually
-        HashMap<Long, HashMap<Long, Double>> hm=new HashMap();
-        for(int i=0; i<time.size(); i++){
-            // we create a Pair for each time-rssi value pair and store it
-            HashMap<Long, Double> pair= new HashMap();
-            pair.put(time.get(i), rssi.get(i));
-            hm.put(tagID.get(i), pair);
-        }
-
-        rssiValues.add(hm);
-        return false; // change once implemented
-    }
-      */
-
-    /* Method returns the list of all parsed rssi values for all radios.
-     * Deprecated due to new code logic in which each beacon represents an 
-     *  object with its own fields.
-    ArrayList getRssiValues(){
-        return this.rssiValues;
-    }
-     */
-    /* Method returns all the tag distances computed for all radios and the  
-     * tags they picked up
-     * Deprecated due to new code logic in which each beacon represents an 
-     * object with its own fields.
-
-    ArrayList getTagDistances(){
-        return this.tagDistances;
-    }
-    */
 }
 
