@@ -137,10 +137,14 @@ public class BasestationController {
             // HERE DO THE MAGIC WHERE YOU ASK WHETHER THE USER IS SURE ABOUT
             // REPLACING A BASESTATION THAT ALREADY EXISTS
             else {
-            
-                db.update(tf_text, Double.parseDouble(te_text),
-                        Double.parseDouble(te1_text),
-                        Double.parseDouble(text_text), c);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Information Dialog");
+            alert.setHeaderText(null);
+            alert.setContentText("Please use a unique ID for each basestation "
+                    + "record."
+                 );
+
+            alert.showAndWait();
             }
             
             System.out.println("noBasestations: " + noBasestations);
