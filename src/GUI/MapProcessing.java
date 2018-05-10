@@ -1,9 +1,10 @@
-/*
- *Another try at making small Cartesian work for the MLAT
+/**
+ * This class describes all functions that are used for map processing and 
+ * generation of the secondary Cartesian plane that is used for multilateration
+ * and visualisation. 
  */
 package GUI;
 
-import GUI.CoordinateTranslation;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -70,8 +71,6 @@ public class MapProcessing {
         double z = rand.nextFloat(); 
 
         Double[] coords = {x,y,z};
-        
-        // System.out.println("getCartesianLoc: " + coords[0] + ", " + coords[1] + ", " + coords[2]);
 
       return coords;
     }
@@ -141,12 +140,6 @@ public class MapProcessing {
 
         CoordinateTranslation.G_LatLng center = new CoordinateTranslation.G_LatLng(centerX, centerY);
         Double[] coords = ct.getCorners(center, zoom, mapWidth, mapHeight);
-        
-        System.out.println("getMapCorners: ");
-        System.out.println(coords[0]);
-        System.out.println(coords[1]);
-        System.out.println(coords[2]);
-        System.out.println(coords[3]);
 
         return coords;
     }

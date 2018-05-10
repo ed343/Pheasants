@@ -1,3 +1,10 @@
+/**
+ * This class describes program behaviour when in simulation mode. 
+ * It runs the visualisation that displays extracted data from real log files. 
+ * It also provides data export functionality to extract analysed data. 
+ * Has a corresponding data_visualisation.fxml file.
+ */
+
 package GUI;
 
 import Multilateration.MLAT;

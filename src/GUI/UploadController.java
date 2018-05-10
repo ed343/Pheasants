@@ -1,3 +1,9 @@
+/**
+ * This class is responsible for controlling the behaviour of the application when in the data upload window. 
+ * It allows to select basestations and upload corresponding log files.
+ * Has a corresponding data_upload.fxml file.
+ */
+
 package GUI;
 
 import javafx.event.ActionEvent;

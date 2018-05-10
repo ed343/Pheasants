@@ -1,3 +1,7 @@
+/**
+ * The starting point of the application that forces main menu window to appear.
+ */
+
 package GUI;
 
 import javafx.fxml.FXMLLoader;
@@ -14,7 +18,7 @@ public class MainApplication extends javafx.application.Application {
 
         Parent root = FXMLLoader.load(getClass().getResource("menu.fxml"));
         primaryStage.setTitle("Pheasants program");
-        primaryStage.setScene(new Scene(root, 400, 400));
+        primaryStage.setScene(new Scene(root, 550, 500));
         primaryStage.centerOnScreen();
         primaryStage.show();
 

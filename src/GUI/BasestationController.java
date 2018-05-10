@@ -1,3 +1,10 @@
+/**
+ * This class is responsible for controlling the behaviour of the application
+ * when in the basestation registration window. It allows to save new basestations
+ * in the internal database, as well as update or delete them. Has a corresponding 
+ * basestations.fxml file.
+ */
+
 package GUI;
 
 import javafx.event.ActionEvent;

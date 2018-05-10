@@ -1,3 +1,8 @@
+/**
+ * This class describes creation and main interactions (CRUD operations) 
+ * with the database of the program where basestation information is kept. 
+ */
+
 package GUI;
 
 import java.sql.Connection;

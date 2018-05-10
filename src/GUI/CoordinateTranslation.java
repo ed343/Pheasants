@@ -1,3 +1,9 @@
+/**
+ * Helper class containing functions for coordinate translation from geographical
+ * coordinates to Cartesian coordinates and manipulating geographical coordinates
+ * to find corners and centre of the particular area.
+ */
+
 package GUI;
 
 public class CoordinateTranslation {
