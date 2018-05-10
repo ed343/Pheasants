@@ -1,10 +1,9 @@
 /**
  * This class is responsible for controlling the behaviour of the application
  * when in the basestation registration window. It allows to save new basestations
- * in the internal database, as well as update or delete them. Has a corresponding 
+ * in the internal database, as well as update or delete them. Has a corresponding
  * basestations.fxml file.
  */
-
 package GUI;
 
 import javafx.event.ActionEvent;
@@ -45,7 +44,7 @@ public class BasestationController {
     HBox basestationButtons;
 
     int noBasestations = 0;
-    
+
     // create new db
     BasestationDB db = new BasestationDB();
 
@@ -95,76 +94,90 @@ public class BasestationController {
      * - the text inputted to the TextField te, i.e. latitude te1_text - the
      * text inputted to the TextField te1, i.e. longitude text_text - the text
      * inputted to the TextField text, i.e. measuredPow
-     * 
+     *
      * TODO: need to check that none of the inputs are wrong format or corrupted
      */
-    public void saveBasestation(ActionEvent event) throws SQLException, IOException {
+    public void saveBasestation(ActionEvent event) throws SQLException, 
+                                                          IOException {
         // connect to db
         Connection c = DriverManager.getConnection(db.url);
         Statement stmt = c.createStatement();
         try {
-        for (int i = 0; i < noBasestations; i++) {
-            // get all data from GUI fields
-            VBox vb = (VBox) basestationList.getChildren().get(i);
-            HBox childsHB = (HBox) vb.getChildren().get(0);
-            TextField tf = (TextField) childsHB.getChildren().get(1);
-            // if this is not a new field, then we are not interested in it 
-            // for the bottom save button
-            if (tf.isDisabled()){continue;}
-            String tf_text = tf.getText();  // basestation name
-            
-            HBox childsHB2 = (HBox) vb.getChildren().get(1);
-            TextField tf2 = (TextField) childsHB2.getChildren().get(1);
-            TextField tf3 = (TextField) childsHB2.getChildren().get(3);
-            String te_text = tf2.getText();  // basestation latitude
-            String te1_text = tf3.getText(); // basetsation longitude
-            
-            HBox childsHB3 = (HBox) vb.getChildren().get(2);
-            TextField tf4 = (TextField) childsHB3.getChildren().get(1);
-            String text_text = tf4.getText(); // basestation measured_power
-            
-            // check we don't already have this radio saved
-            String s = "select * from basestations where name='" + tf_text + "'";
-            ResultSet rs = stmt.executeQuery(s);
-            
-            // if we do not have the current radio saved, create a row for it
-            if (!rs.next()) {
-                db.insert(tf_text, Double.parseDouble(te_text),
-                        Double.parseDouble(te1_text),
-                        Double.parseDouble(text_text), c);
-            } 
-            // if we already have the radio saved
-            // HERE DO THE MAGIC WHERE YOU ASK WHETHER THE USER IS SURE ABOUT
-            // REPLACING A BASESTATION THAT ALREADY EXISTS
-            else {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Information Dialog");
-            alert.setHeaderText(null);
-            alert.setContentText("Please use a unique ID for each basestation "
-                    + "record."
-                 );
+            for (int i = 0; i < noBasestations; i++) {
+                // get all data from GUI fields
+                VBox vb = (VBox) basestationList.getChildren().get(i);
+                HBox childsHB = (HBox) vb.getChildren().get(0);
+                TextField tf = (TextField) childsHB.getChildren().get(1);
+                // if this is not a new field, then we are not interested in it 
+                // for the bottom save button
+                if (tf.isDisabled()) {
+                    continue;
+                }
+                String tf_text = tf.getText();  // basestation name
 
-            alert.showAndWait();
+                HBox childsHB2 = (HBox) vb.getChildren().get(1);
+                TextField tf2 = (TextField) childsHB2.getChildren().get(1);
+                TextField tf3 = (TextField) childsHB2.getChildren().get(3);
+                String te_text = tf2.getText();  // basestation latitude
+                String te1_text = tf3.getText(); // basetsation longitude
+
+                HBox childsHB3 = (HBox) vb.getChildren().get(2);
+                TextField tf4 = (TextField) childsHB3.getChildren().get(1);
+                String text_text = tf4.getText(); // basestation measured_power
+                if (!tf_text.equals("") & !te_text.equals("") 
+                        & !te1_text.equals("")
+                        & !text_text.equals("")) {
+                    // check we don't already have this radio saved
+                    String s = "select * from basestations where name='" + 
+                               tf_text + "'";
+                    ResultSet rs = stmt.executeQuery(s);
+
+                    // if we do not have the current radio saved, 
+                    //create a row for it
+                    if (!rs.next()) {
+                        db.insert(tf_text, Double.parseDouble(te_text),
+                                Double.parseDouble(te1_text),
+                                Double.parseDouble(text_text), c);
+                    } 
+                    // if we already have the radio saved
+                    // alert the user they need to select a different 
+                    // basestation name
+                    else {
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Information Dialog");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Please use a unique name for "
+                                + "each basestation record."
+                        );
+
+                        alert.showAndWait();
+                    }
+
+                    System.out.println("noBasestations: " + noBasestations);
+                    //goBack(new ActionEvent());
+                } else {
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Information Dialog");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Please fill in all the fields.");
+
+                    alert.showAndWait();
+                }
             }
-            
-            System.out.println("noBasestations: " + noBasestations);
-            //goBack(new ActionEvent());
-        }
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            if (noBasestations<4) {
+            if (noBasestations < 4) {
                 Alert alert = new Alert(AlertType.INFORMATION);
                 alert.setTitle("Information Dialog");
                 alert.setHeaderText(null);
-                alert.setContentText("Minimum 4 basestations are required to process data.");
+                alert.setContentText("Minimum 4 basestations are required "
+                                    + "to process data.");
 
                 alert.showAndWait();
-            }
-            else {
+            } else {
                 // goBack(new ActionEvent());
             }
-            
+
         }
         c.close();
     }
@@ -173,7 +186,7 @@ public class BasestationController {
     /**
      * Method generates a single beacon registration window that can be added to
      * the panel
-     * 
+     *
      * I THINK BECAUSE OF THIS METHOD I DON'T USE BASESTATION_ITEM.FXML ANYMORE
      *
      */
@@ -224,8 +237,8 @@ public class BasestationController {
 
     @FXML
     /**
-     * Method generates a single beacon registration window that can be added 
-     * to the panel
+     * Method generates a single beacon registration window that can be added to
+     * the panel
      *
      */
     public VBox addBasestationPrepopulated(ResultSet rs) throws SQLException {
@@ -246,7 +259,7 @@ public class BasestationController {
 
         HBox hb2 = new HBox();
         hb2.setSpacing(5);
-        
+
         Label la = new Label("Latitude/longitude coordinates:");
         TextField te = new TextField();
         te.setPrefSize(70, 25);
@@ -275,38 +288,50 @@ public class BasestationController {
         update_save.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                if (update_save.getText().equals("Update")) {
-                    text.setDisable(false);
-                    te1.setDisable(false);
-                    te.setDisable(false);
-                    //tf.setDisable(false); - maybe this line has to go because 
-                    //names are primary keys, so we can't change them
-                    update_save.setText("Save");
-                } else if (update_save.getText().equals("Save")) {
+                if (!te.getText().equals("") & !te1.getText().equals("") 
+                    & !text.getText().equals("")) {
+                    if (update_save.getText().equals("Update")) {
+                        text.setDisable(false);
+                        te1.setDisable(false);
+                        te.setDisable(false);
+                        //tf.setDisable(false); - maybe this line has to go 
+                        // because 
+                        //names are primary keys, so we can't change them
+                        update_save.setText("Save");
+                    } else if (update_save.getText().equals("Save")) {
 
-                    // here we do upate on db
-                    try {
-                        Connection c = DriverManager.getConnection(db.url);
-                        Statement stmt = c.createStatement();
-                        db.update(tf.getText(),
-                                Double.parseDouble(te.getText()),
-                                Double.parseDouble(te1.getText()),
-                                Double.parseDouble(text.getText()), c);
-                        c.close();
-                    } catch (SQLException ex) {
-                        Logger.getLogger(BasestationController.class.getName()).
-                                log(Level.SEVERE, null, ex);
+                        // here we do upate on db
+                        try {
+                            Connection c = DriverManager.getConnection(db.url);
+                            Statement stmt = c.createStatement();
+                            db.update(tf.getText(),
+                                    Double.parseDouble(te.getText()),
+                                    Double.parseDouble(te1.getText()),
+                                    Double.parseDouble(text.getText()), c);
+                            c.close();
+                        } catch (SQLException ex) {
+                            Logger.getLogger(BasestationController.class.getName()).
+                                    log(Level.SEVERE, null, ex);
+                        }
+
+                        text.setDisable(true);
+                        te1.setDisable(true);
+                        te.setDisable(true);
+                        tf.setDisable(true);
+                        update_save.setText("Update");
+
                     }
 
-                    text.setDisable(true);
-                    te1.setDisable(true);
-                    te.setDisable(true);
-                    tf.setDisable(true);
-                    update_save.setText("Update");
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Information Dialog");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Please fill in all the fields.");
 
+                    alert.showAndWait();
                 }
-
             }
+
         });
 
         Button delete = new Button("Delete");
@@ -314,7 +339,7 @@ public class BasestationController {
         delete.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                
+
                 noBasestations--;
 
                 // here we do delete on db
@@ -327,9 +352,9 @@ public class BasestationController {
                     // Might need to access it as child of the Pane
                 } catch (SQLException ex) {
                     Logger.getLogger(BasestationController.class.getName()).
-                           log(Level.SEVERE, null, ex);
+                            log(Level.SEVERE, null, ex);
                 }
-                
+
                 // not sure all of this is needed
                 text.setDisable(false);
                 text.setText("");
@@ -340,7 +365,7 @@ public class BasestationController {
                 tf.setDisable(false);
                 tf.setText("");
 
-                basestationList.getChildren().remove(vb);  
+                basestationList.getChildren().remove(vb);
             }
         });
 
@@ -371,7 +396,7 @@ public class BasestationController {
 
     public void goBack(ActionEvent event) throws IOException {
         FXMLLoader sceneLoader = new FXMLLoader(getClass()
-                                               .getResource("menu.fxml"));
+                .getResource("menu.fxml"));
         Parent sceneParent = sceneLoader.load();
         Scene scene = new Scene(sceneParent, 400, 400);
 
