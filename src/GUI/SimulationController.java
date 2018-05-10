@@ -41,9 +41,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.stage.FileChooser;
 
 public class SimulationController {
-
 
     @FXML
     HBox imagebox;
@@ -96,12 +96,14 @@ public class SimulationController {
     ArrayList<ArrayList<Double[]>> all_coords = new ArrayList<>(); // coordinates
 
     ArrayList<Thread> threads;
-    
+
     // ideally should take the smallest value between all tags and time should
     // be progressed from that value
     int simTime = 0;
-    
+
     ListView<String> basestationPanel;
+    
+    ListView<String> tagsPanel;
 
     public void initialize() throws IOException {
 
@@ -132,28 +134,49 @@ public class SimulationController {
                     // PAUSE VISUALISATION
 
                     for (Thread t : threads) {
-                        t.stop();                        
+                        t.stop();
                     }
-                    
+
                     // delete all threads
                     threads.clear();
                     System.out.println("simTime:" + simTime);
 
                 } else {
+                    
+                    // ROOT OF PROBLEMS
                     play.setText("||");
                     // PLAY VISUALISATION
 
                     for (int i = 0; i < all_tags.size(); i++) {
-                        Thread t = updateTag(i, simTime);
-                        threads.add(t);
+                        removeTag();
+
+                    }
+
+                    ObservableList selectedIndices = tagsPanel.getSelectionModel().getSelectedIndices();
+
+                    if (selectedIndices.size() > 0) {
+
+                        for (int i = 0; i < selectedIndices.size(); i++) {
+                            placeTag(i, simTime - 1);
+                            Thread t = updateTag(i, simTime);
+                            threads.add(t);
+                        }
+
+                    } else {
+                        for (int i = 0; i < all_tags.size(); i++) {
+                            placeTag(i, simTime - 1);
+                            Thread t = updateTag(i, simTime);
+                            threads.add(t);
+                        }
                     }
                 }
             }
-        });
+        }
+        );
 
         slider = new Slider();
+
         slider.setMinWidth(350.0);
-        //slider.setPadding(new Insets(20, 0, 0, 0));
         slider.setMin(0);
         slider.setMax(all_times.get(0).size() - 1);   // TODO: should be a MAXIMUM number of locations that tag goes through
         slider.setValue(0);
@@ -168,9 +191,11 @@ public class SimulationController {
         //      but doesn't do that yet (if we have a list of locations,
         //      then it would use that location as a starting point and proceed
         //      with subsequent locations)
-        slider.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        slider.setOnMouseClicked(
+                new EventHandler<MouseEvent>() {
             @Override
-            public void handle(MouseEvent event) {
+            public void handle(MouseEvent event
+            ) {
                 slider.setValueChanging(true);
                 double value = (event.getX() / slider.getWidth()) * slider.getMax();
                 int v = (int) Math.rint(value);
@@ -179,9 +204,9 @@ public class SimulationController {
                 // it is bad to use stop(), but it works
                 // alternative would be using http://www.java67.com/2015/07/how-to-stop-thread-in-java-example.html
                 for (Thread t : threads) {
-                    t.stop();                    
+                    t.stop();
                 }
-                
+
                 threads.clear();
                 // should be used for all tags
                 for (int i = 0; i < all_tags.size(); i++) {
@@ -190,7 +215,8 @@ public class SimulationController {
                 }
                 slider.setValueChanging(false);
             }
-        });
+        }
+        );
 
         visualControl.getChildren().addAll(play, slider);
 
@@ -198,136 +224,130 @@ public class SimulationController {
 
         // adding side panels with lists of tags and basestations
         VBox rightbox = new VBox();
+
         rightbox.setPadding(new Insets(0, 0, 25, 25));
         rightbox.setPrefSize(250.0, 400);
         rightbox.setSpacing(20.0);
 
-        // Learn JavaFX 8 page 488 has info about accessing selected items from ListView
-        ListView<String> tagsPanel = new ListView<>();
+        tagsPanel = new ListView<>();
+
         tagsPanel.setPrefWidth(200.0);
         // getting tag IDs from log file
-;
+        ;
         // populate panel with tag IDs
         for (Long tag : all_tags) {
             tagsPanel.getItems().add(tag + "");
         }
 
-        tagsPanel.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        
-        tagsPanel.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        tagsPanel.getSelectionModel()
+                .setSelectionMode(SelectionMode.MULTIPLE);
 
-                ObservableList selectedIndices = tagsPanel.getSelectionModel().getSelectedIndices();
+        tagsPanel.getSelectionModel()
+                .selectedItemProperty().addListener(new ChangeListener<String>() {
+                    @Override
+                    public void changed(ObservableValue<? extends String> observable, String oldValue,
+                            String newValue
+                    ) {
 
-                if (selectedIndices.size() > 0) {
+                        ObservableList selectedIndices = tagsPanel.getSelectionModel().getSelectedIndices();
 
-                    for (int i=0; i<threads.size(); i++) {
-                        threads.get(i).stop();                        
-                    }
-                    
-                    
-                    
-                    
-                    // remove from the map
-                    for (int i = 0; i < threads.size(); i++) {
-                        System.out.println("threads lenght: " + threads.size());
-                        removeTag();
-                    }
-                    
-                    threads.clear();
-                    
-                    // should be used for all tags
-                    for (Object o : selectedIndices) {
-                        int tagIndex = (Integer) o;
-                        System.out.println(tagIndex);
-                        placeTag(tagIndex, simTime-1);
-                        Thread t = updateTag(tagIndex, simTime);
-                        threads.add(t);
-                    }
-                } // tags were unselected
-                else if (selectedIndices.isEmpty()) {
+                        if (selectedIndices.size() > 0) {
 
-                    for (Thread t : threads) {
-                        t.stop();
-                        threads.remove(t);
-                      
-                    }
-                    // reinstantiate all tags and their threads
-                    for (int i = 0; i < all_tags.size(); i++) {
-                        Thread t = updateTag(i, simTime);
-                        threads.add(t);
+                            for (int i = 0; i < threads.size(); i++) {
+                                threads.get(i).stop();
+                            }
+
+                            // remove from the map
+                            for (int i = 0; i < threads.size(); i++) {
+                                System.out.println("threads lenght: " + threads.size());
+                                removeTag();
+                            }
+
+                            threads.clear();
+
+                            // should be used for all tags
+                            for (Object o : selectedIndices) {
+                                int tagIndex = (Integer) o;
+                                System.out.println(tagIndex);
+                                placeTag(tagIndex, simTime - 1);
+                                Thread t = updateTag(tagIndex, simTime);
+                                threads.add(t);
+                            }
+                        } // tags were unselected
+                        else if (selectedIndices.isEmpty()) {
+
+                            for (Thread t : threads) {
+                                t.stop();
+                                threads.remove(t);
+
+                            }
+                            // reinstantiate all tags and their threads
+                            for (int i = 0; i < all_tags.size(); i++) {
+                                Thread t = updateTag(i, simTime);
+                                threads.add(t);
+                            }
+                        }
                     }
                 }
-            }
-        });
+                );
 
         // alternative way to show ListView of height for all tags
         //tags.setPrefHeight(stringTags.size() * 23 + 2);
-       basestationPanel = new ListView<>();
+        basestationPanel = new ListView<>();
 
         // TODO: collect actual basestation names from logUpload
-        basestationPanel.getItems().addAll("Basestation 1", "Basestation 2", "Basestation 3", "Basestation 4");
-        basestationPanel.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        basestationPanel.getItems()
+                .addAll("Basestation 1", "Basestation 2", "Basestation 3", "Basestation 4");
+        basestationPanel.getSelectionModel()
+                .setSelectionMode(SelectionMode.MULTIPLE);
         basestationPanel.setMinHeight(basestationPanel.getItems().size() * 23 + 2);
-
-        // a number of radio buttons to select the regularity (granularity) of the tag movement
-        HBox regularity = new HBox();
-        regularity.setSpacing(5);
-
-        RadioButton r4 = new RadioButton("4 sec");
-        RadioButton r8 = new RadioButton("8 sec");
-        RadioButton r20 = new RadioButton("20 sec");
-        RadioButton r60 = new RadioButton("1 min");
-
-        ToggleGroup group = new ToggleGroup();
-        r4.setToggleGroup(group);
-        r8.setToggleGroup(group);
-        r20.setToggleGroup(group);
-        r60.setToggleGroup(group);
-        r4.setSelected(true);
-
-        regularity.getChildren().addAll(r4, r8, r20, r60);
 
         // TODO: regularity on action should cause regeneration of locations for
         // tags (intermediate step before visualisation and start visualisation from beginning
         drawTrace = new CheckBox();
+
         drawTrace.setText("Draw movement patterns");
         drawTrace.setSelected(false);
 
-        rightbox.getChildren().addAll(tagsPanel, basestationPanel, regularity, drawTrace, buttons);
+        rightbox.getChildren()
+                .addAll(tagsPanel, basestationPanel, drawTrace, buttons);
 
         // adding elements to the HBox from FXML file
-        imagebox.setPadding(new Insets(20, 10, 10, 20));
-        imagebox.getChildren().addAll(leftbox, rightbox);
-        
+        imagebox.setPadding(
+                new Insets(20, 10, 10, 20));
+        imagebox.getChildren()
+                .addAll(leftbox, rightbox);
+
         threads = new ArrayList<>();
 
         // might want to place this in map setup
         // placing tags to their initial locations
-        for (int i = 0; i < all_tags.size(); i++) {
+        for (int i = 0;
+                i < all_tags.size();
+                i++) {
             placeTag(i, 0);
         }
 
         // TODO: if tag is out of the map space, could print out some warning
         // THIS IS WHERE A VISUALISATION THREAD WILL BE STARTED
         // remains for loop, should be changed to traverse tagID list for all tags
-        for (int i = 0; i < all_tags.size(); i++) {
+        for (int i = 0;
+                i < all_tags.size();
+                i++) {
             Thread th = updateTag(i, 1);
             threads.add(th);
         }
     }
-    
-    
     // getter method to be used from other classes
-    public ArrayList<Double[]> getBasestationData() throws SQLException{
+
+    public ArrayList<Double[]> getBasestationData() throws SQLException {
         ArrayList<String> basestationNames = UploadController.getSelectedBasestations();
         ArrayList<Double[]> basestationData = new ArrayList<>();
-        for (String s: basestationNames) {
+        for (String s : basestationNames) {
             Double[] d = UploadController.collectBasestationData(s);
             basestationData.add(d);
         }
-        
+
         return basestationData;
     }
 
@@ -456,7 +476,7 @@ public class SimulationController {
 
         Group g = new Group();
 
-        for (int i=0; i<newCoords.size(); i++) {
+        for (int i = 0; i < newCoords.size(); i++) {
             g.getChildren().add(newCoords.get(i));
             //String name = (String)basestationPanel.get;
             //Circle c = newCoords.get(i);
@@ -591,49 +611,64 @@ public class SimulationController {
     }
 
     public void handleExport() throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        
-               // get date for the name of the file
+
+        // get date for the name of the file
         DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
-        Date today = Calendar.getInstance().getTime();        
+        Date today = Calendar.getInstance().getTime();
         String reportDate = df.format(today);
-        
+
         // get OS for filepath
-        String OS = System.getProperty("os.name").toLowerCase();
-        String path="";
-        if (OS.contains("win")) {
-            path = ".\\" + "export"+ reportDate + ".txt";
-        }
-        if (OS.contains("nix") || OS.contains("nux") ||  
-                OS.contains("aix") || OS.contains("mac")){
-            path = "./" + "export"+ reportDate + ".txt";
-        }
-        
-        // create new file
-        File f = new File(path);
-        f.createNewFile();
-        
-        // write to file
-        PrintWriter writer = new PrintWriter("export" + reportDate + ".txt", "UTF-8");
-        writer.println("Tag,Time,Latitude,Longitude");
-        for (int a=0; a<all_tags.size(); a++) {
-            for(int i=0; i<all_times.get(a).size(); i++){
-                Double[] temp=new Double[]{all_coords.get(a).get(i)[0],
-                                           all_coords.get(a).get(i)[1], 
-                                           all_coords.get(a).get(i)[2]};
-                Double[] geoCoords=mp.getGeoLoc(temp);
-                
-                // export tag ID
-                writer.print(all_tags.get(a));
-                writer.print(',');
-                // export time
-                writer.print(all_times.get(a).get(i));
-                writer.print(',');
-                // export coords
-                writer.print(geoCoords[0]);
-                writer.print(',');
-                writer.println(geoCoords[1]);
+//        String OS = System.getProperty("os.name").toLowerCase();
+//        String path="";
+//        if (OS.contains("win")) {
+//            path = ".\\" + "export"+ reportDate + ".txt";
+//        }
+//        if (OS.contains("nix") || OS.contains("nux") ||  
+//                OS.contains("aix") || OS.contains("mac")){
+//            path = "./" + "export"+ reportDate + ".txt";
+//        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save data");
+        fileChooser.setInitialFileName("export" + reportDate + ".csv");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("CSV file", "*.csv"), 
+                new FileChooser.ExtensionFilter("Text file", "*.txt"),
+                new FileChooser.ExtensionFilter("Log file", ".log"));
+        Stage stage = (Stage) simulation.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+        if (file != null) {
+            System.out.println("file is " + file.getName());
+            System.out.println("file path " + file.getAbsolutePath());
+            String givenName = file.getName();
+            String path = file.getAbsolutePath();
+
+            // create new file
+            File f = new File(path);
+            f.createNewFile();
+
+            // write to file
+            PrintWriter writer = new PrintWriter(path, "UTF-8");
+            writer.println("Tag,Time,Latitude,Longitude");
+            for (int a = 0; a < all_tags.size(); a++) {
+                for (int i = 0; i < all_times.get(a).size(); i++) {
+                    Double[] temp = new Double[]{all_coords.get(a).get(i)[0],
+                        all_coords.get(a).get(i)[1],
+                        all_coords.get(a).get(i)[2]};
+                    Double[] geoCoords = mp.getGeoLoc(temp);
+
+                    // export tag ID
+                    writer.print(all_tags.get(a));
+                    writer.print(',');
+                    // export time
+                    writer.print(all_times.get(a).get(i));
+                    writer.print(',');
+                    // export coords
+                    writer.print(geoCoords[0]);
+                    writer.print(',');
+                    writer.println(geoCoords[1]);
+                }
             }
+            writer.close();
         }
-        writer.close();
     }
 }

@@ -38,7 +38,7 @@ public class MenuController {
         
         FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("data_simulation.fxml"));
         Parent sceneParent = sceneLoader.load();
-        Scene scene = new Scene(sceneParent, 800, 500);
+        Scene scene = new Scene(sceneParent, 800, 450);
 
         Stage stage = (Stage) rootpane.getScene().getWindow();
         stage.setScene(scene);

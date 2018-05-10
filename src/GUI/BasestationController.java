@@ -185,10 +185,10 @@ public class BasestationController {
 
         Label la = new Label("Latitude/longitude coordinates:");
         TextField te = new TextField();
-        te.setPrefSize(60, 25);
+        te.setPrefSize(70, 25);
         Label slash = new Label("/");
         TextField te1 = new TextField();
-        te1.setPrefSize(60, 25);
+        te1.setPrefSize(70, 25);
 
         hb2.getChildren().addAll(la, te, slash, te1);
 
@@ -238,14 +238,14 @@ public class BasestationController {
         
         Label la = new Label("Latitude/longitude coordinates:");
         TextField te = new TextField();
-        te.setPrefSize(60, 25);
+        te.setPrefSize(70, 25);
         te.setText(rs.getString("latitude"));
         te.setDisable(true);
         Label slash = new Label("/");
         TextField te1 = new TextField();
         te1.setText(rs.getString("longitude"));
         te1.setDisable(true);
-        te1.setPrefSize(60, 25);
+        te1.setPrefSize(70, 25);
 
         hb2.getChildren().addAll(la, te, slash, te1);
 

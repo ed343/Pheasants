@@ -318,6 +318,7 @@ public class VisualisationController {
         // restart playback
         slider.setValue(0);
 
+        // slider needs to update a number of ticks to new acitivity count
         threads = new Thread[all_tags.size()];
 
         // placing tags to their initial locations
@@ -609,49 +610,64 @@ public class VisualisationController {
     }
 
     public void handleExport() throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        
-               // get date for the name of the file
+
+        // get date for the name of the file
         DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
-        Date today = Calendar.getInstance().getTime();        
+        Date today = Calendar.getInstance().getTime();
         String reportDate = df.format(today);
-        
+
         // get OS for filepath
-        String OS = System.getProperty("os.name").toLowerCase();
-        String path="";
-        if (OS.contains("win")) {
-            path = ".\\" + "export"+ reportDate + ".txt";
-        }
-        if (OS.contains("nix") || OS.contains("nux") ||  
-                OS.contains("aix") || OS.contains("mac")){
-            path = "./" + "export"+ reportDate + ".txt";
-        }
-        
-        // create new file
-        File f = new File(path);
-        f.createNewFile();
-        
-        // write to file
-        PrintWriter writer = new PrintWriter("export" + reportDate + ".txt", "UTF-8");
-        writer.println("Tag,Time,Latitude,Longitude");
-        for (int a=0; a<all_tags.size(); a++) {
-            for(int i=0; i<all_times.get(a).size(); i++){
-                Double[] temp=new Double[]{all_coords.get(a).get(i)[0],
-                                           all_coords.get(a).get(i)[1], 
-                                           all_coords.get(a).get(i)[2]};
-                Double[] geoCoords=mp.getGeoLoc(temp);
-                
-                // export tag ID
-                writer.print(all_tags.get(a));
-                writer.print(',');
-                // export time
-                writer.print(all_times.get(a).get(i));
-                writer.print(',');
-                // export coords
-                writer.print(geoCoords[0]);
-                writer.print(',');
-                writer.println(geoCoords[1]);
+//        String OS = System.getProperty("os.name").toLowerCase();
+//        String path="";
+//        if (OS.contains("win")) {
+//            path = ".\\" + "export"+ reportDate + ".txt";
+//        }
+//        if (OS.contains("nix") || OS.contains("nux") ||  
+//                OS.contains("aix") || OS.contains("mac")){
+//            path = "./" + "export"+ reportDate + ".txt";
+//        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save data");
+        fileChooser.setInitialFileName("export" + reportDate + ".csv");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("CSV file", "*.csv"), 
+                new FileChooser.ExtensionFilter("Text file", "*.txt"),
+                new FileChooser.ExtensionFilter("Log file", ".log"));
+        Stage stage = (Stage) visualisation.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+        if (file != null) {
+            System.out.println("file is " + file.getName());
+            System.out.println("file path " + file.getAbsolutePath());
+            String givenName = file.getName();
+            String path = file.getAbsolutePath();
+
+            // create new file
+            File f = new File(path);
+            f.createNewFile();
+
+            // write to file
+            PrintWriter writer = new PrintWriter(path, "UTF-8");
+            writer.println("Tag,Time,Latitude,Longitude");
+            for (int a = 0; a < all_tags.size(); a++) {
+                for (int i = 0; i < all_times.get(a).size(); i++) {
+                    Double[] temp = new Double[]{all_coords.get(a).get(i)[0],
+                        all_coords.get(a).get(i)[1],
+                        all_coords.get(a).get(i)[2]};
+                    Double[] geoCoords = mp.getGeoLoc(temp);
+
+                    // export tag ID
+                    writer.print(all_tags.get(a));
+                    writer.print(',');
+                    // export time
+                    writer.print(all_times.get(a).get(i));
+                    writer.print(',');
+                    // export coords
+                    writer.print(geoCoords[0]);
+                    writer.print(',');
+                    writer.println(geoCoords[1]);
+                }
             }
+            writer.close();
         }
-        writer.close();
     }
 }

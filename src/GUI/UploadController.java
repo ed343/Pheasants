@@ -44,7 +44,7 @@ public class UploadController {
 
     ArrayList<String> bsNames;
 
-    static ArrayList<String> selectedBs = new ArrayList<>();
+    static ArrayList<String> selectedBs;
 
     // this arraylist will be used to store data from uploaded log files (processed)
     public static ArrayList<String> logfilePaths = new ArrayList<>();
@@ -213,6 +213,7 @@ public class UploadController {
     public void handleRun() throws IOException {
         
         applyKalman = kalman.isSelected();
+        selectedBs = new ArrayList<>();
 
         for (Node vb : uploadList.getChildren()) {
             VBox box = (VBox) vb;
@@ -225,12 +226,18 @@ public class UploadController {
         
         if (selectedBs.size() >= 4 && logfilePaths.size() >= 4) {
 
-            FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("data_visualisation.fxml"));
-            Parent sceneParent = sceneLoader.load();
-            Scene scene = new Scene(sceneParent, 800, 500);
+            try {
+                FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("data_visualisation.fxml"));
+                Parent sceneParent = sceneLoader.load();
+                Scene scene = new Scene(sceneParent, 800, 450);
 
-            Stage stage = (Stage) data_upload.getScene().getWindow();
-            stage.setScene(scene);
+                Stage stage = (Stage) data_upload.getScene().getWindow();
+                stage.setScene(scene);
+            }
+            
+            catch (Exception e) {
+                handleRun();                
+            }
         } else {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Information Dialog");
