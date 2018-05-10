@@ -159,8 +159,8 @@ public class SimulationController {
         slider.setValue(0);
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
-        slider.setMajorTickUnit(1);
-        slider.setMinorTickCount(0);
+        slider.setMajorTickUnit(5);
+        slider.setMinorTickCount(4);
         slider.setBlockIncrement(1);
 
         //  this listener reacts to the change on the slider:

@@ -34,6 +34,8 @@ public class Simulation {
     static ArrayList<ArrayList<Double[]>> all_coords = new ArrayList<>();
     
     static MapProcessing mp;
+    
+    static int detections = 16;
 
     /* 
      */
@@ -47,12 +49,12 @@ public class Simulation {
      */
     public Double[][] getPheasantLocs(Double[] start) {
         // create an array that will hold the coordinates part of the trajectory
-        Double[][] locs = new Double[15][2];
+        Double[][] locs = new Double[detections][2];
         Double x = start[1]; // longitude
         Double y = start[0]; // latitude
 
         // function creates a line
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < detections; i++) {
             locs[i][1] = x + 0.0001;
             locs[i][0] = y;
             x = x + 0.0001;
@@ -111,7 +113,7 @@ public class Simulation {
         for (int j = 0; j < no_of_tags; j++) {
             BigInteger start = new BigInteger("10");
             BigInteger four = new BigInteger("4");
-            for (int i = 0; i < 15; i++) {
+            for (int i = 0; i < detections; i++) {
                 al.add(start.add(four));
                 start = start.add(four);
             }
@@ -402,7 +404,7 @@ public class Simulation {
         tags = new ArrayList<>();
         Long first_tag = 44001004238L;
         for (int j = 0; j < no_of_tags; j++) {
-            for (int i = 0; i < 15; i++) {
+            for (int i = 0; i < detections; i++) {
                 tags.add(first_tag);
             }
             first_tag += 1;
