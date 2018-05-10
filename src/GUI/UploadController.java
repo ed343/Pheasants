@@ -1,6 +1,5 @@
 package GUI;
 
-import Multilateration.LogData;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

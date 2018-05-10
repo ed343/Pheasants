@@ -341,7 +341,6 @@ public class MLAT {
                     System.out.println(sol.get(2,0));
                     // the matrix is 4x1, and entries 1,2,3
                     // give us the x, y, z coord
-                    GUI.CoordinateTranslation ct = new GUI.CoordinateTranslation();
                     Double[] coords = new Double[]{sol.get(1,0), sol.get(2, 0),
                         sol.get(3, 0)};
                     

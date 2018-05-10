@@ -101,7 +101,7 @@ public class VisualisationController {
     ArrayList<ArrayList<BigInteger>> all_times = new ArrayList<>(); // timestamps
     ArrayList<ArrayList<Double[]>> all_coords = new ArrayList<>(); // coordinates
 
-    Thread[] threads;
+    ArrayList<Thread> threads;
 
     // ideally should take the smallest value between all tags and time should
     // be progressed from that value
@@ -150,9 +150,10 @@ public class VisualisationController {
 
                     for (Thread t : threads) {
                         t.stop();
-                        System.out.println("simTime:" + simTime);
                         // delete all threads
                     }
+                    
+                    threads.clear();
 
                 } else {
                     play.setText("||");
@@ -160,7 +161,7 @@ public class VisualisationController {
 
                     for (int i = 0; i < all_tags.size(); i++) {
                         Thread t = updateTag(i, simTime);
-                        threads[i] = t;
+                        threads.add(t);
                     }
                 }
             }
@@ -170,6 +171,7 @@ public class VisualisationController {
         slider.setMinWidth(350.0);
         //slider.setPadding(new Insets(20, 0, 0, 0));
         slider.setMin(0);
+        // here should check for the longest record
         slider.setMax(all_times.get(0).size() - 1);   // TODO: should be a MAXIMUM number of locations that tag goes through
         slider.setValue(0);
         slider.setShowTickLabels(true);
@@ -196,10 +198,13 @@ public class VisualisationController {
                 for (Thread t : threads) {
                     t.stop();
                 }
+                
+                threads.clear();
+                
                 // should be used for all tags
                 for (int i = 0; i < all_tags.size(); i++) {
                     Thread t = updateTag(i, v);
-                    threads[i] = t;
+                    threads.add(t);
                 }
                 slider.setValueChanging(false);
             }
@@ -237,12 +242,15 @@ public class VisualisationController {
                     for (Thread t : threads) {
                         t.stop();
                     }
+                    
+                    threads.clear();
+                    
                     // should be used for all tags
                     for (Object o : selectedIndices) {
                         int tagIndex = (Integer) o;
                         System.out.println(tagIndex);
                         Thread t = updateTag(tagIndex, simTime);
-                        threads[tagIndex] = t;
+                        threads.add(t);
                     }
                 } // tags were unselected
                 else if (selectedIndices.isEmpty()) {
@@ -250,10 +258,13 @@ public class VisualisationController {
                     for (Thread t : threads) {
                         t.stop();
                     }
+                    
+                    threads.clear();
+                    
                     // reinstantiate all tags and their threads
                     for (int i = 0; i < all_tags.size(); i++) {
                         Thread t = updateTag(i, simTime);
-                        threads[i] = t;
+                        threads.add(t);
                     }
                 }
             }
@@ -317,9 +328,15 @@ public class VisualisationController {
 
         // restart playback
         slider.setValue(0);
+        
+        for (int i = 0; i<threads.size(); i++ ) {
+            removeTag();
+        }
 
         // slider needs to update a number of ticks to new acitivity count
-        threads = new Thread[all_tags.size()];
+        threads.clear();
+        
+       
 
         // placing tags to their initial locations
         for (int i = 0; i < all_tags.size(); i++) {
@@ -329,7 +346,7 @@ public class VisualisationController {
         // TODO: if tag is out of the map space, could print out some warning
         for (int i = 0; i < all_tags.size(); i++) {
             Thread th = updateTag(i, 1);
-            threads[i] = th;
+            threads.add(th);
         }
     }
 

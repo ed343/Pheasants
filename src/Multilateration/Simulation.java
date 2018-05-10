@@ -71,11 +71,12 @@ public class Simulation {
      * 
      * @return Array of locations.
      */
-    public Double[][] drawSemiCircle(Double[]centre, double radius, double startAngle) {
+    public Double[][] drawSemiCircle(Double[]centre) {
         Double[][] locs = new Double[18][2];
         Double cx = centre[1]; // longitude
         Double cy = centre[0]; // latitude
-        Double deg = startAngle;
+        double radius = 0.0005;
+        Double deg = 90.0;
         for(int i=0;i<18;i++) {
             Double rad = (deg*Math.PI)/180;
             locs[i][1] = cx + (radius*Math.cos(rad));
@@ -465,7 +466,8 @@ public class Simulation {
 
         // get coordinates for each of the tags
         for (int i = 0; i < no_of_tags; i++) {
-            locations.add(getPheasantLocs(start));
+            // this is where we choose the pattern for simulation
+            locations.add(drawSemiCircle(start));
             start[0] = start[0] + 0.0001;
             start[1] = start[1] + 0.0001;
         }

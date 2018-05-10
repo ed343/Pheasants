@@ -16,7 +16,7 @@
             <Font size="14.0" />
          </font>
       </Button>
-      <Button onAction="#handleAnalyse" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="Analyse data">
+      <Button onAction="#handleAnalyse" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="Upload data">
          <font>
             <Font size="14.0" />
          </font>

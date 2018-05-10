@@ -198,7 +198,7 @@ public class BasestationController {
         Label labe = new Label("Measured power:");
         TextField text = new TextField();
         text.setPrefSize(50, 25);
-        Label label = new Label("db");
+        Label label = new Label("dBm");
 
         hb3.getChildren().addAll(labe, text, label);
 
@@ -257,7 +257,7 @@ public class BasestationController {
         text.setText(rs.getString("measuredpower"));
         text.setDisable(true);
         text.setPrefSize(50, 25);
-        Label label = new Label("db");
+        Label label = new Label("dBm");
 
         Button update_save = new Button("Update");
 
