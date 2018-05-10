@@ -23,6 +23,10 @@ import java.util.HashMap;
 import java.util.Scanner;
 import javafx.util.Pair;
 
+/**
+ * Class that executes the main functionality of the program.
+ * 
+ */
 public class MLAT {
        
     
@@ -32,6 +36,20 @@ public class MLAT {
     static ArrayList<Double> basestationPowers = new ArrayList<>();
     static MapProcessing mp;
     
+    /**
+     * Main execution of the program: extracts log data, calculates distances
+     * and applies multilateration to get location estimations.
+     * 
+     * @param kfilter: Determines whether filtering is used.
+     * 
+     * @param gran   : Determines whether granularity is used.
+     * 
+     * @param granSec: Granularity constant - number of seconds to
+     *                 average over.
+     * @return       : Hash map containing IDs, times and location estimations.
+     * 
+     * @throws SQLException 
+     */
     public static HashMap<Long, HashMap<BigInteger, Double[]>> getStuff(boolean kfilter, boolean gran, int granSec) throws SQLException {
         // ArrayList to store the Data extracted from all Log files.
         // each entry in the ArrayList keeps the data associated with one radio
@@ -246,8 +264,6 @@ public class MLAT {
             }
         }
         
-        // PART 2 - ACTUAL MULTILATERATION
-        // will call applyMLAT()
         System.out.println("No of tags is " + tag_registry.size());
         // at this point I have all my tags stored in tag_registry
         // there is one hashmap per tag, consisiting of a time key and
@@ -290,6 +306,14 @@ public class MLAT {
     /  a distance of -999,999
     */
     
+    /**
+     * Function to apply the mathematical functions from MLATEquation class.
+     * 
+     * @param tag_detect_times: Hash map of IDs and times.
+     * 
+     * @return                : Hash map containing IDs, times and coordinates
+     *                          of locations.
+     */
     public static HashMap<Long, HashMap<BigInteger, Double[]>> applyMLAT(
             HashMap<Long, ArrayList<BigInteger>> tag_detect_times){
         // initialise the hashmap we're going to return
@@ -360,6 +384,14 @@ public class MLAT {
         return hm;
     }
     
+    /**
+     *  Function to export ID, time and location estimation data to a 
+     *  csv/txt/log file.
+     * 
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     * @throws IOException 
+     */
     public static void exportData() throws FileNotFoundException,
             UnsupportedEncodingException,
             IOException {
@@ -408,7 +440,13 @@ public class MLAT {
         writer.close();
     }
     
-    // getter method to be used from other classes
+    /**
+     * Function to get the coordinates and measured power for basestations.
+     * 
+     * @return Array of basestation data.
+     * 
+     * @throws SQLException 
+     */
     static public ArrayList<Double[]> getBasestationData() throws SQLException{
         ArrayList<String> basestationNames = UploadController.getSelectedBasestations();
         ArrayList<Double[]> basestationData = new ArrayList<>();
@@ -420,8 +458,15 @@ public class MLAT {
         return basestationData;
     }
     
+    /**
+     * Function to retrieve basestation coordinates.
+     * 
+     * @return The basestation coordinates array.
+     * 
+     */
     public static ArrayList<Double[]> getGeogrBasestations() {
         return basestationCoords;
     }
     
 }
+
