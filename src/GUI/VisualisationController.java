@@ -1,10 +1,9 @@
 /**
- * This class describes program behaviour when in simulation mode. 
- * It runs the visualisation that displays extracted data from real log files. 
- * It also provides data export functionality to extract analysed data. 
+ * This class describes program behaviour when in simulation mode.
+ * It runs the visualisation that displays extracted data from real log files.
+ * It also provides data export functionality to extract analysed data.
  * Has a corresponding data_visualisation.fxml file.
  */
-
 package GUI;
 
 import Multilateration.MLAT;
@@ -138,6 +137,7 @@ public class VisualisationController {
         getTagInfo(true);
 
         pane = setupMap(basestations);
+        threads = new ArrayList<>();
 
         VBox leftbox = new VBox();
 
@@ -159,7 +159,7 @@ public class VisualisationController {
                         t.stop();
                         // delete all threads
                     }
-                    
+
                     threads.clear();
 
                 } else {
@@ -205,9 +205,9 @@ public class VisualisationController {
                 for (Thread t : threads) {
                     t.stop();
                 }
-                
+
                 threads.clear();
-                
+
                 // should be used for all tags
                 for (int i = 0; i < all_tags.size(); i++) {
                     Thread t = updateTag(i, v);
@@ -249,9 +249,9 @@ public class VisualisationController {
                     for (Thread t : threads) {
                         t.stop();
                     }
-                    
+
                     threads.clear();
-                    
+
                     // should be used for all tags
                     for (Object o : selectedIndices) {
                         int tagIndex = (Integer) o;
@@ -265,9 +265,9 @@ public class VisualisationController {
                     for (Thread t : threads) {
                         t.stop();
                     }
-                    
+
                     threads.clear();
-                    
+
                     // reinstantiate all tags and their threads
                     for (int i = 0; i < all_tags.size(); i++) {
                         Thread t = updateTag(i, simTime);
@@ -309,7 +309,7 @@ public class VisualisationController {
                 // - restart the visualisation
                 try {
                     getTagInfo(false);
-                    runVisual();
+                    runVisual(false);
                 } catch (SQLException ex) {
                     Logger.getLogger(VisualisationController.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -328,22 +328,22 @@ public class VisualisationController {
         imagebox.setPadding(new Insets(20, 10, 10, 20));
         imagebox.getChildren().addAll(leftbox, rightbox);
 
-        runVisual();
+        runVisual(true);
     }
 
-    public void runVisual() {
+    public void runVisual(boolean firsttime) {
 
         // restart playback
         slider.setValue(0);
-        
-        for (int i = 0; i<threads.size(); i++ ) {
-            removeTag();
-        }
 
-        // slider needs to update a number of ticks to new acitivity count
-        threads.clear();
-        
-       
+        if (!firsttime) {
+
+            for (int i = 0; i < threads.size(); i++) {
+                removeTag();
+            }
+
+            threads.clear();
+        }
 
         // placing tags to their initial locations
         for (int i = 0; i < all_tags.size(); i++) {
@@ -355,6 +355,7 @@ public class VisualisationController {
             Thread th = updateTag(i, 1);
             threads.add(th);
         }
+
     }
 
     /**
@@ -654,7 +655,7 @@ public class VisualisationController {
         fileChooser.setTitle("Save data");
         fileChooser.setInitialFileName("export" + reportDate + ".csv");
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("CSV file", "*.csv"), 
+                new FileChooser.ExtensionFilter("CSV file", "*.csv"),
                 new FileChooser.ExtensionFilter("Text file", "*.txt"),
                 new FileChooser.ExtensionFilter("Log file", ".log"));
         Stage stage = (Stage) visualisation.getScene().getWindow();

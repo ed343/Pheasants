@@ -48,6 +48,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
 
 public class SimulationController {
@@ -234,8 +236,11 @@ public class SimulationController {
 
         rightbox.setPadding(new Insets(0, 0, 25, 25));
         rightbox.setPrefSize(250.0, 400);
-        rightbox.setSpacing(20.0);
-
+        rightbox.setSpacing(15.0);
+        
+        Label tagName = new Label("Tag IDs");
+        tagName.setFont(Font.font(null, FontWeight.BOLD, 12));
+                
         tagsPanel = new ListView<>();
 
         tagsPanel.setPrefWidth(200.0);
@@ -298,6 +303,9 @@ public class SimulationController {
                 }
                 );
 
+        Label basestationName = new Label("Basestation names");
+        basestationName.setFont(Font.font(null, FontWeight.BOLD, 12));
+        
         // alternative way to show ListView of height for all tags
         //tags.setPrefHeight(stringTags.size() * 23 + 2);
         basestationPanel = new ListView<>();
@@ -317,7 +325,7 @@ public class SimulationController {
         drawTrace.setSelected(false);
 
         rightbox.getChildren()
-                .addAll(tagsPanel, basestationPanel, drawTrace, buttons);
+                .addAll(tagName, tagsPanel, basestationName, basestationPanel, drawTrace, buttons);
 
         // adding elements to the HBox from FXML file
         imagebox.setPadding(

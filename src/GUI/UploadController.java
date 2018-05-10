@@ -231,18 +231,18 @@ public class UploadController {
         
         if (selectedBs.size() >= 4 && logfilePaths.size() >= 4) {
 
-            try {
+//            try {
                 FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("data_visualisation.fxml"));
                 Parent sceneParent = sceneLoader.load();
                 Scene scene = new Scene(sceneParent, 800, 450);
 
                 Stage stage = (Stage) data_upload.getScene().getWindow();
                 stage.setScene(scene);
-            }
+//            }
             
-            catch (Exception e) {
-                handleRun();                
-            }
+//            catch (Exception e) {
+//                handleRun();                
+//            }
         } else {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Information Dialog");
