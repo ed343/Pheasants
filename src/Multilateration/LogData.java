@@ -56,10 +56,12 @@ public class LogData {
         //Automatically extract data from log file when object is created.
  
         this.extractData(fp);
+        if(this.RSSIs.get(0)>=0)
+            normaliseRSSIs(-30,-70);
         if(gran) {
             if(filter) {
                 filterRSSIs();
-                granularise(this.Times,this.filtRSSIs,this.IDs,gC);
+                granularise(this.Times,this.RSSIs,this.IDs,gC);
             } else
                 granularise(this.Times,this.RSSIs,this.IDs,gC);
         } else if(filter) {
@@ -82,7 +84,7 @@ public class LogData {
     public LogData(String fp, int test) {
         this.FilePath = fp;
         this.extractData(fp);
-        normaliseRSSIs(-30, -70, "no");
+        normaliseRSSIs(-30, -70);
     }
     
     
@@ -94,14 +96,13 @@ public class LogData {
             if(filter) {
                 introduceNoise();
                 filterRSSIs();
-                granularise(this.Times,this.filtRSSIs,this.IDs,gC);
+                granularise(this.Times,this.RSSIs,this.IDs,gC);
             } else
                 granularise(this.Times,this.RSSIs,this.IDs,gC);
         } else if(filter)
             introduceNoise();
             filterRSSIs(); 
     }
-    
     
     /*
     *  Function to convert a date/time string into a number.
@@ -418,12 +419,9 @@ public class LogData {
     }
     
     // Function to normalise filtered RSSIs to range (x,y).
-    public void normaliseRSSIs(double x, double y,String f) {
+    public void normaliseRSSIs(double x, double y) {
         ArrayList<Double> rssis = new ArrayList<>();
-        if(f=="filter")
-            rssis = this.filtRSSIs;
-        else
-            rssis = this.RSSIs;
+        rssis = this.RSSIs;
         x = -x;
         y = -y;
         double oldRange = 250-0;
@@ -434,7 +432,7 @@ public class LogData {
             double newVal = (((oldVal-0)*newRange)/oldRange)+x;
             double diff = hWay - newVal;
             double normVal = hWay+diff;
-            this.normRSSIs.add(-normVal);
+            this.RSSIs.set(i,-normVal);
             
             
         }
@@ -492,7 +490,7 @@ public class LogData {
                 filtRSSI = filter.getStateEstimation()[0];
             }
             
-            this.filtRSSIs.add(filtRSSI);
+            this.RSSIs.set(j,filtRSSI);
         }
     
 }
