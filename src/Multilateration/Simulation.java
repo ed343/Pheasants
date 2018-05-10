@@ -61,7 +61,35 @@ public class Simulation {
         }
         return locs;
     }
-
+    
+    /**
+     * Method computes locations for a semi-circle.
+     * @param centre = the centre of the circle.
+     * @param radius = the radius of the circle.
+     * @param startAngle = the start angle, the function will create locations
+     *                     from startAngle up to startAngle + 180 degrees.
+     * 
+     * @return Array of locations.
+     */
+    public Double[][] drawSemiCircle(Double[]centre, Double radius, Double startAngle) {
+        Double[][] locs = new Double[18][2];
+        //xcoord for centre
+        Double cx = centre[1]; // longitude
+        //ycoord for centre
+        Double cy = centre[0]; // latitude
+        Double deg = startAngle;
+        for(int i=0;i<18;i++) {
+            //Convert to radians
+            Double rad = (deg*Math.PI)/180;
+            // x location
+            locs[i][1] = cx + (radius*Math.cos(rad));
+            // y location
+            locs[i][0] = cy + (radius*Math.sin(rad));
+            deg+=10;
+        }
+        return locs;
+    }
+    
     /**
      * Method computes distance between a basestation and a tag.
      *
