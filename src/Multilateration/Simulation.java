@@ -71,23 +71,98 @@ public class Simulation {
      * 
      * @return Array of locations.
      */
-    public Double[][] drawSemiCircle(Double[]centre, Double radius, Double startAngle) {
+    public Double[][] drawSemiCircle(Double[]centre, double radius, double startAngle) {
         Double[][] locs = new Double[18][2];
-        //xcoord for centre
         Double cx = centre[1]; // longitude
-        //ycoord for centre
         Double cy = centre[0]; // latitude
         Double deg = startAngle;
         for(int i=0;i<18;i++) {
-            //Convert to radians
             Double rad = (deg*Math.PI)/180;
-            // x location
             locs[i][1] = cx + (radius*Math.cos(rad));
-            // y location
             locs[i][0] = cy + (radius*Math.sin(rad));
             deg+=10;
         }
         return locs;
+    }
+    
+    public Double[][]zigZagDown(Double[] start) {
+        // create an array that will hold the coordinates part of the trajectory
+        Double[][] locs = new Double[18][2];
+        Double x = start[1]; // longitude
+        Double y = start[0]; // latitude
+        // function creates a line
+        for (int i = 0; i < 9; i++) {
+            x-=0.0001;
+            y-=0.0001;
+            locs[(2*(i+1))-2][1] = x;
+            locs[(2*(i+1))-2][0] = y;
+            x +=0.0001;
+            y -= 0.0001;
+            locs[(2*(i+1))-1][1] = x;
+            locs[(2*(i+1))-1][0] = y;
+        }
+        return locs;
+        
+    }
+    
+    public Double[][]zigZagUp(Double[] start) {
+        // create an array that will hold the coordinates part of the trajectory
+        Double[][] locs = new Double[18][2];
+        Double x = start[1]; // longitude
+        Double y = start[0]; // latitude
+        // function creates a line
+        for (int i = 0; i < 9; i++) {
+            x-=0.0001;
+            y+=0.0001;
+            locs[(2*(i+1))-2][1] = x;
+            locs[(2*(i+1))-2][0] = y;
+            x +=0.0001;
+            y += 0.0001;
+            locs[(2*(i+1))-1][1] = x;
+            locs[(2*(i+1))-1][0] = y;
+        }
+        return locs;
+        
+    }
+    
+    public Double[][]zigZagRight(Double[] start) {
+        // create an array that will hold the coordinates part of the trajectory
+        Double[][] locs = new Double[18][2];
+        Double x = start[1]; // longitude
+        Double y = start[0]; // latitude
+        // function creates a line
+        for (int i = 0; i < 9; i++) {
+            x+=0.0001;
+            y+=0.0001;
+            locs[(2*(i+1))-2][1] = x;
+            locs[(2*(i+1))-2][0] = y;
+            x +=0.0001;
+            y -= 0.0001;
+            locs[(2*(i+1))-1][1] = x;
+            locs[(2*(i+1))-1][0] = y;
+        }
+        return locs;
+        
+    }
+    
+    public Double[][]zigZagLeft(Double[] start) {
+        // create an array that will hold the coordinates part of the trajectory
+        Double[][] locs = new Double[18][2];
+        Double x = start[1]; // longitude
+        Double y = start[0]; // latitude
+        // function creates a line
+        for (int i = 0; i < 9; i++) {
+            x-=0.0001;
+            y+=0.0001;
+            locs[(2*(i+1))-2][1] = x;
+            locs[(2*(i+1))-2][0] = y;
+            x -=0.0001;
+            y -= 0.0001;
+            locs[(2*(i+1))-1][1] = x;
+            locs[(2*(i+1))-1][0] = y;
+        }
+        return locs;
+        
     }
     
     /**
