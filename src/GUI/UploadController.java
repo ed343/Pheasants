@@ -54,7 +54,7 @@ public class UploadController {
 
     ArrayList<String> bsNames;
     
-    static int uploadNumber = 4;
+    static int uploadNumber;
 
     static ArrayList<String> selectedBs;
 
@@ -62,6 +62,8 @@ public class UploadController {
     public static ArrayList<String> logfilePaths = new ArrayList<>();
 
     public void initialize() throws SQLException {
+        
+        uploadNumber= 4;
 
         // getting registered basestation names from the database
         bsNames = getBasestationNames(); 
