@@ -104,9 +104,6 @@ public class Analysis {
             ArrayList<Long> idData = log.getIDs();
             //Get normalised RSSI values for this basestation.
             ArrayList<Double> rssiData = log.RSSIs;
-            System.out.println("No of tags: " + idData.size());
-            System.out.println("No of times: " + tData.size());
-            System.out.println("No of rssis: " + rssiData.size());
             primer.setTRVals(tData, idData, rssiData);
         }
 
@@ -253,7 +250,6 @@ public class Analysis {
             }
         }
 
-        System.out.println("No of tags is " + tag_registry.size());
         // at this point I have all my tags stored in tag_registry
         // there is one hashmap per tag, consisiting of a time key and
         // their corresponding values are initialised to null, i.e.
@@ -338,24 +334,21 @@ public class Analysis {
                         }
                     }
                 }
-                System.out.println(primer.idDistances);
+
                 MLATEquation eq = new MLATEquation(distances.size(),
                         primer.getRadiosCoordinates(),
                         distances);
 
-                System.out.println("Tag: " + key + " at time " + time
-                        + ":");
                 // check that we have enough valid distances
                 boolean x = eq.fix();
                 if (x) {
                     // we have enough
                     Matrix A = eq.getA();
-                    System.out.println(A.get(1, 0));
+
                     Matrix B = eq.getB();
-                    System.out.println(B.get(1, 0));
+
                     Matrix sol = A.solve(B);
-                    System.out.println(sol.get(1, 0));//these are our coordinates
-                    System.out.println(sol.get(2, 0));
+
                     // the matrix is 4x1, and entries 1,2,3
                     // give us the x, y, z coord
                     Double[] coords = new Double[]{sol.get(1, 0), sol.get(2, 0)*(-1),
@@ -363,10 +356,6 @@ public class Analysis {
 
                     time_coords_map.put(time, coords);
                     hm.put(key, time_coords_map);
-                    System.out.println(" ");
-                    System.out.println("The location of this tag is: " + Arrays.deepToString(coords));
-                    System.out.println(" ");
-                    //sol.print(10, 5);
                 } else {
                     // we don't have enough valid distances, i.e.
                     // no other radios picked up this tag at this time
@@ -375,62 +364,6 @@ public class Analysis {
             }
         }
         return hm;
-    }
-
-    /**
-     * Function to export ID, time and location estimation data to a csv/txt/log
-     * file.
-     *
-     * @throws FileNotFoundException
-     * @throws UnsupportedEncodingException
-     * @throws IOException
-     */
-    public static void exportData() throws FileNotFoundException,
-            UnsupportedEncodingException,
-            IOException {
-        // get date for the name of the file
-        DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
-        Date today = Calendar.getInstance().getTime();
-        String reportDate = df.format(today);
-
-        // get OS for filepath
-        String OS = System.getProperty("os.name").toLowerCase();
-        String path = "";
-        if (OS.contains("win")) {
-            path = ".\\" + "export" + reportDate + ".txt";
-        }
-        if (OS.contains("nix") || OS.contains("nux")
-                || OS.contains("aix") || OS.contains("mac")) {
-            path = "./" + "export" + reportDate + ".txt";
-        }
-
-        // create new file
-        File f = new File(path);
-        f.createNewFile();
-
-        // write to file
-        PrintWriter writer = new PrintWriter("export" + reportDate + ".txt", "UTF-8");
-        writer.println("Time,Tag,Latitude,Longitude");
-        for (int a = 0; a < all_tags.size(); a++) {
-            for (int i = 0; i < all_times.get(a).size(); i++) {
-                Double[] temp = new Double[]{all_coords.get(a).get(i)[0],
-                    all_coords.get(a).get(i)[1],
-                    all_coords.get(a).get(i)[2]};
-                Double[] geoCoords = mp.getGeoLoc(temp);
-
-                // export tag ID
-                writer.print(all_tags.get(a));
-                writer.print(',');
-                // export time
-                writer.print(all_times.get(a).get(i));
-                writer.print(',');
-                // export coords
-                writer.print(geoCoords[0]);
-                writer.print(',');
-                writer.println(geoCoords[1]);
-            }
-        }
-        writer.close();
     }
 
     /**

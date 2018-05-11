@@ -15,8 +15,8 @@ public class MainApplication extends javafx.application.Application {
     public void start(Stage primaryStage) throws Exception{
 
         Parent root = FXMLLoader.load(getClass().getResource("menu.fxml"));
-        primaryStage.setTitle("Pheasants program");
-        primaryStage.setScene(new Scene(root, 400, 450)); // 400, 450
+        primaryStage.setTitle("PheasEXE");
+        primaryStage.setScene(new Scene(root, 400, 450));
         primaryStage.centerOnScreen();
         primaryStage.show();
 

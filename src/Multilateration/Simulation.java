@@ -411,7 +411,7 @@ public class Simulation {
             writeLog(timez, tags, rs3, fp3);
             writeLog(timez, tags, rs4, fp4);
         } catch (IOException ex) {
-            System.out.println("didn't work");
+
         }
     }
 
@@ -693,7 +693,7 @@ public class Simulation {
 
         // PART 2 - ACTUAL MULTILATERATION
         // will call applyMLAT()
-        System.out.println("No of tags is " + tag_registry.size());
+        
         // at this point I have all my tags stored in tag_registry
         // there is one hashmap per tag, consisiting of a time key and
         // their corresponding values are initialised to null, i.e.
