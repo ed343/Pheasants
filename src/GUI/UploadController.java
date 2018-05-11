@@ -1,9 +1,8 @@
 /**
- * This class is responsible for controlling the behaviour of the application when in the data upload window. 
+ * This class is responsible for controlling the behaviour of the application when in the data upload window.
  * It allows to select basestations and upload corresponding log files.
  * Has a corresponding data_upload.fxml file.
  */
-
 package GUI;
 
 import javafx.event.ActionEvent;
@@ -22,13 +21,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -36,18 +40,21 @@ import javafx.scene.text.FontWeight;
 public class UploadController {
 
     @FXML
-    private ScrollPane data_upload;
+    ScrollPane data_upload;
 
     @FXML
     VBox uploadList;
-    
+
+    CheckBox kalmanCheck;
+
     @FXML
-    CheckBox kalman;
-    
+    VBox uploadBox;
+
     static boolean applyKalman = false;
-    
 
     ArrayList<String> bsNames;
+    
+    static int uploadNumber = 4;
 
     static ArrayList<String> selectedBs;
 
@@ -57,14 +64,63 @@ public class UploadController {
     public void initialize() throws SQLException {
 
         // getting registered basestation names from the database
-        bsNames = getBasestationNames();
+        bsNames = getBasestationNames(); 
+        uploadList.setSpacing(5);
 
-        for (int i = 1; i < 5; i++) {
-            VBox newBasestation = addUpload(i);
-            uploadList.getChildren().add(newBasestation);
+        for (int i = 0; i < uploadNumber; i++) {
+            VBox newUpload = addUpload(i+1);
+            uploadList.getChildren().add(newUpload);
         }
+
+        Label check = new Label("Apply Kalman filter");
+        check.setFont(Font.font(null, 14));
+        kalmanCheck = new CheckBox();
+        
+        Button addAnother = new Button("Add another basestation");
+        addAnother.setMinSize(80,50);
+        addAnother.setStyle("-fx-font-size: 15.0; ");
+        
+        addAnother.setOnAction(event -> {
+                addExtraUpload();
+        });
+
+        Button upload = new Button("Run");
+        upload.setMinSize(80, 50);
+        upload.setStyle("-fx-font-size: 15.0; ");
+
+        upload.setOnAction(event -> {
+            try {
+                handleRun();
+            } catch (IOException ex) {
+                Logger.getLogger(UploadController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+
+        Button cancel = new Button("Cancel");
+        cancel.setMinSize(80, 50);
+        cancel.setStyle("-fx-font-size: 15.0; ");
+
+        cancel.setOnAction(event -> {
+            try {
+                handleCancel();
+            } catch (IOException ex) {
+                Logger.getLogger(UploadController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+
+        Region region1 = new Region();
+        HBox.setHgrow(region1, Priority.ALWAYS);
+
+        Region region2 = new Region();
+        HBox.setHgrow(region2, Priority.ALWAYS);
+
+        HBox hBox = new HBox(check, kalmanCheck, region1, region2, addAnother, upload, cancel);
+        hBox.setSpacing(5);
+
+        uploadBox.getChildren().add(hBox);
+
     }
-    
+
     public static boolean doApplyKalman() {
         return applyKalman;
     }
@@ -72,7 +128,7 @@ public class UploadController {
     public VBox addUpload(int basestationNumber) {
         VBox vb = new VBox();
         vb.setSpacing(10);
-        vb.setPrefSize(600, 80);
+        vb.setPrefSize(650, 80);
 
         HBox hb1 = new HBox();
         hb1.setSpacing(5);
@@ -83,13 +139,14 @@ public class UploadController {
         hb1.getChildren().addAll(l);
 
         HBox hb2 = new HBox();
-        hb2.setSpacing(5);
+        hb2.setSpacing(10);
 
         ComboBox comboBox = new ComboBox();
 
         comboBox.getItems().addAll(bsNames);
 
-        comboBox.setMinSize(120, 30);
+        comboBox.setMinSize(140, 30);
+        comboBox.setPromptText("Select basestation");
 
         Button uploadFile = new Button("Choose file...");
         uploadFile.setMinSize(100, 30);
@@ -107,6 +164,12 @@ public class UploadController {
 
         return vb;
     }
+    
+    public void addExtraUpload() {
+        uploadNumber++;
+        VBox newUpload = addUpload(uploadNumber);
+        uploadList.getChildren().add(newUpload);
+    }
 
     public ArrayList<String> getBasestationNames() throws SQLException {
 
@@ -120,26 +183,23 @@ public class UploadController {
 
         Statement stmt = c.createStatement();
 
-//        String scount = "select count(*) from basestations;";
-//        ResultSet rsc = stmt.executeQuery(scount);
-//        // update the number of radios to be euqal to the number of rows we have
-//        
-//        noBasestations = rsc.getInt("count(*)");
-//        System.out.println("noBasestations: " + noBasestations);
         String s = "select name from basestations";
         ResultSet rs = stmt.executeQuery(s);
 
         while (rs.next()) {
             names.add(rs.getString("name"));
-            System.out.println(rs.getString("name"));
         }
         c.close();
 
         return names;
     }
+    
+    public static int getBasestationsNumber() {
+        return uploadNumber;
+    }
 
     //{ latitude, longitude, measured power}
-    static public Double[] collectBasestationData(String name) throws SQLException {
+    public static Double[] collectBasestationData(String name) throws SQLException {
         Double[] data = new Double[3];
 
         BasestationDB db = new BasestationDB();
@@ -180,31 +240,23 @@ public class UploadController {
         File selected = fileChooser.showOpenDialog(stage);
 
         try {
-        String path = selected.getAbsolutePath();
-        String filename = selected.getName();
-        
+            String path = selected.getAbsolutePath();
+            String filename = selected.getName();
 
-        if (path != null) {
-            Label uploaded = new Label("    " + filename);
-            uploaded.setFont(new Font("Courier New", 14.0));
+            if (path != null) {
+                Label uploaded = new Label("    " + filename);
+                uploaded.setFont(new Font("Courier New", 14.0));
 
-            // adding the name of the uploaded file instead of the button
-            currentHBox.getChildren().remove(b);
-            currentHBox.getChildren().add(uploaded);
+                // adding the name of the uploaded file instead of the button
+                currentHBox.getChildren().remove(b);
+                currentHBox.getChildren().add(uploaded);
 
-            logfilePaths.add(path);
-            System.out.println("path: " + path);
+                logfilePaths.add(path);
+            } else if (path == null) {
 
-//            LogData converter = new LogData(path, 1, 1, 4, 0);
-//            System.out.println(converter.getTimes());
-//            System.out.println(converter.getRSSIs());
-//            System.out.println(converter.getIDs());
+            }
+        } catch (NullPointerException e) {
         }
-        else if (path==null) {
-            
-        }
-        }
-        catch (NullPointerException e){}
     }
 
     public static ArrayList<String> getPaths() {
@@ -215,43 +267,76 @@ public class UploadController {
         return selectedBs;
     }
 
+    public boolean checkInternet() {
+        String imagePath = "https://maps.googleapis.com/maps/api/staticmap?"
+                + "center=" + 50 + "," + 20 + "&"
+                + "zoom=" + 17 + "&size=480x280&maptype=terrain&"
+                + "key=AIzaSyD9duo3FCZAGzoydpTGoM2Gwwcba3OXxSs";
+
+        Boolean backgroundLoading = false;
+        Image image = new Image(imagePath, backgroundLoading);
+
+        // checking for errors (from JavaFX book) - most likely to happen if there is no internet connection
+        if (image.isBackgroundLoading()) {
+            image.errorProperty().addListener((prop, oldValue, newValue) -> {
+                if (newValue) {
+
+                }
+            });
+        } else if (image.isError()) {
+            return false;
+        }
+        return true;
+    }
+
     public void handleRun() throws IOException {
-        
-        applyKalman = kalman.isSelected();
+
+        applyKalman = kalmanCheck.isSelected();
         selectedBs = new ArrayList<>();
 
-        for (Node vb : uploadList.getChildren()) {
-            VBox box = (VBox) vb;
-            HBox hbox = (HBox) box.getChildren().get(1);
-            ComboBox cbox = (ComboBox) hbox.getChildren().get(0);
-            selectedBs.add((String) cbox.getValue());
-        }
+        boolean internet = checkInternet();
 
-        // TODO check whether there are no nulls or duplicate basestations selected
-        
-        if (selectedBs.size() >= 4 && logfilePaths.size() >= 4) {
+        if (!internet) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Information Dialog");
+            alert.setHeaderText(null);
+            alert.setContentText("Make sure that you are connected to the Internet, as visualisation requires active Internet connection!");
+
+            alert.showAndWait();
+        } else {
+
+            for (Node vb : uploadList.getChildren()) {
+                VBox box = (VBox) vb;
+                HBox hbox = (HBox) box.getChildren().get(1);
+                ComboBox cbox = (ComboBox) hbox.getChildren().get(0);
+                selectedBs.add((String) cbox.getValue());
+            }
+
+            // TODO check whether there are no duplicate basestations selected
+            if (selectedBs.size() >= uploadNumber && logfilePaths.size() >= uploadNumber) {
 
 //            try {
                 FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("data_visualisation.fxml"));
                 Parent sceneParent = sceneLoader.load();
-                Scene scene = new Scene(sceneParent, 800, 450);
+                Scene scene = new Scene(sceneParent, 800, 500);
 
                 Stage stage = (Stage) data_upload.getScene().getWindow();
                 stage.setScene(scene);
 //            }
-            
+
 //            catch (Exception e) {
 //                handleRun();                
 //            }
-        } else {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Information Dialog");
-            alert.setHeaderText(null);
-            alert.setContentText("Log file is required for every basestation.");
+            } else {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Information Dialog");
+                alert.setHeaderText(null);
+                alert.setContentText("Log file is required for every basestation.");
 
-            alert.showAndWait();
+                alert.showAndWait();
+            }
         }
-        
+
     }
 
     public void handleCancel() throws IOException {

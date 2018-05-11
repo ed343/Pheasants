@@ -6,7 +6,7 @@
  */
 package GUI;
 
-import Multilateration.MLAT;
+import Multilateration.Analysis;
 import Multilateration.Simulation;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -51,6 +51,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
+import javafx.util.StringConverter;
 
 public class VisualisationController {
 
@@ -71,6 +72,8 @@ public class VisualisationController {
     Slider slider;
 
     ToggleGroup group; // group for radiobuttons for granularity selection
+    
+    Slider granSlider; // slider for granularity specification
 
     int mapWidth = 480;
     int mapHeight = 280;
@@ -88,9 +91,6 @@ public class VisualisationController {
     // < tagID < timestamp, cartCoord(x,y,z)> >
     HashMap<Long, HashMap<BigInteger, Double[]>> tag_registry;
 
-    // will be the list of actual tags taken from the log file
-    //ArrayList<Long> intTags = HelperMethods.deduplicate(MainApplication.logfiles.get(0).getIDs());
-    //ArrayList<String> tagIDs = HelperMethods.convertList(intTags);
     ArrayList<Double[]> tagCoords = new ArrayList<>();
 
     // parameters used for map scaling and tag placement
@@ -112,26 +112,10 @@ public class VisualisationController {
     // ideally should take the smallest value between all tags and time should
     // be progressed from that value
     int simTime = 0;
+    
+    int granularity = 4;
 
     public void initialize() throws IOException, SQLException {
-
-        // creating RadioButton group as first thing so we can use it for
-        // granularity parameter
-        RadioButton r4 = new RadioButton("4 sec");
-        RadioButton r8 = new RadioButton("8 sec");
-        RadioButton r20 = new RadioButton("20 sec");
-        RadioButton r60 = new RadioButton("1 min");
-
-        group = new ToggleGroup();
-        r4.setToggleGroup(group);
-        r4.setId("4");
-        r8.setToggleGroup(group);
-        r8.setId("8");
-        r20.setToggleGroup(group);
-        r20.setId("20");
-        r60.setToggleGroup(group);
-        r60.setId("60");
-        r4.setSelected(true);
 
         // prepares all_tags, all_times and all_coords for later use
         getTagInfo(true);
@@ -142,12 +126,12 @@ public class VisualisationController {
         VBox leftbox = new VBox();
 
         HBox visualControl = new HBox();
-        visualControl.setMaxWidth(300);
-        visualControl.setPadding(new Insets(20, 0, 0, 0));
+        visualControl.setMaxWidth(400);
+        visualControl.setPadding(new Insets(40, 0, 0, 0));
         visualControl.setSpacing(15);
 
         Button play = new Button("||");
-        play.setPrefSize(25, 25);
+        play.setPrefSize(35, 35);
 
         play.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
@@ -176,7 +160,6 @@ public class VisualisationController {
 
         slider = new Slider();
         slider.setMinWidth(350.0);
-        //slider.setPadding(new Insets(20, 0, 0, 0));
         slider.setMin(0);
         // here should check for the longest record
         slider.setMax(all_times.get(0).size() - 1);   // TODO: should be a MAXIMUM number of locations that tag goes through
@@ -189,9 +172,6 @@ public class VisualisationController {
 
         //  this listener reacts to the change on the slider:
         //      should start visualisation from the point were slider is set to
-        //      but doesn't do that yet (if we have a list of locations,
-        //      then it would use that location as a starting point and proceed
-        //      with subsequent locations)
         slider.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -200,8 +180,7 @@ public class VisualisationController {
                 int v = (int) Math.rint(value);
                 slider.setValue(v);
                 simTime = v;
-                // it is bad to use stop(), but it works
-                // alternative would be using http://www.java67.com/2015/07/how-to-stop-thread-in-java-example.html
+
                 for (Thread t : threads) {
                     t.stop();
                 }
@@ -224,10 +203,9 @@ public class VisualisationController {
         // adding side panels with lists of tags and basestations
         VBox rightbox = new VBox();
         rightbox.setPadding(new Insets(0, 0, 25, 25));
-        rightbox.setPrefSize(250.0, 400);
-        rightbox.setSpacing(20.0);
+        rightbox.setPrefSize(250.0, 450);
+        rightbox.setSpacing(15.0);
 
-        // Learn JavaFX 8 page 488 has info about accessing selected items from ListView
         ListView<String> tagsPanel = new ListView<>();
         tagsPanel.setPrefWidth(200.0);
         // getting tag IDs from log file
@@ -287,42 +265,78 @@ public class VisualisationController {
             basestationPanel.getItems().add(name);
         }
 
-        // TODO: collect actual basestation names from logUpload
-        // basestationPanel.getItems().addAll("Basestation 1", "Basestation 2", "Basestation 3", "Basestation 4");
         basestationPanel.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         basestationPanel.setMinHeight(basestationPanel.getItems().size() * 23 + 2);
+        
+        granSlider = new Slider();
 
-        // a number of radio buttons to select the regularity (granularity) of the tag movement
-        HBox regularity = new HBox();
-        regularity.setSpacing(5);
+        granSlider.setMinWidth(200.0);
+        granSlider.setMin(0);
+        granSlider.setMax(300); 
+        granSlider.setValue(0);
+        granSlider.setShowTickLabels(true);
+        granSlider.setShowTickMarks(true);
+        granSlider.setMajorTickUnit(60);
+        granSlider.setMinorTickCount(2);
+        granSlider.setBlockIncrement(20);
+        granSlider.setSnapToTicks(true);
+        // Set a custom major tick formatter
+        granSlider.setLabelFormatter(new StringConverter<Double>() {
+            @Override
+            public String toString(Double value) {
+                String label = "";
+                if (value==60) {
+                    label = "1min";
+                } else if (value == 0 ) {
+                    label = "4s";
+                } else if( value == 120) {
+                    label = "2min";
+                } else if (value == 180) {
+                    label = "3min";
+                } else if (value == 240) {
+                    label = "4min";
+                } else if (value == 300) {
+                    label = "5min";
+                } 
+                return label;
+            }
 
-        // radiobuttons get added at the top of this method
-        regularity.getChildren().addAll(r4, r8, r20, r60);
+            @Override
+            public Double fromString(String string) {
+                return null; // Not used
+            }
+        });
 
-        // what happens when regularity is changed
-        group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
-            public void changed(ObservableValue<? extends Toggle> ov, Toggle toggle, Toggle new_toggle) {
-                RadioButton selected = (RadioButton) group.getSelectedToggle();
-                int newGran = Integer.parseInt(selected.getId());
-                // when new regularity is selected, we want to rerun the application:
-                // - run getTagInfo() so all tag information is updated with new parameters
-                // - restart the visualisation
+        // what happens when granularity is changed
+        granSlider.setOnMouseClicked(
+                new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event
+            ) {
+                granSlider.setValueChanging(true);
+                double value = (event.getX() / granSlider.getWidth()) * granSlider.getMax();
+                granularity = (int) Math.rint(value)+4;
+                granSlider.setValue(granularity);
+                System.out.println("granSlider: " + granularity);
+
+                granSlider.setValueChanging(false);
+                
                 try {
                     getTagInfo(false);
                     runVisual(false);
                 } catch (SQLException ex) {
                     Logger.getLogger(VisualisationController.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                
             }
-        });
+        }
+        );
 
-        // TODO: regularity on action should cause regeneration of locations for
-        // tags (intermediate step before visualisation and start visualisation from beginning
         drawTrace = new CheckBox();
         drawTrace.setText("Draw movement patterns");
         drawTrace.setSelected(false);
 
-        rightbox.getChildren().addAll(tagsPanel, basestationPanel, regularity, drawTrace, buttons);
+        rightbox.getChildren().addAll(tagsPanel, basestationPanel, granSlider, drawTrace, buttons);
 
         // adding elements to the HBox from FXML file
         imagebox.setPadding(new Insets(20, 10, 10, 20));
@@ -367,7 +381,7 @@ public class VisualisationController {
         // downloading static map of the location
         ImageView imageView;
 
-        basestations = MLAT.getGeogrBasestations();
+        basestations = Analysis.getGeogrBasestations();
 
         mp = new MapProcessing(basestations);
         cartBasestationCoords = mp.getBasestations(basestations);
@@ -430,12 +444,14 @@ public class VisualisationController {
         boolean applyKalman = UploadController.doApplyKalman();
         System.out.println("applyKalman: " + applyKalman);
 
-        RadioButton chk = (RadioButton) group.getSelectedToggle(); // Cast object to radio button        
-        int granularity = Integer.parseInt(chk.getId());
+        //RadioButton chk = (RadioButton) group.getSelectedToggle(); // Cast object to radio button        
+        //int granularity = Integer.parseInt(chk.getId());
+        
+        int gran = granularity;
 
-        System.out.println("granularity: " + granularity);
+        System.out.println("granularity: " + gran);
 
-        tag_registry = MLAT.getStuff(applyKalman, true, granularity);
+        tag_registry = Analysis.getStuff(applyKalman, true, gran);
 
         // if not the first time we're getting tag information -
         // empty previous arraylists
@@ -641,16 +657,6 @@ public class VisualisationController {
         Date today = Calendar.getInstance().getTime();
         String reportDate = df.format(today);
 
-        // get OS for filepath
-//        String OS = System.getProperty("os.name").toLowerCase();
-//        String path="";
-//        if (OS.contains("win")) {
-//            path = ".\\" + "export"+ reportDate + ".txt";
-//        }
-//        if (OS.contains("nix") || OS.contains("nux") ||  
-//                OS.contains("aix") || OS.contains("mac")){
-//            path = "./" + "export"+ reportDate + ".txt";
-//        }
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save data");
         fileChooser.setInitialFileName("export" + reportDate + ".csv");
@@ -663,7 +669,6 @@ public class VisualisationController {
         if (file != null) {
             System.out.println("file is " + file.getName());
             System.out.println("file path " + file.getAbsolutePath());
-            String givenName = file.getName();
             String path = file.getAbsolutePath();
 
             // create new file

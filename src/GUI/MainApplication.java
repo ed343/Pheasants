@@ -9,8 +9,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-
 public class MainApplication extends javafx.application.Application {
 
     @Override
@@ -18,7 +16,7 @@ public class MainApplication extends javafx.application.Application {
 
         Parent root = FXMLLoader.load(getClass().getResource("menu.fxml"));
         primaryStage.setTitle("Pheasants program");
-        primaryStage.setScene(new Scene(root, 550, 500));
+        primaryStage.setScene(new Scene(root, 400, 450)); // 400, 450
         primaryStage.centerOnScreen();
         primaryStage.show();
 

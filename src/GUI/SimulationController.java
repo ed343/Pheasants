@@ -1,10 +1,9 @@
 /**
  * This class describes program behaviour when in simulation mode. It runs
- * the visualisation that displays extracted data from simulated log files. 
+ * the visualisation that displays extracted data from simulated log files.
  * It also provides data export functionality to extract analysed data.
  * Has a corresponding data_simulation.fxml file.
  */
-
 package GUI;
 
 import Multilateration.Simulation;
@@ -51,6 +50,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
+import javafx.util.StringConverter;
 
 public class SimulationController {
 
@@ -85,8 +85,6 @@ public class SimulationController {
     HashMap<Long, HashMap<BigInteger, Double[]>> tag_registry;
 
     // will be the list of actual tags taken from the log file
-    //ArrayList<Long> intTags = HelperMethods.deduplicate(MainApplication.logfiles.get(0).getIDs());
-    //ArrayList<String> tagIDs = HelperMethods.convertList(intTags);
     ArrayList<Double[]> tagCoords = new ArrayList<>();
 
     static MapProcessing mp;
@@ -106,35 +104,28 @@ public class SimulationController {
 
     ArrayList<Thread> threads;
 
-    // ideally should take the smallest value between all tags and time should
-    // be progressed from that value
+    // keeping track of the simulation time
     int simTime = 0;
 
     ListView<String> basestationPanel;
-    
     ListView<String> tagsPanel;
 
     public void initialize() throws IOException {
 
+        // get map ready
         pane = setupMap(basestations);
 
-        getTagInfo(); // prepares all_tags, all_times and all_coords for later use
-
-        for (int i = 0; i < all_tags.size(); i++) {
-            System.out.println("number of tags: " + all_tags.size());
-            System.out.println("number of times: " + all_times.get(i).size());
-            System.out.println("number of coords: " + all_coords.get(i).size());
-        }
+        // preparing all_tags, all_times and all_coords for later use
+        getTagInfo(); 
 
         VBox leftbox = new VBox();
-
         HBox visualControl = new HBox();
-        visualControl.setMaxWidth(300);
-        visualControl.setPadding(new Insets(20, 0, 0, 0));
+        visualControl.setMaxWidth(400);
+        visualControl.setPadding(new Insets(40, 0, 0, 0));
         visualControl.setSpacing(15);
 
         Button play = new Button("||");
-        play.setPrefSize(25, 25);
+        play.setMinSize(35, 35);
 
         play.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
@@ -148,26 +139,25 @@ public class SimulationController {
 
                     // delete all threads
                     threads.clear();
-                    System.out.println("simTime:" + simTime);
 
                 } else {
-                    
-                    // ROOT OF PROBLEMS
+
                     play.setText("||");
                     // PLAY VISUALISATION
 
                     for (int i = 0; i < all_tags.size(); i++) {
                         removeTag();
-
                     }
 
+                    // get selected tag indeces
                     ObservableList selectedIndices = tagsPanel.getSelectionModel().getSelectedIndices();
 
                     if (selectedIndices.size() > 0) {
 
                         for (int i = 0; i < selectedIndices.size(); i++) {
-                            placeTag(i, simTime - 1);
-                            Thread t = updateTag(i, simTime);
+                            int index = (int)selectedIndices.get(i);
+                            placeTag(index, simTime - 1);
+                            Thread t = updateTag(index, simTime);
                             threads.add(t);
                         }
 
@@ -187,19 +177,17 @@ public class SimulationController {
 
         slider.setMinWidth(350.0);
         slider.setMin(0);
-        slider.setMax(all_times.get(0).size() - 1);   // TODO: should be a MAXIMUM number of locations that tag goes through
+        slider.setMax(all_times.get(0).size() - 1); 
         slider.setValue(0);
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
+        int majorTick = 5;
         slider.setMajorTickUnit(5);
-        slider.setMinorTickCount(4);
+        slider.setMinorTickCount(majorTick-1);
         slider.setBlockIncrement(1);
 
         //  this listener reacts to the change on the slider:
-        //      should start visualisation from the point were slider is set to
-        //      but doesn't do that yet (if we have a list of locations,
-        //      then it would use that location as a starting point and proceed
-        //      with subsequent locations)
+        //  should start visualisation from the point were slider is set to
         slider.setOnMouseClicked(
                 new EventHandler<MouseEvent>() {
             @Override
@@ -210,14 +198,13 @@ public class SimulationController {
                 int v = (int) Math.rint(value);
                 slider.setValue(v);
                 simTime = v;
-                // it is bad to use stop(), but it works
-                // alternative would be using http://www.java67.com/2015/07/how-to-stop-thread-in-java-example.html
+
                 for (Thread t : threads) {
                     t.stop();
                 }
 
                 threads.clear();
-                // should be used for all tags
+
                 for (int i = 0; i < all_tags.size(); i++) {
                     Thread t = updateTag(i, v);
                     threads.add(t);
@@ -235,17 +222,16 @@ public class SimulationController {
         VBox rightbox = new VBox();
 
         rightbox.setPadding(new Insets(0, 0, 25, 25));
-        rightbox.setPrefSize(250.0, 400);
+        rightbox.setPrefSize(250.0, 480);
         rightbox.setSpacing(15.0);
-        
+
         Label tagName = new Label("Tag IDs");
         tagName.setFont(Font.font(null, FontWeight.BOLD, 12));
-                
+
         tagsPanel = new ListView<>();
 
         tagsPanel.setPrefWidth(200.0);
-        // getting tag IDs from log file
-        ;
+
         // populate panel with tag IDs
         for (Long tag : all_tags) {
             tagsPanel.getItems().add(tag + "");
@@ -271,7 +257,6 @@ public class SimulationController {
 
                             // remove from the map
                             for (int i = 0; i < threads.size(); i++) {
-                                System.out.println("threads lenght: " + threads.size());
                                 removeTag();
                             }
 
@@ -305,20 +290,15 @@ public class SimulationController {
 
         Label basestationName = new Label("Basestation names");
         basestationName.setFont(Font.font(null, FontWeight.BOLD, 12));
-        
-        // alternative way to show ListView of height for all tags
-        //tags.setPrefHeight(stringTags.size() * 23 + 2);
+
         basestationPanel = new ListView<>();
 
-        // TODO: collect actual basestation names from logUpload
         basestationPanel.getItems()
                 .addAll("Basestation 1", "Basestation 2", "Basestation 3", "Basestation 4");
         basestationPanel.getSelectionModel()
                 .setSelectionMode(SelectionMode.MULTIPLE);
         basestationPanel.setMinHeight(basestationPanel.getItems().size() * 23 + 2);
 
-        // TODO: regularity on action should cause regeneration of locations for
-        // tags (intermediate step before visualisation and start visualisation from beginning
         drawTrace = new CheckBox();
 
         drawTrace.setText("Draw movement patterns");
@@ -335,7 +315,6 @@ public class SimulationController {
 
         threads = new ArrayList<>();
 
-        // might want to place this in map setup
         // placing tags to their initial locations
         for (int i = 0;
                 i < all_tags.size();
@@ -343,9 +322,6 @@ public class SimulationController {
             placeTag(i, 0);
         }
 
-        // TODO: if tag is out of the map space, could print out some warning
-        // THIS IS WHERE A VISUALISATION THREAD WILL BE STARTED
-        // remains for loop, should be changed to traverse tagID list for all tags
         for (int i = 0;
                 i < all_tags.size();
                 i++) {
@@ -353,8 +329,12 @@ public class SimulationController {
             threads.add(th);
         }
     }
-    // getter method to be used from other classes
-
+    
+    /**
+     * basestation data getter method to me used from other classes.
+     * @return ArrayList with basestation coordinates and measured power
+     * @throws SQLException 
+     */
     public ArrayList<Double[]> getBasestationData() throws SQLException {
         ArrayList<String> basestationNames = UploadController.getSelectedBasestations();
         ArrayList<Double[]> basestationData = new ArrayList<>();
@@ -367,8 +347,10 @@ public class SimulationController {
     }
 
     /**
-     * Function for setting up map - downloading from Google Maps, placing first
-     * things
+     * Function for setting up map - downloading from Google Maps, 
+     * and placing basestations on it.
+     * @param basestations 
+     * @return new Pane
      */
     public Pane setupMap(ArrayList<Double[]> basestations) {
 
@@ -382,7 +364,7 @@ public class SimulationController {
         int zoom = mp.getZoom();
         double[] centerPoints = mp.getCenter(); // {centerY, centerX}
 
-        // main pain - top layer of map where visualisation will happen
+        // main pane - top layer of map where visualisation will happen
         pane = new Pane();
 
         String imagePath = "https://maps.googleapis.com/maps/api/staticmap?"
@@ -393,34 +375,23 @@ public class SimulationController {
         Boolean backgroundLoading = false;
         Image image = new Image(imagePath, backgroundLoading);
 
-        // checking for errors (from JavaFX book) - most likely to happen if there is no internet connection
+        // checking for errors - most likely to happen if there is no internet connection
         if (image.isBackgroundLoading()) {
             image.errorProperty().addListener((prop, oldValue, newValue) -> {
                 if (newValue) {
-                    System.out.println("An error occurred while loading the image.\n"
-                            + "Make sure that there is a working internet connection to download the map.");
                     Label l = new Label("An error occurred while loading the image.\n"
-                            + "Make sure that there is a working internet connection to download the map.\n"
-                            + "1. Check your internet connection and reload the map (button)\n"
-                            + "2. Or paste some dummy image instead and make the user aware of that.");
+                            + "Make sure that there is a working internet connection to download the map.\n");
                     pane.getChildren().add(l);
                     return;
                 }
             });
         } else if (image.isError()) {
-            System.out.println("An error occurred while loading the image.\n"
-                    + "Make sure that there is a working internet connection to download the map.");
             Label l = new Label("An error occurred while loading the image.\n"
-                    + "Make sure that there is a working internet connection to download the map.\n"
-                    + "1. Check your internet connection and reload the map (button)\n"
-                    + "2. Or paste some dummy image instead and make the user aware of that.");
+                    + "Make sure that there is a working internet connection to download the map.\n");
             pane.getChildren().add(l);
             return pane;
         }
 
-        // here if error at downloading the map occured, probably I don't want to carry on and need to 
-        // prompt the user to connect to internet and retry, rather than display everything. 
-        // For example, could use return for that.
         imageView = new ImageView(image);
 
         pane.getChildren().add(imageView);
@@ -432,6 +403,10 @@ public class SimulationController {
 
     }
 
+    /**
+     * Run data processing to get resulting locations for all tags that 
+     * have enough detections.
+     */
     public void getTagInfo() {
         tag_registry = nc.simulateLocations();
 
@@ -468,12 +443,8 @@ public class SimulationController {
     }
 
     /**
-     * Here I want to get the coordinates of basestations (either geographical
-     * (from beacon registration) or converted to simple coordinate system and
-     * place them as extra things on the pane that will
-     *
-     * TO DO: check if basestations don't fit in the frame of map, need to
-     * change zoom setting
+     * Placing basestations on the new pane
+     * @param coords
      */
     public void placeBasestations(ArrayList<Double[]> coords) {
 
@@ -493,21 +464,13 @@ public class SimulationController {
 
         for (int i = 0; i < newCoords.size(); i++) {
             g.getChildren().add(newCoords.get(i));
-            //String name = (String)basestationPanel.get;
-            //Circle c = newCoords.get(i);
-
-//            c.hoverProperty().addListener((observable) -> {                
-//                Tooltip t = new Tooltip(name); // should get tag id and put it as a label
-//                Tooltip.install(c, t);
-//            });
         }
 
         pane.getChildren().addAll(g);
     }
 
     /**
-     * This method should remove the last appearance of the tag. Probably only
-     * works if we choose to display all tags.
+     * This method should remove the last appearance of the tag. 
      */
     public void removeTag() {
         // accessing Group object of the Pane that stores rectangles
@@ -515,6 +478,11 @@ public class SimulationController {
         pane.getChildren().remove(2);
     }
 
+    /**
+     * placing a single tag on the pane for given time index
+     * @param tagIndex tag index in the tag list
+     * @param timeIndex time index for the time list of the tag
+     */
     public void placeTag(int tagIndex, int timeIndex) {
 
         ArrayList<Rectangle> tagMarks = new ArrayList<>();
@@ -525,12 +493,10 @@ public class SimulationController {
         double x = all_coords.get(tagIndex).get(timeIndex)[0];
         double y = all_coords.get(tagIndex).get(timeIndex)[1];
 
-        // draw only if it fits on the pane
-        // if (x <= 480 && y <= 280) {
         Rectangle r = new Rectangle(x, y, 4, 4);
         r.setFill(Color.OLIVE);
         r.hoverProperty().addListener((observable) -> {
-            Tooltip t = new Tooltip(name); // should get tag id and put it as a label
+            Tooltip t = new Tooltip(name); // putting tag ID as a name
             Tooltip.install(r, t);
         });
 
@@ -543,14 +509,23 @@ public class SimulationController {
         }
 
         pane.getChildren().add(g);
-        //}
 
     }
 
+    /**
+     * updating slider value
+     * @param time 
+     */
     public void updateSlider(int time) {
         slider.setValue(time);
     }
 
+    /**
+     * Method to start a thread for a single tag, starting at the given time t.
+     * @param index tag index
+     * @param t time
+     * @return new Thread
+     */
     public Thread updateTag(int index, int t) {
 
         Thread th = new Thread() {
@@ -559,9 +534,6 @@ public class SimulationController {
             public void run() {
                 // this will be for loop for all locations that we have
                 for (int i = t; i < all_times.get(index).size(); i++) {
-                    //currentTime = i;
-                    // TODO: timing will actually need to be synchronised across the tags
-                    BigInteger time = all_times.get(index).get(i);
                     simTime = i;
                     int no = i; // index of coordinate to which we want to set location now
 
@@ -583,7 +555,6 @@ public class SimulationController {
                                 removeTag();
                                 updateSlider(no);
                             } // if checkbox in GUI is selected, previous tag locations are kept on the map
-                            // TODO: MAKE IT DRAW THIN LINE BETWEEN THOSE POINTS
                             else if (drawTrace.isSelected()) {
                                 placeTag(index, no);
                                 updateSlider(no);
@@ -616,6 +587,10 @@ public class SimulationController {
 
     }
 
+    /**
+     * handler for 'Cancel' button
+     * @throws IOException 
+     */
     public void handleCancel() throws IOException {
         FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("menu.fxml"));
         Parent sceneParent = sceneLoader.load();
@@ -625,6 +600,12 @@ public class SimulationController {
         stage.setScene(scene);
     }
 
+    /**
+     * handler for 'Export data' button
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     * @throws IOException 
+     */
     public void handleExport() throws FileNotFoundException, UnsupportedEncodingException, IOException {
 
         // get date for the name of the file
@@ -632,21 +613,11 @@ public class SimulationController {
         Date today = Calendar.getInstance().getTime();
         String reportDate = df.format(today);
 
-        // get OS for filepath
-//        String OS = System.getProperty("os.name").toLowerCase();
-//        String path="";
-//        if (OS.contains("win")) {
-//            path = ".\\" + "export"+ reportDate + ".txt";
-//        }
-//        if (OS.contains("nix") || OS.contains("nux") ||  
-//                OS.contains("aix") || OS.contains("mac")){
-//            path = "./" + "export"+ reportDate + ".txt";
-//        }
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save data");
         fileChooser.setInitialFileName("export" + reportDate + ".csv");
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("CSV file", "*.csv"), 
+                new FileChooser.ExtensionFilter("CSV file", "*.csv"),
                 new FileChooser.ExtensionFilter("Text file", "*.txt"),
                 new FileChooser.ExtensionFilter("Log file", ".log"));
         Stage stage = (Stage) simulation.getScene().getWindow();
@@ -654,7 +625,6 @@ public class SimulationController {
         if (file != null) {
             System.out.println("file is " + file.getName());
             System.out.println("file path " + file.getAbsolutePath());
-            String givenName = file.getName();
             String path = file.getAbsolutePath();
 
             // create new file

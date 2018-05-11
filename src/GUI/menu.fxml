@@ -26,7 +26,7 @@
             <Font size="14.0" />
          </font>
       </Button>
-      <Button onAction="#handleSettings" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="User manual">
+      <Button onAction="#handleManual" minHeight="60.0" minWidth="220.0" mnemonicParsing="false" text="User manual">
          <font>
             <Font size="14.0" />
          </font>

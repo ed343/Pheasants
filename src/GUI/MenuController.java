@@ -12,14 +12,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-
 import java.io.IOException;
-import javafx.scene.image.Image;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
 
 public class MenuController {
 
@@ -27,14 +20,12 @@ public class MenuController {
     AnchorPane rootpane;
     
     public void initialize() {
-//        BackgroundImage myBI;
-//        myBI = new BackgroundImage(new Image("./GUI/ph.png",32,32,false,true),
-//                BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT,
-//                BackgroundSize.DEFAULT);
-//    //then you set to your node
-//    rootpane.setBackground(new Background(myBI));
     }
 
+    /**
+     * handler for 'Register and update basestations' button
+     * @throws IOException 
+     */
     public void handleRegister() throws IOException {
 
         FXMLLoader sceneLoader=new FXMLLoader(getClass().getResource("basestations.fxml"));
@@ -45,31 +36,45 @@ public class MenuController {
         stage.setScene(scene);
     }
 
+    /**
+     * handler for 'Upload data' button
+     * @throws IOException 
+     */
     public void handleAnalyse() throws IOException {
 
         FXMLLoader sceneLoader=new FXMLLoader(getClass().getResource("data_upload.fxml"));
         Parent sceneParent = sceneLoader.load();
-        Scene scene = new Scene(sceneParent, 620, 560);
+        Scene scene = new Scene(sceneParent, 720, 570);
 
         Stage stage = (Stage) rootpane.getScene().getWindow();
         stage.setScene(scene);
     }
 
+    /**
+     * handler for 'Run simulation' button
+     * @throws IOException 
+     */
     public void handleSimulation() throws IOException {
         
         FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("data_simulation.fxml"));
         Parent sceneParent = sceneLoader.load();
-        Scene scene = new Scene(sceneParent, 800, 450);
+        Scene scene = new Scene(sceneParent, 800, 500);
 
         Stage stage = (Stage) rootpane.getScene().getWindow();
         stage.setScene(scene);
         
     }
 
-    public void handleSettings() {
-
+    /**
+     * handler for 'User manual' button
+     */
+    public void handleManual() {
+        
     }
     
+    /**
+     * handler for 'Exit' button
+     */
     public void handleExit() {
         Stage stage = (Stage) rootpane.getScene().getWindow();
         stage.close();

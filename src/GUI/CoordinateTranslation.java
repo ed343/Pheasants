@@ -36,7 +36,7 @@ public class CoordinateTranslation {
     /**
      * Converts Cartesian coordinate (x,y,z) to geographical coordinate (lat, lon).
      * @param cartCoords
-     * @return 
+     * @return array of geographical coordinates
      */
     public Double[] cartesianToLatLon(Double[] cartCoords) {
         
@@ -54,7 +54,14 @@ public class CoordinateTranslation {
            
         return coords;
     }
-     
+    
+    /**
+     * Method to find a bound.
+     * @param value
+     * @param opt_min
+     * @param opt_max
+     * @return bound value
+     */
     public double bound( double value, double opt_min, double opt_max){
 
         if (opt_min>value) {
@@ -67,10 +74,19 @@ public class CoordinateTranslation {
         return value;
     }
     
+    /**
+     * Converting degrees to radians
+     * @param deg 
+     * @return radians
+     */
     public double degreesToRadians(double deg) {
         return deg * (Math.PI / 180);
     }
-    
+     /**
+      * Converting radians to degrees
+      * @param rad
+      * @return degrees
+      */
     public double radiansToDegrees (double rad) {
         return rad / (Math.PI /180);
     }

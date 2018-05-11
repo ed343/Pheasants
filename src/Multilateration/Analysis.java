@@ -27,7 +27,7 @@ import javafx.util.Pair;
  * Class that executes the main functionality of the program.
  *
  */
-public class MLAT {
+public class Analysis {
 
     static int radioIndex = 0;
     static PrimerClass primer;
@@ -52,12 +52,14 @@ public class MLAT {
         // ArrayList to store the Data extracted from all Log files.
         // each entry in the ArrayList keeps the data associated with one radio
         ArrayList<LogData> dataArr = new ArrayList<>();
+        
+        int radiosNumber = UploadController.getBasestationsNumber();
 
         // 0. create a program instance:
         primer = new PrimerClass();
 
         // 1. set no. of radios in field
-        primer.setNumberOfRadios(4);
+        primer.setNumberOfRadios(radiosNumber);
 
         // 2. insert all radio coordinates
         ArrayList<Double[]> data = getBasestationData();

@@ -11,13 +11,10 @@
 
 <ScrollPane fx:id="data_upload" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="GUI.UploadController">
     
-    <VBox prefHeight="550" prefWidth="600" spacing="15">
+    <VBox fx:id="uploadBox" prefHeight="550" prefWidth="700" spacing="15">
         <padding><Insets bottom="15" left="25" right="25" top="55" /></padding>
         <VBox>
-            <Label text="Please upload a file for every basestation, containing its observations.">
-                <font><Font size="14.0"/></font>
-            </Label>
-            <Label text="Files should be in .log, .txt or .csv format.">
+            <Label text="Please upload a log file for every basestation. Files should be in .log, .txt or .csv format.">
                 <font><Font size="14.0"/></font>
             </Label>
              <Label text="Note: if there are no basestations to select in the dropdown list, please go back to the database registration and input more basestation." wrapText = "true">
@@ -31,23 +28,6 @@
 
             </children>
         </VBox>
-        
-        <HBox alignment="BOTTOM_RIGHT" spacing="5">
-            
-            <Label text="Apply Kalman filter"> <font><Font size="14.0"/></font></Label>
-            <CheckBox fx:id="kalman" />
-            
-            <Button fx:id="run" onAction="#handleRun" minHeight="50.0" minWidth="100.0" mnemonicParsing="false" text="Run">
-                <font>
-                    <Font size="15.0"/>
-                </font>
-            </Button>
-            <Button fx:id="cancel" text="Cancel" minWidth="100.0" minHeight="50.0" onAction="#handleCancel">
-                <font>
-                    <Font size="15.0"/>
-                </font>
-            </Button>
-        </HBox>
     
     </VBox>
 

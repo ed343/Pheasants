@@ -9,16 +9,12 @@ package GUI;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -96,7 +92,6 @@ public class BasestationController {
      * text inputted to the TextField te1, i.e. longitude text_text - the text
      * inputted to the TextField text, i.e. measuredPow
      * 
-     * TODO: need to check that none of the inputs are wrong format or corrupted
      */
     public void saveBasestation(ActionEvent event) throws SQLException, IOException {
         // connect to db
@@ -134,8 +129,6 @@ public class BasestationController {
                         Double.parseDouble(text_text), c);
             } 
             // if we already have the radio saved
-            // HERE DO THE MAGIC WHERE YOU ASK WHETHER THE USER IS SURE ABOUT
-            // REPLACING A BASESTATION THAT ALREADY EXISTS
             else {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Information Dialog");
@@ -147,8 +140,6 @@ public class BasestationController {
             alert.showAndWait();
             }
             
-            System.out.println("noBasestations: " + noBasestations);
-            //goBack(new ActionEvent());
         }
         }
         catch(Exception e) {
@@ -162,20 +153,20 @@ public class BasestationController {
                 alert.showAndWait();
             }
             else {
-                // goBack(new ActionEvent());
             }
             
         }
         c.close();
     }
 
+
     @FXML
     /**
-     * Method generates a single beacon registration window that can be added to
+     * Method generates a single basestation registration window that can be added to
      * the panel
-     * 
-     * I THINK BECAUSE OF THIS METHOD I DON'T USE BASESTATION_ITEM.FXML ANYMORE
      *
+     * @param basestationNumber current number of basestations
+     * @return VBox for new basestation registration
      */
     public VBox addBasestation(int basestationNumber) {
 
@@ -224,9 +215,12 @@ public class BasestationController {
 
     @FXML
     /**
-     * Method generates a single beacon registration window that can be added 
-     * to the panel
-     *
+     * Method generates a single basestation registration window that can be added 
+     * to the panel.
+     * 
+     * @param rs database result
+     * @return populated VBox
+     * @throws SQLException
      */
     public VBox addBasestationPrepopulated(ResultSet rs) throws SQLException {
 
@@ -279,8 +273,6 @@ public class BasestationController {
                     text.setDisable(false);
                     te1.setDisable(false);
                     te.setDisable(false);
-                    //tf.setDisable(false); - maybe this line has to go because 
-                    //names are primary keys, so we can't change them
                     update_save.setText("Save");
                 } else if (update_save.getText().equals("Save")) {
 
@@ -323,14 +315,11 @@ public class BasestationController {
                     Statement stmt = c.createStatement();
                     db.delete(tf.getText(), c);
                     c.close();
-                    // TODO: remove whole VBox with all the context. 
-                    // Might need to access it as child of the Pane
                 } catch (SQLException ex) {
                     Logger.getLogger(BasestationController.class.getName()).
                            log(Level.SEVERE, null, ex);
                 }
                 
-                // not sure all of this is needed
                 text.setDisable(false);
                 text.setText("");
                 te1.setDisable(false);
@@ -363,19 +352,13 @@ public class BasestationController {
 
     }
 
+    /**
+     * Method adds a single basestation registration window and
+     * adds it to the panel.
+     */
     public void addExtraBasestation() {
         noBasestations++;
         VBox newBasestation = addBasestation(noBasestations);
         basestationList.getChildren().add(newBasestation);
-    }
-
-    public void goBack(ActionEvent event) throws IOException {
-        FXMLLoader sceneLoader = new FXMLLoader(getClass()
-                                               .getResource("menu.fxml"));
-        Parent sceneParent = sceneLoader.load();
-        Scene scene = new Scene(sceneParent, 400, 400);
-
-        Stage stage = (Stage) basestation_pane.getScene().getWindow();
-        stage.setScene(scene);
     }
 }
