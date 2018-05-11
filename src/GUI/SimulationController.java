@@ -450,9 +450,6 @@ public class SimulationController {
 
         ArrayList<Circle> newCoords = new ArrayList<>();
 
-        // will have to be passed information about basestations, 
-        // which will also include the unique name, which I can then assign
-        // on a tooltip
         for (Double[] bs : coords) {
 
             Circle r = new Circle(bs[0], bs[1], 2.5);

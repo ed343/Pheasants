@@ -80,7 +80,7 @@ public class VisualisationController {
     double centerX;
     double centerY;
     static MapProcessing mp;
-    //Simulation nc = new Simulation();
+
     // ArrayList to hold the geographical coordinates of basestations that will be displayed
     ArrayList<Double[]> basestations = new ArrayList<>();
 
@@ -109,10 +109,10 @@ public class VisualisationController {
 
     ArrayList<Thread> threads;
 
-    // ideally should take the smallest value between all tags and time should
-    // be progressed from that value
+// keeping track of the simulation time
     int simTime = 0;
     
+    // default granularity value
     int granularity = 4;
 
     public void initialize() throws IOException, SQLException {
@@ -120,6 +120,7 @@ public class VisualisationController {
         // prepares all_tags, all_times and all_coords for later use
         getTagInfo(true);
 
+        // setting up map
         pane = setupMap(basestations);
         threads = new ArrayList<>();
 
@@ -161,8 +162,8 @@ public class VisualisationController {
         slider = new Slider();
         slider.setMinWidth(350.0);
         slider.setMin(0);
-        // here should check for the longest record
-        slider.setMax(all_times.get(0).size() - 1);   // TODO: should be a MAXIMUM number of locations that tag goes through
+
+        slider.setMax(all_times.get(0).size() - 1);  
         slider.setValue(0);
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
@@ -171,7 +172,7 @@ public class VisualisationController {
         slider.setBlockIncrement(1);
 
         //  this listener reacts to the change on the slider:
-        //      should start visualisation from the point were slider is set to
+        //  should start visualisation from the point were slider is set to
         slider.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -233,7 +234,6 @@ public class VisualisationController {
                     // should be used for all tags
                     for (Object o : selectedIndices) {
                         int tagIndex = (Integer) o;
-                        System.out.println(tagIndex);
                         Thread t = updateTag(tagIndex, simTime);
                         threads.add(t);
                     }
@@ -255,8 +255,6 @@ public class VisualisationController {
             }
         });
 
-        // alternative way to show ListView of height for all tags
-        //tags.setPrefHeight(stringTags.size() * 23 + 2);
         ListView<String> basestationPanel = new ListView<>();
 
         ArrayList<String> basestationNames = UploadController.getSelectedBasestations();
@@ -317,7 +315,6 @@ public class VisualisationController {
                 double value = (event.getX() / granSlider.getWidth()) * granSlider.getMax();
                 granularity = (int) Math.rint(value)+4;
                 granSlider.setValue(granularity);
-                System.out.println("granSlider: " + granularity);
 
                 granSlider.setValueChanging(false);
                 
@@ -364,7 +361,6 @@ public class VisualisationController {
             placeTag(i, 0);
         }
 
-        // TODO: if tag is out of the map space, could print out some warning
         for (int i = 0; i < all_tags.size(); i++) {
             Thread th = updateTag(i, 1);
             threads.add(th);
@@ -373,8 +369,10 @@ public class VisualisationController {
     }
 
     /**
-     * Function for setting up map - downloading from Google Maps, placing first
-     * things
+     * Function for setting up map - downloading from Google Maps, 
+     * and placing basestations on it.
+     * @param basestations 
+     * @return new Pane
      */
     public Pane setupMap(ArrayList<Double[]> basestations) {
 
@@ -388,7 +386,7 @@ public class VisualisationController {
         int zoom = mp.getZoom();
         double[] centerPoints = mp.getCenter(); // {centerY, centerX}
 
-        // main pain - top layer of map where visualisation will happen
+        // main pane - top layer of map where visualisation will happen
         pane = new Pane();
 
         String imagePath = "https://maps.googleapis.com/maps/api/staticmap?"
@@ -399,34 +397,23 @@ public class VisualisationController {
         Boolean backgroundLoading = false;
         Image image = new Image(imagePath, backgroundLoading);
 
-        // checking for errors (from JavaFX book) - most likely to happen if there is no internet connection
+        // checking for errors - most likely to happen if there is no internet connection
         if (image.isBackgroundLoading()) {
             image.errorProperty().addListener((prop, oldValue, newValue) -> {
                 if (newValue) {
-                    System.out.println("An error occurred while loading the image.\n"
-                            + "Make sure that there is a working internet connection to download the map.");
                     Label l = new Label("An error occurred while loading the image.\n"
-                            + "Make sure that there is a working internet connection to download the map.\n"
-                            + "1. Check your internet connection and reload the map (button)\n"
-                            + "2. Or paste some dummy image instead and make the user aware of that.");
+                            + "Make sure that there is a working internet connection to download the map.\n");
                     pane.getChildren().add(l);
                     return;
                 }
             });
         } else if (image.isError()) {
-            System.out.println("An error occurred while loading the image.\n"
-                    + "Make sure that there is a working internet connection to download the map.");
             Label l = new Label("An error occurred while loading the image.\n"
-                    + "Make sure that there is a working internet connection to download the map.\n"
-                    + "1. Check your internet connection and reload the map (button)\n"
-                    + "2. Or paste some dummy image instead and make the user aware of that.");
+                    + "Make sure that there is a working internet connection to download the map.\n");
             pane.getChildren().add(l);
             return pane;
         }
 
-        // here if error at downloading the map occured, probably I don't want to carry on and need to 
-        // prompt the user to connect to internet and retry, rather than display everything. 
-        // For example, could use return for that.
         imageView = new ImageView(image);
 
         pane.getChildren().add(imageView);
@@ -438,18 +425,16 @@ public class VisualisationController {
 
     }
 
+    /**
+     * Run data processing to get resulting locations for all tags that 
+     * have enough detections.
+     */
     public void getTagInfo(boolean firstTime) throws SQLException {
 
-        // this is were I read parameters set in uploadController for use of Kalman filter
+        // read parameters set in uploadController for use of Kalman filter
         boolean applyKalman = UploadController.doApplyKalman();
-        System.out.println("applyKalman: " + applyKalman);
-
-        //RadioButton chk = (RadioButton) group.getSelectedToggle(); // Cast object to radio button        
-        //int granularity = Integer.parseInt(chk.getId());
         
         int gran = granularity;
-
-        System.out.println("granularity: " + gran);
 
         tag_registry = Analysis.getStuff(applyKalman, true, gran);
 
@@ -495,20 +480,13 @@ public class VisualisationController {
     }
 
     /**
-     * Here I want to get the coordinates of basestations (either geographical
-     * (from beacon registration) or converted to simple coordinate system and
-     * place them as extra things on the pane that will
-     *
-     * TO DO: check if basestations don't fit in the frame of map, need to
-     * change zoom setting
+     * Placing basestations on the new pane
+     * @param coords
      */
     public void placeBasestations(ArrayList<Double[]> coords) {
 
         ArrayList<Circle> newCoords = new ArrayList<>();
 
-        // will have to be passed information about basestations, 
-        // which will also include the unique name, which I can then assign
-        // on a tooltip
         for (Double[] bs : coords) {
 
             Circle r = new Circle(bs[0], bs[1], 2.5);
@@ -521,18 +499,13 @@ public class VisualisationController {
         for (Circle r : newCoords) {
             g.getChildren().add(r);
 
-//            r.hoverProperty().addListener((observable) -> {
-//                Tooltip t = new Tooltip(name); // should get tag id and put it as a label
-//                Tooltip.install(r, t);
-//            });
         }
 
         pane.getChildren().addAll(g);
     }
 
     /**
-     * This method should remove the last appearance of the tag. Probably only
-     * works if we choose to display all tags.
+     * This method should remove the last appearance of the tag. 
      */
     public void removeTag() {
         // accessing Group object of the Pane that stores rectangles
@@ -540,6 +513,11 @@ public class VisualisationController {
         pane.getChildren().remove(2);
     }
 
+    /**
+     * placing a single tag on the pane for given time index
+     * @param tagIndex tag index in the tag list
+     * @param timeIndex time index for the time list of the tag
+     */
     public void placeTag(int tagIndex, int timeIndex) {
 
         ArrayList<Rectangle> tagMarks = new ArrayList<>();
@@ -550,8 +528,6 @@ public class VisualisationController {
         double x = all_coords.get(tagIndex).get(timeIndex)[0];
         double y = all_coords.get(tagIndex).get(timeIndex)[1];
 
-        // draw only if it fits on the pane
-        // if (x <= 480 && y <= 280) {
         Rectangle r = new Rectangle(x, y, 4, 4);
         r.setFill(Color.OLIVE);
         r.hoverProperty().addListener((observable) -> {
@@ -568,14 +544,23 @@ public class VisualisationController {
         }
 
         pane.getChildren().add(g);
-        //}
 
     }
 
+     /**
+     * updating slider value
+     * @param time 
+     */
     public void updateSlider(int time) {
         slider.setValue(time);
     }
 
+    /**
+     * Method to start a thread for a single tag, starting at the given time t.
+     * @param index tag index
+     * @param t time
+     * @return new Thread
+     */    
     public Thread updateTag(int index, int t) {
 
         Thread th = new Thread() {
@@ -584,8 +569,7 @@ public class VisualisationController {
             public void run() {
                 // this will be for loop for all locations that we have
                 for (int i = t; i < all_times.get(index).size(); i++) {
-                    //currentTime = i;
-                    // TODO: timing will actually need to be synchronised across the tags
+
                     BigInteger time = all_times.get(index).get(i);
                     simTime = i;
                     int no = i; // index of coordinate to which we want to set location now
@@ -608,7 +592,6 @@ public class VisualisationController {
                                 removeTag();
                                 updateSlider(no);
                             } // if checkbox in GUI is selected, previous tag locations are kept on the map
-                            // TODO: MAKE IT DRAW THIN LINE BETWEEN THOSE POINTS
                             else if (drawTrace.isSelected()) {
                                 placeTag(index, no);
                                 updateSlider(no);
@@ -641,6 +624,10 @@ public class VisualisationController {
 
     }
 
+     /**
+     * handler for 'Cancel' button
+     * @throws IOException 
+     */
     public void handleCancel() throws IOException {
         FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("menu.fxml"));
         Parent sceneParent = sceneLoader.load();
@@ -650,6 +637,13 @@ public class VisualisationController {
         stage.setScene(scene);
     }
 
+    
+        /**
+     * handler for 'Export data' button
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     * @throws IOException 
+     */
     public void handleExport() throws FileNotFoundException, UnsupportedEncodingException, IOException {
 
         // get date for the name of the file

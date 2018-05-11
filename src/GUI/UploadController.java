@@ -121,10 +121,19 @@ public class UploadController {
 
     }
 
+    /**
+     * getter for boolean if we apply filter or not
+     * @return boolean value
+     */
     public static boolean doApplyKalman() {
         return applyKalman;
     }
 
+    /**
+     * add a single basestation upload window
+     * @param basestationNumber
+     * @return new VBox
+     */
     public VBox addUpload(int basestationNumber) {
         VBox vb = new VBox();
         vb.setSpacing(10);
@@ -165,12 +174,20 @@ public class UploadController {
         return vb;
     }
     
+    /**
+     * add a single extra upload window
+     */
     public void addExtraUpload() {
         uploadNumber++;
         VBox newUpload = addUpload(uploadNumber);
         uploadList.getChildren().add(newUpload);
     }
 
+    /**
+     * collect all basestation names from the database
+     * @return ArrayList of basestation names
+     * @throws SQLException 
+     */
     public ArrayList<String> getBasestationNames() throws SQLException {
 
         ArrayList<String> names = new ArrayList<>();
@@ -194,11 +211,22 @@ public class UploadController {
         return names;
     }
     
+    /**
+     * getter for current number of basestations
+     * @return number of basestations
+     */
     public static int getBasestationsNumber() {
         return uploadNumber;
     }
 
-    //{ latitude, longitude, measured power}
+    
+    /**
+     * Method to collect data about the basestation from the database,
+     * given its name.
+     * @param name basestation name in the database
+     * @return array containing: latitude, longitude, measured power
+     * @throws SQLException 
+     */
     public static Double[] collectBasestationData(String name) throws SQLException {
         Double[] data = new Double[3];
 
@@ -225,6 +253,10 @@ public class UploadController {
         return data;
     }
 
+    /**
+     * handler for 'Select file' button used to upload a single log file
+     * @param event 
+     */
     public void handleUpload(ActionEvent event) {
 
         Button b = (Button) event.getSource();
@@ -259,14 +291,27 @@ public class UploadController {
         }
     }
 
+    /**
+     * getter for all paths to log files.
+     * @return ArrayList of paths
+     */
     public static ArrayList<String> getPaths() {
         return logfilePaths;
     }
 
+    /**
+     * getter for all selected basestation names.
+     * @return ArrayList of basestation names
+     */
     public static ArrayList<String> getSelectedBasestations() {
         return selectedBs;
     }
 
+    /**
+     * Method to check whether the user has Internet connection and show
+     * alert if no connection is found.
+     * @return boolean value for whether there is Internet connection
+     */
     public boolean checkInternet() {
         String imagePath = "https://maps.googleapis.com/maps/api/staticmap?"
                 + "center=" + 50 + "," + 20 + "&"
@@ -289,6 +334,10 @@ public class UploadController {
         return true;
     }
 
+    /**
+     * handler for 'Run' button. Starts the visualisation if everything is good.
+     * @throws IOException 
+     */
     public void handleRun() throws IOException {
 
         applyKalman = kalmanCheck.isSelected();
@@ -312,21 +361,15 @@ public class UploadController {
                 selectedBs.add((String) cbox.getValue());
             }
 
-            // TODO check whether there are no duplicate basestations selected
             if (selectedBs.size() >= uploadNumber && logfilePaths.size() >= uploadNumber) {
 
-//            try {
                 FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("data_visualisation.fxml"));
                 Parent sceneParent = sceneLoader.load();
                 Scene scene = new Scene(sceneParent, 800, 500);
 
                 Stage stage = (Stage) data_upload.getScene().getWindow();
                 stage.setScene(scene);
-//            }
 
-//            catch (Exception e) {
-//                handleRun();                
-//            }
             } else {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Information Dialog");
@@ -339,6 +382,10 @@ public class UploadController {
 
     }
 
+    /**
+     * handler for 'Cancel' button forcing application to go back to the main menu.
+     * @throws IOException 
+     */
     public void handleCancel() throws IOException {
         FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("menu.fxml"));
         Parent sceneParent = sceneLoader.load();
