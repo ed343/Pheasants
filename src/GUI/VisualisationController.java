@@ -661,8 +661,6 @@ public class VisualisationController {
         Stage stage = (Stage) visualisation.getScene().getWindow();
         File file = fileChooser.showSaveDialog(stage);
         if (file != null) {
-            System.out.println("file is " + file.getName());
-            System.out.println("file path " + file.getAbsolutePath());
             String path = file.getAbsolutePath();
 
             // create new file

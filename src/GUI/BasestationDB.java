@@ -137,10 +137,6 @@ public class BasestationDB {
             Statement stmt = c.createStatement();
             String s = "select name from basestations";
             ResultSet rs = stmt.executeQuery(s);
-            
-            while (rs.next()) {
-                System.out.println("read: "+ rs.getString("name"));
-            }
         }
 
         catch (SQLException e) {

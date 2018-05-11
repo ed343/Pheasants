@@ -265,7 +265,6 @@ public class SimulationController {
                             // should be used for all tags
                             for (Object o : selectedIndices) {
                                 int tagIndex = (Integer) o;
-                                System.out.println(tagIndex);
                                 placeTag(tagIndex, simTime - 1);
                                 Thread t = updateTag(tagIndex, simTime);
                                 threads.add(t);
@@ -620,8 +619,6 @@ public class SimulationController {
         Stage stage = (Stage) simulation.getScene().getWindow();
         File file = fileChooser.showSaveDialog(stage);
         if (file != null) {
-            System.out.println("file is " + file.getName());
-            System.out.println("file path " + file.getAbsolutePath());
             String path = file.getAbsolutePath();
 
             // create new file
