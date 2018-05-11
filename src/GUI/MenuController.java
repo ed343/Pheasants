@@ -68,8 +68,13 @@ public class MenuController {
     /**
      * handler for 'User manual' button
      */
-    public void handleManual() {
-        
+    public void handleManual() throws IOException {
+        FXMLLoader sceneLoader = new FXMLLoader(getClass().getResource("data_manual.fxml"));
+        Parent sceneParent = sceneLoader.load();
+        Scene scene = new Scene(sceneParent, 700, 600);
+
+        Stage stage = (Stage) rootpane.getScene().getWindow();
+        stage.setScene(scene);
     }
     
     /**
