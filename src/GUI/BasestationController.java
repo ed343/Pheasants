@@ -94,11 +94,9 @@ public class BasestationController {
      * - the text inputted to the TextField te, i.e. latitude te1_text - the
      * text inputted to the TextField te1, i.e. longitude text_text - the text
      * inputted to the TextField text, i.e. measuredPow
-     *
-     * TODO: need to check that none of the inputs are wrong format or corrupted
      */
-    public void saveBasestation(ActionEvent event) throws SQLException, 
-                                                          IOException {
+    public void saveBasestation(ActionEvent event) throws SQLException,
+            IOException {
         // connect to db
         Connection c = DriverManager.getConnection(db.url);
         Statement stmt = c.createStatement();
@@ -124,12 +122,12 @@ public class BasestationController {
                 HBox childsHB3 = (HBox) vb.getChildren().get(2);
                 TextField tf4 = (TextField) childsHB3.getChildren().get(1);
                 String text_text = tf4.getText(); // basestation measured_power
-                if (!tf_text.equals("") & !te_text.equals("") 
+                if (!tf_text.equals("") & !te_text.equals("")
                         & !te1_text.equals("")
                         & !text_text.equals("")) {
                     // check we don't already have this radio saved
-                    String s = "select * from basestations where name='" + 
-                               tf_text + "'";
+                    String s = "select * from basestations where name='"
+                            + tf_text + "'";
                     ResultSet rs = stmt.executeQuery(s);
 
                     // if we do not have the current radio saved, 
@@ -138,8 +136,7 @@ public class BasestationController {
                         db.insert(tf_text, Double.parseDouble(te_text),
                                 Double.parseDouble(te1_text),
                                 Double.parseDouble(text_text), c);
-                    } 
-                    // if we already have the radio saved
+                    } // if we already have the radio saved
                     // alert the user they need to select a different 
                     // basestation name
                     else {
@@ -153,9 +150,8 @@ public class BasestationController {
                         alert.showAndWait();
                     }
 
-                    System.out.println("noBasestations: " + noBasestations);
-                    //goBack(new ActionEvent());
-                } else {
+                } // if fields are left blank, ask the user to fill them in
+                else {
                     Alert alert = new Alert(AlertType.INFORMATION);
                     alert.setTitle("Information Dialog");
                     alert.setHeaderText(null);
@@ -164,6 +160,8 @@ public class BasestationController {
                     alert.showAndWait();
                 }
             }
+            // if fewer than 4 basestation are selected to run the program
+            // ask the user to select more
         } catch (Exception e) {
             e.printStackTrace();
             if (noBasestations < 4) {
@@ -171,11 +169,10 @@ public class BasestationController {
                 alert.setTitle("Information Dialog");
                 alert.setHeaderText(null);
                 alert.setContentText("Minimum 4 basestations are required "
-                                    + "to process data.");
+                        + "to process data.");
 
                 alert.showAndWait();
             } else {
-                // goBack(new ActionEvent());
             }
 
         }
@@ -184,11 +181,11 @@ public class BasestationController {
 
     @FXML
     /**
-     * Method generates a single beacon registration window that can be added to
-     * the panel
+     * Method generates a single basestation registration window that can be
+     * added to the panel.
      *
-     * I THINK BECAUSE OF THIS METHOD I DON'T USE BASESTATION_ITEM.FXML ANYMORE
-     *
+     * @param basestationNumber - number used in generating VBox ID
+     * @return vb - container for single basestation registration
      */
     public VBox addBasestation(int basestationNumber) {
 
@@ -238,8 +235,12 @@ public class BasestationController {
     @FXML
     /**
      * Method generates a single beacon registration window that can be added to
-     * the panel
+     * the panel. It also specifies functionality for update/save and 
+     * delete operations.
      *
+     * @param rs - the result set obtained from the database
+     * @return VBox - contains the prepopulated GUI elements
+     * @throws SQLException
      */
     public VBox addBasestationPrepopulated(ResultSet rs) throws SQLException {
 
@@ -288,15 +289,13 @@ public class BasestationController {
         update_save.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                if (!te.getText().equals("") & !te1.getText().equals("") 
-                    & !text.getText().equals("")) {
+                if (!te.getText().equals("") & !te1.getText().equals("")
+                        & !text.getText().equals("")) {
                     if (update_save.getText().equals("Update")) {
                         text.setDisable(false);
                         te1.setDisable(false);
                         te.setDisable(false);
-                        //tf.setDisable(false); - maybe this line has to go 
-                        // because 
-                        //names are primary keys, so we can't change them
+                        // when update gets clicked, the button becomes a save button
                         update_save.setText("Save");
                     } else if (update_save.getText().equals("Save")) {
 
@@ -322,7 +321,9 @@ public class BasestationController {
 
                     }
 
-                } else {
+                } 
+                // if not all fields were filled in, ask user to fill them in
+                else {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Information Dialog");
                     alert.setHeaderText(null);
@@ -335,7 +336,7 @@ public class BasestationController {
         });
 
         Button delete = new Button("Delete");
-
+        
         delete.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
@@ -348,14 +349,11 @@ public class BasestationController {
                     Statement stmt = c.createStatement();
                     db.delete(tf.getText(), c);
                     c.close();
-                    // TODO: remove whole VBox with all the context. 
-                    // Might need to access it as child of the Pane
                 } catch (SQLException ex) {
                     Logger.getLogger(BasestationController.class.getName()).
                             log(Level.SEVERE, null, ex);
                 }
 
-                // not sure all of this is needed
                 text.setDisable(false);
                 text.setText("");
                 te1.setDisable(false);
@@ -388,12 +386,20 @@ public class BasestationController {
 
     }
 
+    /** Method creates a GUI element for adding an extra basestation.
+     *
+     */
     public void addExtraBasestation() {
         noBasestations++;
         VBox newBasestation = addBasestation(noBasestations);
         basestationList.getChildren().add(newBasestation);
     }
 
+    /** Method handles the go-back functionality. 
+     *
+     * @param event - the click event
+     * @throws IOException
+     */
     public void goBack(ActionEvent event) throws IOException {
         FXMLLoader sceneLoader = new FXMLLoader(getClass()
                 .getResource("menu.fxml"));
